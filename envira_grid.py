@@ -29,8 +29,7 @@ import mathutils
 def generate_grid():
     settings = bpy.context.scene.ps_set_
     unit = settings.one_unit_length
-
-
+    
 
     if settings.one_unit == 'CM':
         #unit = 0.01

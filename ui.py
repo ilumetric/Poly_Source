@@ -164,15 +164,17 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
 
-
+        # --- Operators
         box = layout.box()
         box.prop(props, "max_points")
         if context.mode == 'EDIT_MESH':
             box.prop(context.space_data.overlay, "show_occlude_wire")
-        box.operator("ps.clear_dots", icon='SHADERFX')
-        box.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
-
         
+        row = box.row(align=True)
+        row.operator("ps.clear_dots", icon='SHADERFX')
+        row.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
+        box.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
+        box.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
 
 
 
