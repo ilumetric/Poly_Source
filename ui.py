@@ -259,7 +259,7 @@ def header_panel(self, context):
             layout = self.layout
             row = layout.row(align=True) 
             draw_panel(self, context, row)
-
+            row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 def viewHeader_L_panel(self, context):
     props = context.preferences.addons[__package__].preferences
