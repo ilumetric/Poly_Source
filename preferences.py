@@ -8,8 +8,8 @@ import os
 import sys
 import importlib  
 
-import bpy.utils.previews 
-
+from .icons import preview_collections
+import rna_keymap_ui
 
 
 # --- Scene Settings
@@ -34,7 +34,7 @@ class PS_settings(PropertyGroup):
 
 
 
-    mesh_check: BoolProperty(name="Mesh Check", default=False)
+    PS_check: BoolProperty(name="Mesh Check", default=False)
 
     retopo_mode: BoolProperty(name="Retopology Mode", default=False, update=run_draw)
 
@@ -252,23 +252,49 @@ class PS_preferences(AddonPreferences):
         
         keymap = context.window_manager.keyconfigs.user.keymaps['3D View']
         keymap_items = keymap.keymap_items
+        km = keymap.active()
 
-        col.prop(keymap_items["ps.ngons"], 'type', text='NGons', full_event=True)
+
+        """ col.prop(keymap_items["ps.ngons"], 'type', text='NGons', full_event=True)
         col.prop(keymap_items["ps.quads"], 'type', text='Quads', full_event=True)
         col.prop(keymap_items["ps.tris"], 'type', text='Tris', full_event=True)
         col.prop(keymap_items["ps.clear_dots"], 'type', text='Clear Dots', full_event=True)
-        col.prop(keymap_items["ps.remove_vertex_non_manifold"], 'type', text='Clear Dots', full_event=True)
+        col.prop(keymap_items["ps.remove_vertex_non_manifold"], 'type', text='Clear Dots', full_event=True) """
+
+        
+
+
+
+        kmi = keymap_items["ps.tk_panel"]
+        kmi.show_expanded = False
+        rna_keymap_ui.draw_kmi(kmi, keymap, km, kmi, col, 0)
+
+
+        kmi = keymap_items["ps.ngons"]
+        kmi.show_expanded = False
+        rna_keymap_ui.draw_kmi(kmi, keymap, km, kmi, col, 0)
+
+        kmi = keymap_items["ps.quads"]
+        kmi.show_expanded = False
+        rna_keymap_ui.draw_kmi(kmi, keymap, km, kmi, col, 0)
+
+        kmi = keymap_items["ps.tris"]
+        kmi.show_expanded = False
+        rna_keymap_ui.draw_kmi(kmi, keymap, km, kmi, col, 0)
+
+        kmi = keymap_items["ps.clear_dots"]
+        kmi.show_expanded = False
+        rna_keymap_ui.draw_kmi(kmi, keymap, km, kmi, col, 0)
+
+        kmi = keymap_items["ps.remove_vertex_non_manifold"]
+        kmi.show_expanded = False
+        rna_keymap_ui.draw_kmi(kmi, keymap, km, kmi, col, 0)
 
         col.label(text="*some hotkeys may not work because of the use of other addons")
 
 
-
-
-
-
-
 addon_keymaps = []  
-preview_collections = {}
+
 
 classes = [
     PS_settings,
@@ -294,6 +320,11 @@ def register():
     
 
     km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
+
+    kmi = km.keymap_items.new("ps.tk_panel", type = "SPACE", value="PRESS", ctrl=False, alt=False, shift=False, oskey=False)
+    addon_keymaps.append((km, kmi))
+
+
     # Pie
     kmi = km.keymap_items.new("ps.ngons", type = "ONE",value="PRESS", ctrl=False, alt=True, shift=False, oskey=False)
     addon_keymaps.append((km, kmi))
@@ -313,21 +344,6 @@ def register():
 
     
 
-    pcoll = bpy.utils.previews.new()
-    my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
-    pcoll.load("market_icon", os.path.join(my_icons_dir, "market.png"), 'IMAGE')
-    pcoll.load("gumroad_icon", os.path.join(my_icons_dir, "gumroad.png"), 'IMAGE')
-    pcoll.load("artstation_icon", os.path.join(my_icons_dir, "artstation.png"), 'IMAGE')
-    pcoll.load("discord_icon", os.path.join(my_icons_dir, "discord.png"), 'IMAGE')
-    preview_collections["main"] = pcoll
-
-
-    #bpy.app.handlers.load_post.append(run_draw)
-
-
-
-
-
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
@@ -337,9 +353,7 @@ def unregister():
     
     
 
-    #remove keymap entry
+    # --- Remove Keymap
     for km, kmi in addon_keymaps:
         km.keymap_items.remove(kmi)
     addon_keymaps.clear()
-
-    #bpy.app.handlers.load_post.remove(run_draw)

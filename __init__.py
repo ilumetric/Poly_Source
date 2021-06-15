@@ -1,8 +1,8 @@
 bl_info = {
     'name': 'Poly Source',
     "author": "Max Derksen",
-    'version': (1, 6, 2),
-    'blender': (2, 83, 0),
+    'version': (1, 7, 0),
+    'blender': (2, 93, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': 'Mesh',
 }
@@ -16,6 +16,7 @@ from . import (
     check,
     polycount,
     envira_grid,
+    icons,
 )
 
 from .utils import (
@@ -25,8 +26,21 @@ from .utils import (
 )
 
 
+# --- Tool Kit
+from .add_object import (
+    cube,
+    cylinder,
+    empty_mesh,
+)
+
+from .toolkit import (
+    tk_panel,
+    tk_scripts,
+)
+
 
 def register():
+    icons.register()
     preferences.register()
     
     ui.register()
@@ -40,8 +54,17 @@ def register():
     cylinder_optimizer.register()
 
 
+    # --- Tool Kit
+    cube.register()
+    cylinder.register()
+    empty_mesh.register()
+
+    tk_panel.register()
+    tk_scripts.register()
+
 
 def unregister():
+    icons.unregister()
     preferences.unregister()
 
     ui.unregister()
@@ -53,3 +76,12 @@ def unregister():
     active_tool.unregister()
     op.unregister()
     cylinder_optimizer.unregister()
+
+
+    # --- Tool Kit
+    cube.unregister()
+    cylinder.unregister()
+    empty_mesh.unregister()
+
+    tk_panel.unregister()
+    tk_scripts.unregister()

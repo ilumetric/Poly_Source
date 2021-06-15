@@ -2,7 +2,8 @@ import bpy
 import bmesh
 import os
 from bpy.types import Operator, Panel, Menu
-import bpy.utils.previews
+
+from .icons import preview_collections
 
 
 
@@ -68,12 +69,12 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
         # --- Mesh Check
-        if settings.mesh_check == False: 
-            layout.prop(settings, "mesh_check", icon_value=check_icon.icon_id)
+        if settings.PS_check == False: 
+            layout.prop(settings, "PS_check", icon_value=check_icon.icon_id)
                 
         else:
             box = layout.box()
-            box.prop(settings, "mesh_check", icon_value=check_icon.icon_id)
+            box.prop(settings, "PS_check", icon_value=check_icon.icon_id)
     
             row = box.row()
             col = row.column()
@@ -167,14 +168,11 @@ class PS_PT_settings_draw_mesh(Panel):
         # --- Operators
         box = layout.box()
         box.prop(props, "max_points")
+        
         if context.mode == 'EDIT_MESH':
             box.prop(context.space_data.overlay, "show_occlude_wire")
         
-        row = box.row(align=True)
-        row.operator("ps.clear_dots", icon='SHADERFX')
-        row.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
-        box.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
-        box.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
+        
 
 
 
@@ -306,7 +304,7 @@ def tool_panel(self, context):
 
 
 #OPERATOR
-class MESH_OT_ps_ngons(Operator):
+class PS_OT_ps_ngons(Operator):
     bl_idname = "ps.ngons"
     bl_label = "NGons"
     bl_options = {'REGISTER', 'UNDO'}
@@ -319,12 +317,12 @@ class MESH_OT_ps_ngons(Operator):
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.mesh_select_mode=(False, False, True)
+        context.tool_settings.PS_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER')
         return {'FINISHED'}
 
 
-class MESH_OT_ps_quads(Operator):
+class PS_OT_ps_quads(Operator):
     bl_idname = "ps.quads"
     bl_label = "Quads"
     bl_options = {'REGISTER', 'UNDO'}
@@ -337,12 +335,12 @@ class MESH_OT_ps_quads(Operator):
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.mesh_select_mode=(False, False, True)
+        context.tool_settings.PS_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=4, type='EQUAL')
         return {'FINISHED'}
 
 
-class MESH_OT_ps_tris(Operator):
+class PS_OT_ps_tris(Operator):
     bl_idname = "ps.tris"
     bl_label = "Tris"
     bl_options = {'REGISTER', 'UNDO'}
@@ -355,7 +353,7 @@ class MESH_OT_ps_tris(Operator):
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.mesh_select_mode=(False, False, True)
+        context.tool_settings.PS_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL')
         return {'FINISHED'}
 
@@ -365,41 +363,80 @@ class MESH_OT_ps_tris(Operator):
 
 
 
-preview_collections = {}
+
+
+
+# --- ADD OBJECT
+# Layout
+def layout_add_object(self, context):
+    pcoll = preview_collections["main"]
+    cylinder_icon = pcoll["cylinder"]
+    tube_icon = pcoll["tube"]
+    empty_PS_icon = pcoll["empty_mesh"]
+    cube_icon = pcoll["cube"]
+
+    layout = self.layout
+    
+    
+    layout.operator("ps.create_empty_mesh", text="Empty Mesh", icon_value=empty_PS_icon.icon_id)
+    layout.operator("ps.create_cube", text="Cube", icon_value=cube_icon.icon_id)
+    layout.operator("ps.create_cylinder", text="Cylinder", icon_value=cylinder_icon.icon_id)
+    layout.operator("ps.create_tube", text="Tube", icon_value=tube_icon.icon_id)
+
+
+
+# Menu
+class PS_MT_add_object(Menu):
+    bl_idname = "PS_MT_add_object"
+    bl_label = "Tool Kit"
+
+    def draw(self, context):
+        layout_add_object(self, context)
+
+
+
+# Button In Add Menu
+def add_object(self, context):
+    pcoll = preview_collections["main"]
+    addOb_icon = pcoll["addOb"]
+
+    layout = self.layout
+    layout.scale_x = 1.2
+    if layout.direction != 'HORIZONTAL':
+        layout.menu(menu='PS_MT_add_object', text="Tool Kit", icon_value=addOb_icon.icon_id)
+        layout.separator()
+    else:
+        layout.menu(menu='PS_MT_add_object', text="", icon_value=addOb_icon.icon_id)
+    layout.scale_x = 1.0
+    #layout.separator()
+
+
+
+
+
+
+
 
 
 
 classes = [
     PS_PT_settings_draw_mesh,
-    MESH_OT_ps_ngons,
-    MESH_OT_ps_quads,
-    MESH_OT_ps_tris,
+    PS_OT_ps_ngons,
+    PS_OT_ps_quads,
+    PS_OT_ps_tris,
+    PS_MT_add_object,
 ]
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    pcoll = bpy.utils.previews.new()
-    my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
-    pcoll.load("ngon_icon", os.path.join(my_icons_dir, "ngon.png"), 'IMAGE')
-    pcoll.load("quad_icon", os.path.join(my_icons_dir, "quad.png"), 'IMAGE')
-    pcoll.load("tris_icon", os.path.join(my_icons_dir, "triangle.png"), 'IMAGE')
-
-    pcoll.load("grid_icon", os.path.join(my_icons_dir, "grid.png"), 'IMAGE')
-    pcoll.load("box_icon", os.path.join(my_icons_dir, "box.png"), 'IMAGE')
-    pcoll.load("draw_icon", os.path.join(my_icons_dir, "draw.png"), 'IMAGE')
-    pcoll.load("calculate_icon", os.path.join(my_icons_dir, "calculate.png"), 'IMAGE')
-    pcoll.load("check_icon", os.path.join(my_icons_dir, "check.png"), 'IMAGE')
-    preview_collections["main"] = pcoll
-
-    
-    
     bpy.types.TOPBAR_HT_upper_bar.append(header_panel)
     bpy.types.VIEW3D_MT_editor_menus.append(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.append(viewHeader_R_panel)
     bpy.types.VIEW3D_HT_tool_header.append(tool_panel)
-   
+    bpy.types.VIEW3D_MT_editor_menus.prepend(add_object)
+
 
 def unregister():
     for cls in classes:
@@ -409,3 +446,4 @@ def unregister():
     bpy.types.VIEW3D_MT_editor_menus.remove(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.remove(viewHeader_R_panel)
     bpy.types.VIEW3D_HT_tool_header.remove(tool_panel)
+    bpy.types.VIEW3D_MT_editor_menus.prepend(add_object)

@@ -361,7 +361,7 @@ class PS_OT_draw_props_grid(Operator):
 
 
     def invoke(self, context, event):
-        if context.area.type == 'VIEW_3D': # mesh_draw_bgl
+        if context.area.type == 'VIEW_3D': # PS_draw_bgl
             args = (self, context)
             self._ps_grid_props_draw= bpy.types.SpaceView3D.draw_handler_add(draw_grid, args, 'WINDOW', 'POST_VIEW')
             context.window_manager.modal_handler_add(self)

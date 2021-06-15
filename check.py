@@ -294,7 +294,7 @@ class PS_GGT_check_group(GizmoGroup):
     @classmethod
     def poll(cls, context):
         settings = context.scene.ps_set_
-        return settings.mesh_check
+        return settings.PS_check
         
 
     def setup(self, context):
@@ -306,7 +306,7 @@ class PS_GGT_check_group(GizmoGroup):
     """ def draw_prepare(self, context):
         settings = context.scene.ps_set_
         mesh = self.mesh
-        if settings.mesh_check == True:
+        if settings.PS_check == True:
             mesh.hide = False
         else:
             mesh.hide = True """

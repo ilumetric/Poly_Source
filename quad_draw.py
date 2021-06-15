@@ -42,15 +42,15 @@ from .utils.active_tool import active_tool
 
 # --- Retopology Tool
 tools_ret = {
-        "mesh_tool.poly_quilt",
-        "mesh_tool.poly_quilt_poly",
-        "mesh_tool.poly_quilt_extrude",
-        "mesh_tool.poly_quilt_edgeloop",
-        "mesh_tool.poly_quilt_loopcut",
-        "mesh_tool.poly_quilt_knife",
-        "mesh_tool.poly_quilt_delete",
-        "mesh_tool.poly_quilt_brush",
-        "mesh_tool.poly_quilt_seam",
+        "PS_tool.poly_quilt",
+        "PS_tool.poly_quilt_poly",
+        "PS_tool.poly_quilt_extrude",
+        "PS_tool.poly_quilt_edgeloop",
+        "PS_tool.poly_quilt_loopcut",
+        "PS_tool.poly_quilt_knife",
+        "PS_tool.poly_quilt_delete",
+        "PS_tool.poly_quilt_brush",
+        "PS_tool.poly_quilt_seam",
         "builtin.poly_build",
         }
 #import time
@@ -195,7 +195,7 @@ def gpu_draw(self, context): # TODO
     print( len(depsgraph_update_post) )
     return True """
 
-def mesh_draw_bgl(self, context):
+def PS_draw_bgl(self, context):
     #if context.area:
     if context.active_object != None and context.active_object.select_get() and context.mode == 'EDIT_MESH':
         #start_time = time.time()
@@ -373,7 +373,7 @@ def mesh_draw_bgl(self, context):
                     VERTS = batch_for_shader(shader, 'POINTS', {"pos": vertex_co, "col": vert_col}) 
                 
                     EDGES.draw(shader)
-                    if context.tool_settings.mesh_select_mode[0]:
+                    if context.tool_settings.PS_select_mode[0]:
                         VERTS.draw(shader)
                     
             if props.use_mod_ret:     
@@ -408,7 +408,7 @@ class PS_GT_draw(Gizmo):
 
     def draw(self, context):
         gpu_draw(self, context)
-        #mesh_draw_bgl(self, context)
+        #PS_draw_bgl(self, context)
 
     def setup(self):
         self.use_draw_modal = False
@@ -486,7 +486,7 @@ class PS_OT_draw_mesh(Operator):
 
                
         if settings.retopo_mode == False:
-            bpy.types.SpaceView3D.draw_handler_remove(self._ps_mesh_draw, 'WINDOW')
+            bpy.types.SpaceView3D.draw_handler_remove(self._ps_PS_draw, 'WINDOW')
             return {'FINISHED'}
             
 
@@ -495,9 +495,9 @@ class PS_OT_draw_mesh(Operator):
 
 
     def invoke(self, context, event):
-        if context.area.type == 'VIEW_3D': # mesh_draw_bgl
+        if context.area.type == 'VIEW_3D': # PS_draw_bgl
             args = (self, context)
-            self._ps_mesh_draw= bpy.types.SpaceView3D.draw_handler_add(mesh_draw_bgl, args, 'WINDOW', 'POST_VIEW')
+            self._ps_PS_draw= bpy.types.SpaceView3D.draw_handler_add(PS_draw_bgl, args, 'WINDOW', 'POST_VIEW')
             context.window_manager.modal_handler_add(self)
             return {'RUNNING_MODAL'}
         else:
