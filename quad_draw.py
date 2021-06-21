@@ -373,7 +373,7 @@ def PS_draw_bgl(self, context):
                     VERTS = batch_for_shader(shader, 'POINTS', {"pos": vertex_co, "col": vert_col}) 
                 
                     EDGES.draw(shader)
-                    if context.tool_settings.PS_select_mode[0]:
+                    if context.tool_settings.mesh_select_mode[0]:
                         VERTS.draw(shader)
                     
             if props.use_mod_ret:     

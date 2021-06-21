@@ -317,7 +317,7 @@ class PS_OT_ps_ngons(Operator):
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.PS_select_mode=(False, False, True)
+        context.tool_settings.mesh_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER')
         return {'FINISHED'}
 
@@ -335,7 +335,7 @@ class PS_OT_ps_quads(Operator):
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.PS_select_mode=(False, False, True)
+        context.tool_settings.mesh_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=4, type='EQUAL')
         return {'FINISHED'}
 
@@ -353,7 +353,7 @@ class PS_OT_ps_tris(Operator):
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.PS_select_mode=(False, False, True)
+        context.tool_settings.mesh_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL')
         return {'FINISHED'}
 
