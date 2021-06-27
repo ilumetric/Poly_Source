@@ -1,7 +1,7 @@
 import bpy
 import bmesh 
 import array
-
+from mathutils import Matrix, Vector
 
 from bpy.types import Operator, PropertyGroup
 from bpy.props import EnumProperty, BoolProperty
@@ -137,8 +137,17 @@ class PS_OT_locvert(Operator):
             default='ALL',
             )
     
-    cursor_pos: BoolProperty(name="Relative 3D Cursor", description = "Alignment Relative To The 3d Сursor.", default=False)
+    #cursor_pos: BoolProperty(name="Relative 3D Cursor", description = "Alignment Relative To The 3d Сursor.", default=False)
 
+    pos: EnumProperty(
+        name='Position',
+        items=[
+            ('OBJECT', 'Object', '', '', 0),
+            ('CURSOR', '3D Cursor', '', '', 1),
+            ('WORLD', 'World', '', '', 2),
+            ],
+            default='OBJECT',
+            )
 
     def execute(self, context):
         uniques = bpy.context.objects_in_mode_unique_data
@@ -148,38 +157,61 @@ class PS_OT_locvert(Operator):
         for obj in uniques:
             bms[obj] = bmesh.from_edit_mesh(obj.data)
             
-        # Selected Vertex
-        verts = []
-        for obj in bms:
-            verts.extend([v for v in bms[obj].verts if v.select]) 
+       
 
         cursor = context.scene.cursor.location
 
-        for v in verts:
-            if self.axis == 'X':
-                if self.cursor_pos:
-                    v.co.x = cursor.x
-                else:
-                    v.co.x = 0.0
 
-            elif self.axis == 'Y':
-                if self.cursor_pos:
-                    v.co.y = cursor.y
-                else:
-                    v.co.y = 0.0
+        for obj in uniques:
+            for v in bms[obj].verts:
+                if v.select:
+                    # --- X
+                    if self.axis == 'X':
+                        if self.pos == 'CURSOR': # TODO FIXME
+                            v.co.x = cursor[0] #( obj.matrix_world.inverted() @ cursor )[0]
+                        
+                        elif self.pos == 'WORLD':
+                            v.co.x = ( obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[0]
 
-            elif self.axis == 'Z':
-                if self.cursor_pos:
-                    v.co.z = cursor.z
-                else:
-                    v.co.z = 0.0
+                        else:
+                            v.co.x = 0.0
 
-            elif self.axis == 'ALL':
-                if self.cursor_pos:
-                    v.co = cursor
-                else:
-                    v.co = (0.0, 0.0, 0.0)
-                
+
+                    # --- Y
+                    elif self.axis == 'Y':
+                        if self.pos == 'CURSOR':
+                            v.co.y = ( obj.matrix_world.inverted() @ cursor )[1]
+
+                        elif self.pos == 'WORLD':
+                            v.co.y = ( obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[1]
+
+                        else:
+                            v.co.y = 0.0
+
+
+                    # --- Z
+                    elif self.axis == 'Z':
+                        if self.pos == 'CURSOR':
+                            v.co.z = ( obj.matrix_world.inverted() @ cursor )[2]
+
+                        elif self.pos == 'WORLD':
+                            v.co.z = ( obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[2]
+
+                        else:
+                            v.co.z = 0.0
+
+
+                    # --- ALL
+                    elif self.axis == 'ALL':
+                        if self.pos == 'CURSOR':
+                            v.co = obj.matrix_world.inverted() @ cursor
+
+                        elif self.pos == 'WORLD':
+                            v.co = obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0))
+
+                        else:
+                            v.co = Vector((0.0, 0.0, 0.0))
+                    
         
         for obj in uniques:
             bmesh.update_edit_mesh(obj.data)
