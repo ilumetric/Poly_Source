@@ -368,7 +368,7 @@ class PS_OT_ps_tris(Operator):
 
 # --- ADD OBJECT
 # Layout
-def layout_add_object(self, context):
+def add_object(self, context):
     pcoll = preview_collections["main"]
     cylinder_icon = pcoll["cylinder"]
     tube_icon = pcoll["tube"]
@@ -376,8 +376,8 @@ def layout_add_object(self, context):
     cube_icon = pcoll["cube"]
 
     layout = self.layout
-    
-    
+    layout.separator()
+    layout.label(text='Poly Source')
     layout.operator("ps.create_empty_mesh", text="Empty Mesh", icon_value=empty_PS_icon.icon_id)
     layout.operator("ps.create_cube", text="Cube", icon_value=cube_icon.icon_id)
     layout.operator("ps.create_cylinder", text="Cylinder", icon_value=cylinder_icon.icon_id)
@@ -385,30 +385,7 @@ def layout_add_object(self, context):
 
 
 
-# Menu
-class PS_MT_add_object(Menu):
-    bl_idname = "PS_MT_add_object"
-    bl_label = "Tool Kit"
 
-    def draw(self, context):
-        layout_add_object(self, context)
-
-
-
-# Button In Add Menu
-def add_object(self, context):
-    pcoll = preview_collections["main"]
-    addOb_icon = pcoll["addOb"]
-
-    layout = self.layout
-    layout.scale_x = 1.2
-    if layout.direction != 'HORIZONTAL':
-        layout.menu(menu='PS_MT_add_object', text="Tool Kit", icon_value=addOb_icon.icon_id)
-        layout.separator()
-    else:
-        layout.menu(menu='PS_MT_add_object', text="", icon_value=addOb_icon.icon_id)
-    layout.scale_x = 1.0
-    #layout.separator()
 
 
 
@@ -424,7 +401,6 @@ classes = [
     PS_OT_ps_ngons,
     PS_OT_ps_quads,
     PS_OT_ps_tris,
-    PS_MT_add_object,
 ]
 
 def register():
@@ -435,7 +411,7 @@ def register():
     bpy.types.VIEW3D_MT_editor_menus.append(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.append(viewHeader_R_panel)
     bpy.types.VIEW3D_HT_tool_header.append(tool_panel)
-    bpy.types.VIEW3D_MT_editor_menus.prepend(add_object)
+    bpy.types.VIEW3D_MT_mesh_add.append(add_object)
 
 
 def unregister():
@@ -446,4 +422,4 @@ def unregister():
     bpy.types.VIEW3D_MT_editor_menus.remove(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.remove(viewHeader_R_panel)
     bpy.types.VIEW3D_HT_tool_header.remove(tool_panel)
-    bpy.types.VIEW3D_MT_editor_menus.prepend(add_object)
+    bpy.types.VIEW3D_MT_mesh_add.append(add_object)

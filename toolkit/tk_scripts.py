@@ -229,8 +229,8 @@ class PS_OT_submod(Operator):
     
     def execute(self, context):
         
-        nameB = "Gizmo PRO Bevel"
-        nameS = "Gizmo PRO Subdivision"
+        nameB = "PS Bevel"
+        nameS = "PS Subdivision"
 
         for obj in context.selected_objects:
 
@@ -274,7 +274,7 @@ class PS_OT_add_mirror_mod(Operator):
 
 
     def execute(self, context):
-        name = "Gizmo PRO Mirror"
+        name = "PS Mirror"
        
         for obj in context.selected_objects:
 
@@ -330,7 +330,7 @@ class PS_OT_triangulate(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        name = "Gizmo PRO Triangulate"
+        name = "PS Triangulate"
        
         for obj in context.selected_objects:
             if obj.modifiers.get(name) is None:
@@ -355,7 +355,7 @@ class PS_OT_solidify(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        name = "Gizmo PRO Solidify"
+        name = "PS Solidify"
        
         for obj in context.selected_objects:
             if obj.modifiers.get(name) is None:
@@ -381,7 +381,7 @@ class PS_OT_normalfix(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        name = "Gizmo PRO Weighted Normal"
+        name = "PS Weighted Normal"
        
         for obj in context.selected_objects:
             obj.data.use_auto_smooth = True
