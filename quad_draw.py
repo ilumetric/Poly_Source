@@ -142,7 +142,7 @@ def gpu_draw(self, context): # TODO
 
 
 
-            if len(bm.verts)<30000:
+            if len(bm.verts) <= props.maxP_retop:
                 if tool_retopo:
                     # только одиночные вертексы
                     vCo_one = [obj.matrix_world @ v.co for v in bm.verts] # if len(v.link_faces) < 1
@@ -295,7 +295,7 @@ def PS_draw_bgl(self, context):
 
 
 
-            if len(bm.verts)<30000:
+            if len(bm.verts) <= props.maxP_retop:
                 # Если выбран инструмент ретопологии
                 if tool_retopo:
                     # все вертексы

@@ -66,7 +66,7 @@ class PS_PT_settings_draw_mesh(Panel):
             row_P.scale_x = 1.1
             row_P.prop(props, "use_mod_ret")
 
-
+            box.prop(props, 'maxP_retop')
 
         # --- Mesh Check
         if settings.PS_check == False: 
@@ -104,7 +104,9 @@ class PS_PT_settings_draw_mesh(Panel):
             row_P.prop(props, "xray_che")
             row_P.scale_x = 1.1
             row_P.prop(props, "use_mod_che")
-     
+            
+
+            
 
 
 
@@ -167,7 +169,7 @@ class PS_PT_settings_draw_mesh(Panel):
 
         # --- Operators
         box = layout.box()
-        box.prop(props, "max_points")
+        box.prop(props, "maxP")
         
         if context.mode == 'EDIT_MESH':
             box.prop(context.space_data.overlay, "show_occlude_wire")
@@ -190,7 +192,7 @@ def draw_panel(self, context, row):
             quad = 0
             ngon = 0
             
-            if len(obj.data.vertices) < props.max_points:
+            if len(obj.data.vertices) < props.maxP:
                 if context.mode != 'EDIT_MESH': 
                     for loop in obj.data.polygons:
                         count = loop.loop_total
@@ -242,7 +244,7 @@ def draw_panel(self, context, row):
 
             else:
                 box = row.box()
-                point_max = str(props.max_points)
+                point_max = str(props.maxP)
                 box.label(text="Points > " + point_max, icon='ERROR')
 
 

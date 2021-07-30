@@ -84,7 +84,8 @@ class PS_preferences(AddonPreferences):
     #Polycount
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
     
-    max_points: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=1, soft_max=200000, default=50000)
+    maxP: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=50000)
+    maxP_retop: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=30000)
 
 
     header: BoolProperty(name="Header", default=False)
@@ -176,7 +177,7 @@ class PS_preferences(AddonPreferences):
 
 
         col = layout.column()
-        col.prop(self, "max_points")
+        col.prop(self, "maxP")
         col.separator()
         
         col.prop(self, "header", text="Header(Not Suport Advance Draw Mesh)")
