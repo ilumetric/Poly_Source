@@ -25,7 +25,7 @@ class PS_OT_del_long_faces(Operator):
             ("EQUAL_TO", "Equal To", ""), 
             ("LESS_THAN", "Less Than", ""),
             ], 
-        default="EQUAL_TO",
+        default="GREATER_THAN",
         )
     
 
