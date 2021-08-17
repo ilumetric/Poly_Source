@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Poly Source',
     "author": "Max Derksen",
-    'version': (1, 7, 3),
+    'version': (1, 7, 4),
     'blender': (2, 93, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': 'Mesh',
@@ -39,6 +39,13 @@ from .toolkit import (
 )
 
 
+# --- Clean Up
+from .clean_up import (
+    long_tris,
+)
+
+
+
 def register():
     icons.register()
     preferences.register()
@@ -63,6 +70,10 @@ def register():
     tk_scripts.register()
 
 
+    # --- Clean Up
+    long_tris.register()
+
+
 def unregister():
     icons.unregister()
     preferences.unregister()
@@ -85,3 +96,7 @@ def unregister():
 
     tk_panel.unregister()
     tk_scripts.unregister()
+
+
+    # --- Clean Up
+    long_tris.unregister()

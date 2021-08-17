@@ -173,7 +173,7 @@ def fast_tool_kit(self, context, layout):
     box.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
 
 
-
+    box.operator("ps.del_long_faces")
 
 
 # --- Object Property Panel
