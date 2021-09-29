@@ -270,7 +270,7 @@ def check_draw_bgl(self, context):
 
 
 class PS_GT_check(Gizmo):
-    bl_idname = "ps.check"
+    bl_idname = 'PS_GT_check'
 
     def draw(self, context):
         check_draw_bgl(self, context)
@@ -284,17 +284,17 @@ class PS_GT_check(Gizmo):
 
 class PS_GGT_check_group(GizmoGroup):
     
-    bl_idname = "ps.check_group"
+    bl_idname = 'PS_GGT_check_group'
     bl_label = "PS Draw"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'WINDOW'
-    bl_options = {'3D', 'PERSISTENT', 'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL'
+    bl_options = {'3D', 'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL' 'PERSISTENT', 
  
 
-    @classmethod
+    """ @classmethod
     def poll(cls, context):
         settings = context.scene.ps_set_
-        return settings.PS_check
+        return settings.PS_check """
         
 
     def setup(self, context):

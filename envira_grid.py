@@ -103,13 +103,6 @@ def generate_grid():
 
 
 
-
-
-
-
-
-
-
 def lines():
     settings = bpy.context.scene.ps_set_
 
@@ -287,14 +280,8 @@ def draw_grid(self, context):
     bgl.glLineWidth(1)
     bgl.glDisable(bgl.GL_BLEND) 
 
-    
 
 
-
-
-
-
-""" #----------------------------------------------- FROM GIZMO TODO
 class PS_GT_draw_grid(Gizmo):
     bl_idname = "ps.draw_grid"
 
@@ -306,10 +293,10 @@ class PS_GT_draw_grid(Gizmo):
         self.use_draw_modal = False
 
 
-    def test_select(self, context, location):
+    """ def test_select(self, context, location):
         if context.area.type == 'VIEW_3D':
             context.area.tag_redraw()
-        return -1
+        return -1 """
 
 
 
@@ -319,70 +306,24 @@ class PS_GGT_draw_grid_group(GizmoGroup):
     bl_label = "PS Draw Grid"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'WINDOW'
-    bl_options = {'3D', 'PERSISTENT', 'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL'
+    bl_options = {'3D','SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL'  'PERSISTENT', 
  
 
-    @classmethod
+    """ @classmethod
     def poll(cls, context):
         settings = context.scene.ps_set_
-        return settings.draw_envira_grid
+        return settings.PS_envira_grid """
         
 
     def setup(self, context):
         mesh = self.gizmos.new(PS_GT_draw_grid.bl_idname)
         self.mesh = mesh 
 
-"""
-
-
-
- 
-# --- STANDART OP
-class PS_OT_draw_props_grid(Operator):
-    bl_idname = "ps.draw_props_grid"
-    bl_label = "Draw Props Grid"
-
-
-    def modal(self, context, event):
-        settings = context.scene.ps_set_
-        #props = bpy.context.preferences.addons[__package__.split(".")[0]].preferences
-        
-        """ if context.area:
-            context.area.tag_redraw() """
-
-               
-        if settings.draw_envira_grid == False:
-            bpy.types.SpaceView3D.draw_handler_remove(self._ps_grid_props_draw, 'WINDOW')
-            return {'FINISHED'}
-            
-
-    
-        return {'PASS_THROUGH'}
-
-
-    def invoke(self, context, event):
-        if context.area.type == 'VIEW_3D': # PS_draw_bgl
-            args = (self, context)
-            self._ps_grid_props_draw= bpy.types.SpaceView3D.draw_handler_add(draw_grid, args, 'WINDOW', 'POST_VIEW')
-            context.window_manager.modal_handler_add(self)
-            return {'RUNNING_MODAL'}
-        else:
-            self.report({'WARNING'}, "Area Type Not 'VIEW_3D'")
-            return {'CANCELLED'} 
-
-
-
-
-
-
-
-
-
-
 
 
 classes = [
-    PS_OT_draw_props_grid,
+    PS_GT_draw_grid,
+    PS_GGT_draw_grid_group,
 ]
 
 

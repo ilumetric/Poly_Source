@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Poly Source',
     "author": "Max Derksen",
-    'version': (1, 7, 4),
+    'version': (1, 9, 0),
     'blender': (2, 93, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': 'Mesh',
@@ -11,7 +11,7 @@ bl_info = {
 
 from . import (
     preferences,
-    quad_draw,
+    retopology,
     ui,
     check,
     polycount,
@@ -51,7 +51,7 @@ def register():
     preferences.register()
     
     ui.register()
-    quad_draw.register()
+    retopology.register()
     check.register()
     polycount.register()
     envira_grid.register()
@@ -79,7 +79,7 @@ def unregister():
     preferences.unregister()
 
     ui.unregister()
-    quad_draw.unregister()
+    retopology.unregister()
     check.unregister()
     polycount.unregister()
     envira_grid.unregister()

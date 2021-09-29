@@ -43,30 +43,40 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
 
-        if settings.retopo_mode == False: 
-            layout.prop(settings, "retopo_mode", icon_value=draw_icon.icon_id)
+        if settings.PS_retopology == False: 
+            layout.prop(settings, "PS_retopology", icon_value=draw_icon.icon_id)
 
         else:
             box = layout.box()
-            box.prop(settings, "retopo_mode", icon_value=draw_icon.icon_id)
+            box.prop(settings, "PS_retopology", icon_value=draw_icon.icon_id)
 
-            row_W = box.row(align=True)
-            row_W.scale_x = 1.0
-            row_W.label(text="Width")
-            row_W.scale_x = 3.0
-            row_W.prop(props, "verts_size")
-            row_W.prop(props, "edge_width")
+            row = box.row(align=True)
+            row.prop(settings, 'draw_verts', icon='VERTEXSEL')
+            row.prop(settings, 'draw_edges', icon='EDGESEL')
+            row.prop(settings, 'draw_faces', icon='FACESEL')
+
+
+            row = box.row(align=True)
+            row.scale_x = 1.0
+            row.label(text="Width")
+            row.scale_x = 3.0
+            row.prop(props, "verts_size")
+            row.prop(props, "edge_width")
 
             box.prop(props, "z_bias", text="Z-Bias:")
+            box.prop(props, "z_offset", text="Z-Offset:")
             box.prop(props, "opacity", text="Opacity:")
 
-            row_P = box.row()
-            row_P.scale_x = 1.0
-            row_P.prop(props, "xray_ret")
-            row_P.scale_x = 1.1
-            row_P.prop(props, "use_mod_ret")
+            row = box.row()
+            row.scale_x = 1.0
+            row.prop(props, "xray_ret")
+            row.scale_x = 1.1
+            row.prop(props, "use_mod_ret")
 
             box.prop(props, 'maxP_retop')
+
+
+
 
         # --- Mesh Check
         if settings.PS_check == False: 
@@ -111,13 +121,13 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
         # --- Polycount
-        if settings.polycount == False:
-            layout.prop(settings, "polycount", icon_value=calculate_icon.icon_id)
+        if settings.PS_polycount == False:
+            layout.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id)
         
         else:
             box = layout.box()
-            box.prop(settings, "polycount", icon_value=calculate_icon.icon_id)
-        
+            box.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id)
+            
             row = box.row(align=True)
             row.prop(settings, "tris_count")
             row.scale_x = 0.4
@@ -127,13 +137,13 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
         # --- Envira Grid
-        if settings.draw_envira_grid == False:
-            layout.prop(settings, "draw_envira_grid", icon_value=grid_icon.icon_id)
+        if settings.PS_envira_grid == False:
+            layout.prop(settings, "PS_envira_grid", icon_value=grid_icon.icon_id)
         
         else:
             box = layout.box()
             row = box.row()
-            row.prop(settings, "draw_envira_grid", icon_value=grid_icon.icon_id)
+            row.prop(settings, "PS_envira_grid", icon_value=grid_icon.icon_id)
             row.prop(settings, 'box', icon_value=box_icon.icon_id)
         
 

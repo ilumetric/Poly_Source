@@ -89,7 +89,7 @@ def polycount(self, context):
 
         # ACTIVE
         tris = 0
-        sel_obj = bpy.context.selected_objects
+        sel_obj = context.objects_in_mode_unique_data
         for obj in sel_obj: 
             if obj.type == 'MESH':
                 if obj.mode != 'EDIT': 
@@ -123,7 +123,7 @@ def polycount(self, context):
 
 
 class PS_GT_polycount(Gizmo):
-    bl_idname = "ps.polycount"
+    bl_idname = 'PS_GT_polycount'
 
     def draw(self, context):
         polycount(self, context)
@@ -137,22 +137,22 @@ class PS_GT_polycount(Gizmo):
 
 class PS_GGT_polycount_group(GizmoGroup):
     
-    bl_idname = "ps.polycount_group"
-    bl_label = "Poly Count"
+    bl_idname = 'PS_GGT_polycount_group'
+    bl_label = 'Poly Count'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'WINDOW'
-    bl_options = {'PERSISTENT', 'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL'
+    bl_options = {'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL' 'PERSISTENT', 
  
 
     @classmethod
     def poll(cls, context):
         if context.active_object != None:
             settings = context.scene.ps_set_
-            return settings.polycount == True
+            return settings.PS_polycount
         
   
     def setup(self, context):
-        mesh = self.gizmos.new(PS_GT_polycount.bl_idname)
+        mesh = self.gizmos.new('PS_GT_polycount')
         mesh.use_draw_modal = True
         self.mesh = mesh 
 
@@ -161,7 +161,7 @@ class PS_GGT_polycount_group(GizmoGroup):
         settings = context.scene.ps_set_
         #props = context.preferences.addons[__package__.split(".")[0]].preferences
         mesh = self.mesh
-        if settings.polycount == True:
+        if settings.PS_polycount:
             mesh.hide = False
         else:
             mesh.hide = True

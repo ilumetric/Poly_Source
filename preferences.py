@@ -14,53 +14,64 @@ import rna_keymap_ui
 
 # --- Scene Settings
 class PS_settings(PropertyGroup):
+
+    # --- Retopology
+    def retop_widget(self, context):
+        wm = context.window_manager
+        if self.PS_retopology:
+            from . import retopology
+            retopology.REFRESH = True
+            wm.gizmo_group_type_ensure('PS_GGT_draw_mesh')
+        else:
+            wm.gizmo_group_type_unlink_delayed('PS_GGT_draw_mesh')
+
+
+    PS_retopology: BoolProperty(name="Retopology Mode", default=False, update=retop_widget)
+    draw_verts: BoolProperty(name="Vertex", default=True)
+    draw_edges: BoolProperty(name="Edge", default=True)
+    draw_faces: BoolProperty(name="Face", default=True)
+
+    # --- Check
+    def check_widget(self, context):
+        wm = context.window_manager
+        if self.PS_check:
+            wm.gizmo_group_type_ensure('PS_GGT_check_group')
+        else:
+            wm.gizmo_group_type_unlink_delayed('PS_GGT_check_group')
     
-    def run_draw(self, context):
-        if self.retopo_mode:
-            bpy.ops.ps.draw_mesh('INVOKE_DEFAULT')
-        
-        if context.area:
-            context.area.tag_redraw()
-    
-
-    def run_draw_props_grid(self, context):
-        if self.draw_envira_grid:
-            bpy.ops.ps.draw_props_grid('INVOKE_DEFAULT')
-
-        if context.area:
-            context.area.tag_redraw()
-
-    
+    PS_check: BoolProperty(name="Mesh Check", default=False, update=check_widget)
 
 
+    # --- Polycount
+    def polycount_widget(self, context):
+        wm = context.window_manager
+        if self.PS_polycount:
+            wm.gizmo_group_type_ensure('PS_GGT_polycount_group')
+        else:
+            wm.gizmo_group_type_unlink_delayed('PS_GGT_polycount_group')
 
-    PS_check: BoolProperty(name="Mesh Check", default=False)
-
-    retopo_mode: BoolProperty(name="Retopology Mode", default=False, update=run_draw)
-
-    polycount:  BoolProperty(name="Poly Count", default=False)
+    PS_polycount: BoolProperty(name="Poly Count", default=False, update=polycount_widget)
     tris_count: IntProperty(name="Tris Count", min=1, soft_max=5000, default=2500) # , subtype='FACTOR'
  
 
-
-
     # --- Envira Grid
-    draw_envira_grid: BoolProperty(name="Props Grid", default=False, update=run_draw_props_grid)
+    def grid_widget(self, context):
+        wm = context.window_manager
+        if self.PS_envira_grid:
+            wm.gizmo_group_type_ensure('PS_GGT_draw_grid_group')
+        else:
+            wm.gizmo_group_type_unlink_delayed('PS_GGT_draw_grid_group')
+
+    PS_envira_grid: BoolProperty(name="Props Grid", default=False, update=grid_widget)
+
     one_unit: EnumProperty(name="One Unit", items = [("CM", "cm", ""), ("M", "m", "")], default="M",  description="One Unit")
-
-
-    
     one2one: BoolProperty(name="1x1", default=True)
     unit_x: FloatProperty(name="X", description = " ", min=1.0, soft_max=5.0, default=1.0, subtype='FACTOR')
     unit_y: FloatProperty(name="Y", description = " ", min=1.0, soft_max=5.0, default=1.0, subtype='FACTOR')
     float_z: FloatProperty(name="Z Position", description = " ", default=0.0)
-
     padding: FloatProperty(name="Padding(cm)", description = " ", min=0.0, soft_max=20, default=10, subtype='FACTOR')
-
     draw_unit_grid: BoolProperty(name="Grid", default=False)
     one_unit_length: FloatProperty(name="One Unit Lenght(m)", description = " ", default=1.0, min=0.01)
-
-
     box: BoolProperty(name="Box", default=False)
     box_height: FloatProperty(name="Box Height", description = " ", min=0.0, soft_max=2.0, default=1.0, subtype='FACTOR')
 
@@ -71,16 +82,6 @@ class PS_preferences(AddonPreferences):
     bl_idname = __package__
     
     
-
-    
-
-
-
-
-
-
-    draw_: BoolProperty(name="TEST", default=False) # TODO 
-
     #Polycount
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
     
@@ -110,7 +111,7 @@ class PS_preferences(AddonPreferences):
     edge_width: FloatProperty(name="Edge", description="Edge Width", min=1.0, soft_max=5.0, default=2, subtype='FACTOR')
     z_bias: FloatProperty(name="Z-Bias", description="Z-Bias", min=0.000001, soft_max=1.0, default=0.5, subtype='FACTOR')
     opacity: FloatProperty(name="Opacity", description="Face Opacity", min=0.0, max=1.0, default=0.75, subtype='PERCENTAGE')
-    
+    z_offset: FloatProperty(name="Z-Offset", description="Z-Offset", min=0.0, soft_max=3.0, default=0.0, subtype='FACTOR')
 
 
 
