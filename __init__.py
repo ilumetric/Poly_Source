@@ -21,6 +21,7 @@ from . import (
 
 from .utils import (
     active_tool,
+    fill_mesh,
     op,
     cylinder_optimizer,
 )
@@ -57,6 +58,7 @@ def register():
     envira_grid.register()
 
     active_tool.register()
+    fill_mesh.register()
     op.register()
     cylinder_optimizer.register()
 
@@ -85,6 +87,7 @@ def unregister():
     envira_grid.unregister()
 
     active_tool.unregister()
+    fill_mesh.unregister()
     op.unregister()
     cylinder_optimizer.unregister()
 
