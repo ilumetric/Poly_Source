@@ -4,178 +4,6 @@ from ..icons import preview_collections
 
 
 
-# bl_parent_id = "PT_PT_transform_panel"
-# bl_category = 'Pivot Transform'
-
-
-class PS_PT_uv_maps_panel(Panel):
-    bl_label = "UV Channel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
-    bl_idname = 'PS_PT_uv_maps_panel'
-
-
-    def draw(self, context):
-        layout = self.layout
-        me = context.object.data
-        row = layout.row()
-        col = row.column()
-        col.template_list("MESH_UL_uvmaps", "uvmaps", me, "uv_layers", me.uv_layers, "active_index", rows=2)
-        col = row.column(align=True)
-        col.operator("mesh.uv_texture_add", icon='ADD', text="")
-        col.operator("mesh.uv_texture_remove", icon='REMOVE', text="") 
-
-
-
-# --- General Panel
-def fast_tool_kit(self, context, layout):
-    pcoll = preview_collections["main"]
-    x_icon = pcoll["x_icon"]
-    y_icon = pcoll["y_icon"]
-    z_icon = pcoll["z_icon"]
-    reset_all = pcoll["reset_icon"]
-    fix_icon = pcoll["fix_icon"]
-    bevelSub = pcoll["bevelSub"]
-    tool_icon = pcoll["tool"]
-    auto_s_icon = pcoll["180"]
-    bevelW_icon = pcoll["bevelW"]
-    creaseW_icon = pcoll["creaseW"]
-
-
-    box_all = layout.box()
-
-    box_all.label(text='Tool Kit')
-
-    
-    # --- Transform
-    box = box_all.box()
-    col = box.column(align=True)
-    
-    if context.mode == 'OBJECT':
-        row = col.row(align=True) 
-        row.scale_x = 2
-        row.operator("ps.reset_location_object", text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator("ps.reset_location_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator("ps.reset_location_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator("object.location_clear", text='Location').clear_delta=False
-        
-        row = col.row(align=True)
-        row.scale_x = 2
-        row.operator("ps.reset_rotation_object", text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator("ps.reset_rotation_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator("ps.reset_rotation_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator("object.rotation_clear", text='Rotation').clear_delta=False
-        
-        row = col.row(align=True)
-        row.scale_x = 2
-        row.operator("ps.reset_scale_object", text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator("ps.reset_scale_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator("ps.reset_scale_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator("object.scale_clear", text='Scale').clear_delta=False
-        
-        row = col.row(align=True)           
-        row.operator("ps.reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL'
-
-        
-        
-
-
-    elif context.mode == 'EDIT_MESH':
-        row = col.row(align=True) 
-        row.scale_x = 2
-        row.operator("ps.locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator("ps.locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator("ps.locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator("ps.locvert", text='Location').axis = 'ALL'
-    
-
-
-
-
-
-    
-    
-
-    
-    # --- Smooth
-    if context.active_object.type == 'MESH':
-        box = box_all.box()
-        row = box.row(align=True)   
-        row.operator("ps.autosmooth",text='', icon_value=auto_s_icon.icon_id)
-        row.prop(context.object.data, 'auto_smooth_angle',text=' ', icon='META_BALL')
-        row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
-        sub = row.row()
-        #sub.scale_x = 1.0
-        sub.operator("ps.normalfix", text='Fix', icon_value=fix_icon.icon_id)
-   
-
-    
-    
-    
-
-    #Modifier
-    
-    box = box_all.box()
-    row = box.row()        
-    row.label(text="Modifiers", icon_value=tool_icon.icon_id)    
-    
-
-    
-
-
-
-    # --- Triangulate
-    if context.active_object.type == 'MESH':
-        box.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
-
-
-
-
-
-    # --- Subdivision
-    box.operator('ps.submod', text='Bevel For Crease', icon_value=bevelSub.icon_id)
-
-
-    # --- Solidify
-    box.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
-    
-
-    # --- Mirror
-    row = box.row(align=True)     
-    row.scale_x = 3
-    row.operator('ps.add_mirror_mod', text="", icon_value=x_icon.icon_id).axis = 'X'    
-    row.operator('ps.add_mirror_mod', text="", icon_value=y_icon.icon_id).axis = 'Y' 
-    row.operator('ps.add_mirror_mod', text="", icon_value=z_icon.icon_id).axis = 'Z' 
-
-    
-
-
-    if context.mode == 'EDIT_MESH':
-        box = box_all.box()
-        row = box.row(align=True)
-        row.label(text="Weight")
-        row.scale_x = 2.0
-        row.operator("ps.edge_data", text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
-        row.operator("ps.edge_data", text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
-
-        row = box.row(align=True)
-        row.scale_x = 1.15
-        row.operator('mesh.edges_select_sharp', icon='LINCURVE')
-        row.operator('mesh.select_nth', icon='TEXTURE_DATA')
-
-
-
-    box = box_all.box()
-    row = box.row(align=True)
-    row.operator("ps.clear_dots", icon='SHADERFX')
-    row.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
-    box.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
-    box.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
-
-    #box.operator("ps.fill_mesh", icon='MOD_LATTICE') # TODO 
-    
-    box.operator("ps.del_long_faces")
-
 
 # --- Object Property Panel
 def object_display(self, context, layout):
@@ -238,23 +66,6 @@ def object_display(self, context, layout):
     col.prop(context.space_data.overlay, 'show_wireframes', text='All Wireframe')
     #col.prop(context.object, 'show_wire', text='Obj', icon='URL')
 
-
-# --- UV Maps Panel
-def uv_maps(self, context, layout):
-    layout = layout.box()
-
-    layout.label(text='UV Maps')
-
-    me = context.object.data #mesh
-
-    row = layout.row()
-    col = row.column()
-
-    col.template_list("MESH_UL_uvmaps", "uvmaps", me, "uv_layers", me.uv_layers, "active_index", rows=2)
-
-    col = row.column(align=True)
-    col.operator("mesh.uv_texture_add", icon='ADD', text="")
-    col.operator("mesh.uv_texture_remove", icon='REMOVE', text="")
 
 
 # --- Unit Panel
@@ -329,24 +140,163 @@ class PS_OT_tk_panel(Operator):
         #unit(self, context, flow)
  
    
-     
+    
+
+
+class PS_OT_tk_menu(Menu):
+    bl_idname = 'PS_OT_tk_menu'
+    bl_label = 'Tool Kit'
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        x_icon = pcoll["x_icon"]
+        y_icon = pcoll["y_icon"]
+        z_icon = pcoll["z_icon"]
+        reset_all = pcoll["reset_icon"]
+        fix_icon = pcoll["fix_icon"]
+        bevelSub = pcoll["bevelSub"]
+        tool_icon = pcoll["tool"]
+        auto_s_icon = pcoll["180"]
+        bevelW_icon = pcoll["bevelW"]
+        creaseW_icon = pcoll["creaseW"]
+
+
+        
+
+        layout = self.layout
+
+
+        pie = layout.menu_pie()
+
+
+        
+        # --- Transform ---
+        box = pie.box()
+        col = box.column(align=True)
+        
+        if context.mode == 'OBJECT':
+            row = col.row(align=True) 
+            #row.scale_x = 2
+            row.operator("ps.reset_location_object", text='', icon_value=x_icon.icon_id).axis = 'X'
+            row.operator("ps.reset_location_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
+            row.operator("ps.reset_location_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
+            row.operator("object.location_clear", text='Location').clear_delta=False
+            
+            row = col.row(align=True)
+            #row.scale_x = 2
+            row.operator("ps.reset_rotation_object", text='', icon_value=x_icon.icon_id).axis = 'X'
+            row.operator("ps.reset_rotation_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
+            row.operator("ps.reset_rotation_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
+            row.operator("object.rotation_clear", text='Rotation').clear_delta=False
+            
+            row = col.row(align=True)
+            #row.scale_x = 2
+            row.operator("ps.reset_scale_object", text='', icon_value=x_icon.icon_id).axis = 'X'
+            row.operator("ps.reset_scale_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
+            row.operator("ps.reset_scale_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
+            row.operator("object.scale_clear", text='Scale').clear_delta=False
+            
+            row = col.row(align=True)           
+            row.operator("ps.reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL'
+
+
+        elif context.mode == 'EDIT_MESH':
+            row = col.row(align=True) 
+            #row.scale_x = 2
+            row.operator("ps.locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
+            row.operator("ps.locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
+            row.operator("ps.locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
+            row.operator("ps.locvert", text='Location').axis = 'ALL'
+
+        
+        
+        
+        
+        # --- Modifiers --- 
+        box = pie.box()
+        row = box.row()        
+       
+        # --- Smooth
+        if context.active_object.type == 'MESH':
+            row = row.row(align=True)   
+            row.operator("ps.autosmooth",text='', icon_value=auto_s_icon.icon_id)
+            row.prop(context.object.data, 'auto_smooth_angle',text=' ', icon='META_BALL')
+            row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
+            sub = row.row()
+            #sub.scale_x = 1.0
+            sub.operator("ps.normalfix", text='Fix', icon_value=fix_icon.icon_id)
+            
+        # --- Triangulate
+        if context.active_object.type == 'MESH':
+            box.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
+
+        # --- Subdivision
+        box.operator('ps.submod', text='Bevel For Crease', icon_value=bevelSub.icon_id)
+
+        # --- Solidify
+        box.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
+        
+        # --- Mirror
+        row = box.row(align=True)     
+        #row.scale_x = 2
+        row.operator('ps.add_mirror_mod', text=" ", icon_value=x_icon.icon_id).axis = 'X'    
+        row.operator('ps.add_mirror_mod', text=" ", icon_value=y_icon.icon_id).axis = 'Y' 
+        row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z'
+
+
+
+
+
+        
+
+        # --- Operators --- 3
+
+        box = pie.box()
+
         
 
 
+        if context.mode == 'EDIT_MESH':
+            # --- Seam
+            row = box.row(align=True)
+            row.label(text='Mark')
+            row.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'
+            row.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'
+            
+            # --- Weight
+            row = box.row(align=True)
+            row.label(text='Weight')
+            row.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
+            row.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
 
-
-
-
-        
-        
-        
             
             
-          
+            box.operator('mesh.edges_select_sharp', icon = 'LINCURVE')
+            box.operator('mesh.select_nth', icon = 'TEXTURE_DATA')
+
+
+      
+        
+        box.operator("ps.clear_dots", icon='SHADERFX')
+        box.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
+        box.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
+        box.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
+
+        #box.operator("ps.fill_mesh", icon='MOD_LATTICE') # TODO 
+        
+        box.operator("ps.del_long_faces")
+
+
+
+
+        box.popover(panel='OBJECT_PT_display') # --- Object Display
+        
+        
+
+
 
 classes = [
-    PS_PT_uv_maps_panel,
-    PS_OT_tk_panel,
+    PS_OT_tk_menu,
 ]
 
 

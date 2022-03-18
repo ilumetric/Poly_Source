@@ -323,24 +323,27 @@ def register():
 
     km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
 
-    kmi = km.keymap_items.new("ps.tk_panel", type = "SPACE", value="PRESS", ctrl=False, alt=False, shift=False, oskey=False)
-    addon_keymaps.append((km, kmi))
+    """ kmi = km.keymap_items.new("ps.tk_panel", type = "SPACE", value="PRESS", ctrl=False, alt=False, shift=False, oskey=False)
+    addon_keymaps.append((km, kmi)) """
 
+    kmi = km.keymap_items.new('wm.call_menu_pie', type = 'SPACE', value = 'PRESS', ctrl=False, alt=False, shift=False, oskey=False)
+    kmi.properties.name = 'PS_OT_tk_menu'
+    addon_keymaps.append((km, kmi))
 
     # Pie
-    kmi = km.keymap_items.new("ps.ngons", type = "ONE",value="PRESS", ctrl=False, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.ngons', type = 'ONE', value = 'PRESS', ctrl=False, alt=True, shift=False, oskey=False)
     addon_keymaps.append((km, kmi))
 
-    kmi = km.keymap_items.new("ps.quads", type = "TWO",value="PRESS", ctrl=False, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.quads', type = 'TWO', value = 'PRESS', ctrl=False, alt=True, shift=False, oskey=False)
     addon_keymaps.append((km, kmi))
 
-    kmi = km.keymap_items.new("ps.tris", type = "THREE",value="PRESS", ctrl=False, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.tris', type = 'THREE', value = 'PRESS', ctrl=False, alt=True, shift=False, oskey=False)
     addon_keymaps.append((km, kmi))
     
-    kmi = km.keymap_items.new("ps.clear_dots", type = "C",value="PRESS", ctrl=True, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.clear_dots', type = 'C', value = 'PRESS', ctrl=True, alt=True, shift=False, oskey=False)
     addon_keymaps.append((km, kmi))
 
-    kmi = km.keymap_items.new("ps.remove_vertex_non_manifold", type = "N",value="PRESS", ctrl=True, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.remove_vertex_non_manifold', type = 'N', value = 'PRESS', ctrl=True, alt=True, shift=False, oskey=False)
     addon_keymaps.append((km, kmi))
     del addon_keyconfig
 

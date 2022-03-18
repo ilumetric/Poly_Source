@@ -409,7 +409,10 @@ class PS_OT_edge_data(Operator):
         name='Mode',
         items=[
             ('BEVEL', 'Bevel Weight', '', '', 0),
-            ('CREASE', 'Crease Weight', '', '', 1)],
+            ('CREASE', 'Crease Weight', '', '', 1),
+            ('SEAM', 'Seam', '', '', 2),
+            ('SHARP', 'Sharp', '', '', 3),
+            ],
             default='BEVEL',
             )
 
@@ -448,7 +451,27 @@ class PS_OT_edge_data(Operator):
                         else:
                             edge[cw] = 1.0
 
-             
+            elif self.mode == 'SEAM':
+                for edge in bm.edges:
+                    if edge.select:
+                        if edge.seam:
+                            for e in bm.edges:
+                                if e.select:
+                                    e.seam = False
+                            break
+                        else:
+                            edge.seam = True
+
+            elif self.mode == 'SHARP':
+                for edge in bm.edges:
+                    if edge.select:
+                        if edge.smooth:
+                            for e in bm.edges:
+                                if e.select:
+                                    e.smooth = False
+                            break
+                        else:
+                            edge.smooth = True
 
 
             bmesh.update_edit_mesh(obj.data)
