@@ -1,10 +1,11 @@
 import bpy
 import bmesh 
 import array
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Vector, Euler
 
 from bpy.types import Operator, PropertyGroup
 from bpy.props import EnumProperty, BoolProperty
+
 
 
 
@@ -22,52 +23,63 @@ class PS_OT_reset_location_object(Operator):
             ('X', 'X Axis', '', '', 0),
             ('Y', 'Y Axis', '', '', 1),
             ('Z', 'Z Axis', '', '', 2),
-            ('ALL', 'All Axis', '', '', 3)],
+            ('ALL', 'All Axis', '', '', 3),
+            ('ALL_T', 'All Tramsform', '', '', 4),
+            ],
             default='ALL',
             )
 
-
-    cursor_pos: BoolProperty(name="Relative 3D Cursor", description = "Alignment Relative To The 3d Сursor.", default=False)
-
+    cursor: BoolProperty(name="Relative 3D Cursor", description = "Alignment Relative To The 3d Сursor.", default=False)
 
     def execute(self, context):
-        cursor = context.scene.cursor.location
+        cursor = context.scene.cursor
+        cur_l = cursor.location
+        cur_e = cursor.rotation_euler
+        objs = context.selected_objects
+        for ob in objs:
+            if self.axis == 'X':
+                if self.cursor:
+                    ob.location.x = cur_l.x
+                else:
+                    ob.location.x = 0.0
 
-        if self.axis == 'X':
-            if self.cursor_pos:
-                bpy.context.object.location.x = cursor.x
-            else:
-                bpy.context.object.location.x = 0.0
+            elif self.axis == 'Y':
+                if self.cursor:
+                    ob.location.y = cur_l.y
+                else:
+                    ob.location.y = 0.0
 
-        elif self.axis == 'Y':
-            if self.cursor_pos:
-                bpy.context.object.location.y = cursor.y
-            else:
-                bpy.context.object.location.y = 0.0
+            elif self.axis == 'Z':
+                if self.cursor:
+                    ob.location.z = cur_l.z
+                else:
+                    ob.location.z = 0.0
 
-        elif self.axis == 'Z':
-            if self.cursor_pos:
-                bpy.context.object.location.z = cursor.z
-            else:
-                bpy.context.object.location.z = 0.0
+            elif self.axis == 'ALL':
+                if self.cursor:
+                    ob.location = cur_l
+                else:
+                    ob.location = Vector()
 
-        elif self.axis == 'ALL':
-            if self.cursor_pos:
-                bpy.context.object.location = cursor
-            else:
-                bpy.context.object.location = (0.0, 0.0, 0.0)
+            elif self.axis == 'ALL_T':
+                if self.cursor:
+                    ob.location = cur_l
+                else:
+                    ob.location = Vector()
+                
+                ob.rotation_euler = cur_e #Quaternion()
+                ob.scale = Vector((1.0, 1.0, 1.0))
 
-            #bpy.ops.object.location_clear(clear_delta=False)
-            bpy.ops.object.rotation_clear(clear_delta=False)
-            bpy.ops.object.scale_clear(clear_delta=False)
+                #bpy.ops.object.location_clear(clear_delta=False)
+                #bpy.ops.object.rotation_clear(clear_delta=False)
+                #bpy.ops.object.scale_clear(clear_delta=False)
 
         return {'FINISHED'}
 
 
-
 class PS_OT_reset_rotation_object(Operator):
-    bl_idname = "ps.reset_rotation_object"
-    bl_label = "Reset Rotation"
+    bl_idname = 'ps.reset_rotation_object'
+    bl_label = 'Reset Rotation'
     bl_options = {'REGISTER', 'UNDO'}
 
     axis: EnumProperty(
@@ -75,27 +87,48 @@ class PS_OT_reset_rotation_object(Operator):
         items=[
             ('X', 'X Axis', '', '', 0),
             ('Y', 'Y Axis', '', '', 1),
-            ('Z', 'Z Axis', '', '', 2)],
+            ('Z', 'Z Axis', '', '', 2),
+            ('ALL', 'All Axis', '', '', 3),
+            ],
             default='X',
             )
 
+    cursor: BoolProperty(name="Relative 3D Cursor", description = "Alignment Relative To The 3d Сursor.", default=False)
+
     def execute(self, context):
-        if self.axis == 'X':
-            bpy.context.object.rotation_euler[0] = 0.0
+        cursor = context.scene.cursor.rotation_euler
+        objs = context.selected_objects
+        for ob in objs:
+            if self.axis == 'X':
+                if self.cursor:
+                    ob.rotation_euler[0] = cursor[0]
+                else:
+                    ob.rotation_euler[0] = 0.0
 
-        elif self.axis == 'Y':
-            bpy.context.object.rotation_euler[1] = 0.0
+            elif self.axis == 'Y':
+                if self.cursor:
+                    ob.rotation_euler[1] = cursor[1]
+                else:
+                    ob.rotation_euler[1] = 0.0
 
-        elif self.axis == 'Z':
-            bpy.context.object.rotation_euler[2] = 0.0
+            elif self.axis == 'Z':
+                if self.cursor:
+                    ob.rotation_euler[2] = cursor[2]
+                else:
+                    ob.rotation_euler[2] = 0.0
 
+            elif self.axis == 'ALL':
+                if self.cursor:
+                    ob.rotation_euler = cursor
+                else:
+                    ob.rotation_euler = Euler()
+                
         return {'FINISHED'} 
-
 
 
 class PS_OT_reset_scale_object(Operator):
-    bl_idname = "ps.reset_scale_object"
-    bl_label = "Reset Scale"
+    bl_idname = 'ps.reset_scale_object'
+    bl_label = 'Reset Scale'
     bl_options = {'REGISTER', 'UNDO'}
 
     axis: EnumProperty(
@@ -103,28 +136,33 @@ class PS_OT_reset_scale_object(Operator):
         items=[
             ('X', 'X Axis', '', '', 0),
             ('Y', 'Y Axis', '', '', 1),
-            ('Z', 'Z Axis', '', '', 2)],
+            ('Z', 'Z Axis', '', '', 2),
+            ('ALL', 'All Axis', '', '', 3),
+            ],
             default='X',
             )
 
     def execute(self, context):
-        if self.axis == 'X':
-            bpy.context.object.scale[0] = 1.0
+        objs = context.selected_objects
+        for ob in objs:
+            if self.axis == 'X':
+                ob.scale[0] = 1.0
 
-        elif self.axis == 'Y':
-            bpy.context.object.scale[1] = 1.0
+            elif self.axis == 'Y':
+                ob.scale[1] = 1.0
 
-        elif self.axis == 'Z':
-            bpy.context.object.scale[2] = 1.0
+            elif self.axis == 'Z':
+                ob.scale[2] = 1.0
+
+            elif self.axis == 'ALL':
+                ob.scale = Vector((1.0, 1.0, 1.0))
 
         return {'FINISHED'} 
 
 
-
-#=======================================================RESET MESH=========================================================
 class PS_OT_locvert(Operator):
-    bl_idname = "ps.locvert"
-    bl_label = "Reset Vertex Location"
+    bl_idname = 'ps.locvert'
+    bl_label = 'Reset Vertex Location'
     bl_options = {'REGISTER', 'UNDO'}
 
     axis: EnumProperty(
@@ -137,8 +175,6 @@ class PS_OT_locvert(Operator):
             default='ALL',
             )
     
-    #cursor_pos: BoolProperty(name="Relative 3D Cursor", description = "Alignment Relative To The 3d Сursor.", default=False)
-
     pos: EnumProperty(
         name='Position',
         items=[
@@ -149,72 +185,135 @@ class PS_OT_locvert(Operator):
             default='OBJECT',
             )
 
+    vi: BoolProperty(name='Vertex Individual', description = ' ', default=True)
+
+
     def execute(self, context):
-        uniques = bpy.context.objects_in_mode_unique_data
+        uniques = context.objects_in_mode_unique_data
 
         # Selected Object(EDIT_MODE)  
         bms = {}
-        for obj in uniques:
-            bms[obj] = bmesh.from_edit_mesh(obj.data)
-            
-       
+        for ob in uniques:
+            bms[ob] = bmesh.from_edit_mesh(ob.data)
+        
+        # ---
+        l = Vector()
+        v_g = []
+        verts = []
+        for ob in uniques:
+            v_g.extend([ob.matrix_world @ v.co  for v in bms[ob].verts if v.select])
+            verts.extend([v.co  for v in bms[ob].verts if v.select])
+
+        if len(v_g) == 0:
+            return {'CANCELLED'}
+        else:
+            l_g = sum(v_g, Vector()) / len(v_g)
+            l = sum(verts, Vector()) / len(verts)
+        
+        vs_g = {}
+        vs = {}
+        for ob in uniques:
+            for v in bms[ob].verts:
+                vs_g[v] = l_g - v.co
+                vs[v] = l - v.co
+        # ---
+
+
 
         cursor = context.scene.cursor.location
 
 
-        for obj in uniques:
-            for v in bms[obj].verts:
+        for ob in uniques:
+            for v in bms[ob].verts:
                 if v.select:
-                    # --- X
+                    # --- X FIXME
                     if self.axis == 'X':
                         if self.pos == 'CURSOR': # TODO FIXME
-                            v.co.x = cursor[0] #( obj.matrix_world.inverted() @ cursor )[0]
-                        
+                            if self.vi:
+                                v.co.x = ( ob.matrix_world.inverted() @ cursor )[0]
+                            else:
+                                v.co.x = ( ob.matrix_world.inverted() @ cursor )[0] - vs[v][0]
+                                
                         elif self.pos == 'WORLD':
-                            v.co.x = ( obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[0]
+                            if self.vi:
+                                v.co.x = ( ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[0]
+                            else:
+                                v.co.x = ( ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[0] - vs[v][0]
 
                         else:
-                            v.co.x = 0.0
+                            if self.vi:
+                                v.co.x = 0.0
+                            else:
+                                v.co.x = 0.0 - vs[v][0]
 
-
-                    # --- Y
+                    # --- Y FIXME
                     elif self.axis == 'Y':
                         if self.pos == 'CURSOR':
-                            v.co.y = ( obj.matrix_world.inverted() @ cursor )[1]
+                            if self.vi:
+                                v.co.y = ( ob.matrix_world.inverted() @ cursor )[1]
+                            else:
+                                v.co.y = ( ob.matrix_world.inverted() @ cursor )[1] - vs[v][1]
 
                         elif self.pos == 'WORLD':
-                            v.co.y = ( obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[1]
+                            if self.vi:
+                                v.co.y = ( ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[1]
+                            else:
+                                v.co.y = ( ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[1] - vs[v][1]
 
                         else:
-                            v.co.y = 0.0
+                            if self.vi:
+                                v.co.y = 0.0
+                            else:
+                                v.co.y = 0.0 - vs[v][1]
 
-
-                    # --- Z
+                    # --- Z FIXME
                     elif self.axis == 'Z':
-                        if self.pos == 'CURSOR':
-                            v.co.z = ( obj.matrix_world.inverted() @ cursor )[2]
+                        if self.pos == 'CURSOR':# TODO
+                            if self.vi:
+                                v.co.z = ( ob.matrix_world.inverted() @ cursor )[2]
+                            else:
+                                v.co.z = ( ob.matrix_world.inverted() @ cursor )[2] - vs[v][2]
 
                         elif self.pos == 'WORLD':
-                            v.co.z = ( obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[2]
-
+                            if self.vi:
+                                v.co.z = ( ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) )[2]
+                            else:
+                                #matrix_basis
+                                #matrix_local
+                                #matrix_parent_inverse
+                                #matrix_world
+                                loc = ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0))
+                                #v.co.z = loc[2] - vs[v][2]
+                                v.co.z = loc[2]
                         else:
-                            v.co.z = 0.0
-
+                            if self.vi:
+                                v.co.z = 0.0
+                            else:
+                                v.co.z = 0.0 - vs[v][2]
 
                     # --- ALL
                     elif self.axis == 'ALL':
                         if self.pos == 'CURSOR':
-                            v.co = obj.matrix_world.inverted() @ cursor
+                            if self.vi:
+                                v.co = ob.matrix_world.inverted() @ cursor
+                            else:
+                                v.co = ( ob.matrix_world.inverted() @ cursor ) - vs[v]
 
                         elif self.pos == 'WORLD':
-                            v.co = obj.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0))
+                            if self.vi:
+                                v.co = ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0))
+                            else:
+                                v.co = ( ob.matrix_world.inverted() @ Vector((0.0, 0.0, 0.0)) ) - vs[v]
 
                         else:
-                            v.co = Vector((0.0, 0.0, 0.0))
-                    
+                            if self.vi:
+                                v.co = Vector((0.0, 0.0, 0.0))
+                            else:
+                                v.co = Vector((0.0, 0.0, 0.0)) - vs[v]
+
         
-        for obj in uniques:
-            bmesh.update_edit_mesh(obj.data)
+        
+            bmesh.update_edit_mesh(ob.data)
         
         return {'FINISHED'} 
 
@@ -402,7 +501,7 @@ class PS_OT_normalfix(Operator):
 # --- Bevel & Crease
 class PS_OT_edge_data(Operator):
     bl_idname = "ps.edge_data"
-    bl_label = "Bevel Weight 1.0"
+    bl_label = 'Mark'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     
     mode: EnumProperty(
@@ -427,7 +526,7 @@ class PS_OT_edge_data(Operator):
 
                 for edge in bm.edges:
                     if edge.select:
-                        if edge[bw] == 1.0:
+                        if edge[bw] > 0.0:
                             for e in bm.edges:
                                 if e.select:
                                     e[bw] = 0.0
@@ -435,15 +534,12 @@ class PS_OT_edge_data(Operator):
                         else:
                             edge[bw] = 1.0
            
-
-
-
             elif self.mode == 'CREASE':
                 cw = bm.edges.layers.crease.verify()
 
                 for edge in bm.edges:
                     if edge.select:
-                        if edge[cw] == 1.0:
+                        if edge[cw] > 0.0:
                             for e in bm.edges:
                                 if e.select:
                                     e[cw] = 0.0
@@ -476,6 +572,12 @@ class PS_OT_edge_data(Operator):
 
             bmesh.update_edit_mesh(obj.data)
 
+
+        #dg = context.evaluated_depsgraph_get()
+        #dg.update()
+        #context.view_layer.update()
+        #if context.area:
+        #context.area.tag_redraw()
         return {'FINISHED'}
 
 

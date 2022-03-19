@@ -1,150 +1,184 @@
 import bpy
-from bpy.types import Operator, Panel, Menu
+from bpy.types import Panel, Menu
 from ..icons import preview_collections
 
 
 
+# --- TRANSFORM ---
+def transform_panel(self, context, pie):
+    pcoll = preview_collections["main"]
+    x_icon = pcoll["x_icon"]
+    y_icon = pcoll["y_icon"]
+    z_icon = pcoll["z_icon"]
+    reset_all = pcoll["reset_icon"]
 
-# --- Object Property Panel
-def object_display(self, context, layout):
-    box = layout.box()
-
-    box.label(text='Viewport Display')
-
-    box.use_property_split = True
-
-    obj = context.object
-    obj_type = obj.type
-    is_geometry = (obj_type in {'MESH', 'CURVE', 'SURFACE', 'META', 'FONT', 'VOLUME', 'HAIR', 'POINTCLOUD'})
-    is_wire = (obj_type in {'CAMERA', 'EMPTY'})
-    is_empty_image = (obj_type == 'EMPTY' and obj.empty_display_type == 'IMAGE')
-    is_dupli = (obj.instance_type != 'NONE')
-    is_gpencil = (obj_type == 'GPENCIL')
-
-    col = box.column(heading="Show")
-    col.prop(obj, "show_name", text="Name")
-    col.prop(obj, "show_axis", text="Axis")
-
-    # Makes no sense for cameras, armatures, etc.!
-    # but these settings do apply to dupli instances
-    if is_geometry or is_dupli:
-        col.prop(obj, "show_wire", text="Wireframe")
-    if obj_type == 'MESH' or is_dupli:
-        col.prop(obj, "show_all_edges", text="All Edges")
-    if is_geometry:
-        col.prop(obj, "show_texture_space", text="Texture Space")
-        col.prop(obj.display, "show_shadows", text="Shadow")
-    col.prop(obj, "show_in_front", text="In Front")
-    # if obj_type == 'MESH' or is_empty_image:
-    #    col.prop(obj, "show_transparent", text="Transparency")
-    sub = box.column()
-    if is_wire:
-        # wire objects only use the max. display type for duplis
-        sub.active = is_dupli
-    sub.prop(obj, "display_type", text="Display As")
-
-    if is_geometry or is_dupli or is_empty_image or is_gpencil:
-        # Only useful with object having faces/materials...
-        col.prop(obj, "color")
-
-    col = box.column(align=False, heading="Bounds")
-    col.use_property_decorate = False
-    row = col.row(align=True)
-    sub = row.row(align=True)
-    sub.prop(obj, "show_bounds", text="")
-    sub = sub.row(align=True)
-    sub.active = obj.show_bounds or (obj.display_type == 'BOUNDS')
-    sub.prop(obj, "display_bounds_type", text="")
-    row.prop_decorator(obj, "display_bounds_type")
-
-
-    # --- Show Wire
-    """ if context.mode == 'OBJECT':
-    col = box.column() 
-    #row.scale_x = 2 """
-    col = box.column()
-    col.prop(context.space_data.overlay, 'show_wireframes', text='All Wireframe')
-    #col.prop(context.object, 'show_wire', text='Obj', icon='URL')
-
-
-
-# --- Unit Panel
-def unit(self, context, layout):
-    layout = layout.box()
-
-    unit = context.scene.unit_settings
-
-    layout.use_property_split = True
-    layout.use_property_decorate = False
-
-    layout.prop(unit, "system")
-
-    col = layout.column()
-    col.enabled = unit.system != 'NONE'
-    col.prop(unit, "scale_length")
-    col.prop(unit, "use_separate")
-
-    col = layout.column()
-    col.prop(unit, "system_rotation", text="Rotation")
-    subcol = col.column()
-    subcol.enabled = unit.system != 'NONE'
-    subcol.prop(unit, "length_unit", text="Length")
-    subcol.prop(unit, "mass_unit", text="Mass")
-    subcol.prop(unit, "time_unit", text="Time")
-    subcol.prop(unit, "temperature_unit", text="Temperature")
-
-
-
-
-
-
-
-
-class PS_OT_tk_panel(Operator):
-    bl_idname = "ps.tk_panel"
-    bl_label = "Tool Kit"
-    bl_options = {'REGISTER', 'INTERNAL'}
+    col = pie.column(align=False)
     
+    if context.mode == 'OBJECT':
+        col.label(text='Reset Transform')
+        col.scale_x = 1.3
+
+
+        # --- Bool Tool
+        addons = context.preferences.addons.keys()[:]
+        if 'object_boolean_tools' in addons:
+            row = col.row(align=True)
+            row.label(icon='AUTO')
+            row.operator('object.booltool_auto_difference', text='', icon='SELECT_SUBTRACT')
+            row.operator('object.booltool_auto_union', text='', icon="SELECT_EXTEND")
+            row.operator('object.booltool_auto_intersect', text='', icon="SELECT_INTERSECT")
+            row.operator('object.booltool_auto_slice', text='', icon="SELECT_DIFFERENCE")
+            
+            sub = row.row(align=True)
+            sub.label(icon='BRUSH_DATA')
+            sub.operator('btool.boolean_diff', text='', icon='SELECT_SUBTRACT')
+            sub.operator('btool.boolean_union', text='', icon="SELECT_EXTEND")
+            sub.operator('btool.boolean_inters', text='', icon="SELECT_INTERSECT")
+            sub.operator('btool.boolean_slice', text='', icon="SELECT_DIFFERENCE")
+
+
+
+        row = col.row(align=True) 
+        row.operator('ps.reset_location_object', text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator('ps.reset_location_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator('ps.reset_location_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
+        sub = row.row()
+        sub.operator('ps.reset_location_object', text='Location').axis = 'ALL'
+        
+        row = col.row(align=True)
+        row.operator('ps.reset_rotation_object', text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator('ps.reset_rotation_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator('ps.reset_rotation_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
+        sub = row.row()
+        sub.operator('ps.reset_rotation_object', text='Rotation').axis = 'ALL'
+        
+        row = col.row(align=True)
+        row.operator('ps.reset_scale_object', text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator('ps.reset_scale_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator('ps.reset_scale_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
+        sub = row.row()
+        sub.operator('ps.reset_scale_object', text='Scale').axis = 'ALL'
+        
+        row = col.row(align=True)           
+        row.operator("ps.reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL_T'
+
+
+    elif context.mode == 'EDIT_MESH':
+        col.label(text='Reset Transform')
+        col.scale_x = 1.3
+
+        row = col.row(align=True)
+        row.operator("ps.locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator("ps.locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator("ps.locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
+        sub = row.row()
+        sub.operator("ps.locvert", text='Location').axis = 'ALL'
+
+
+# --- SHADE Panel
+class PS_PT_shade(Panel):
+    bl_idname = 'PS_PT_shade'
+    bl_label = 'Shade'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
 
     @classmethod
-    def poll(self, context):
-        if context.active_object != None:
-            return context.mode in {'EDIT_MESH', 'OBJECT'}
+    def poll(cls, context):
+        return context.object.type == 'MESH'
 
-    
-    def execute(self, context):
-        return {'FINISHED'} 
-    
-    def invoke(self, context, event):
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        fix_icon = pcoll["fix_icon"]
+        auto_s_icon = pcoll["180"]
+
+        layout = self.layout
+
+        row = layout.row()
         if context.mode == 'OBJECT':
-            return context.window_manager.invoke_popup(self, width = 600)#invoke_props_dialog
+            row.operator('object.shade_smooth', text='Smooth', icon = 'ANTIALIASED')
+            row.operator('object.shade_flat', text='Flat', icon = 'ALIASED')
 
         elif context.mode == 'EDIT_MESH':
-            return context.window_manager.invoke_popup(self, width = 600)
+            row.operator('mesh.faces_shade_smooth', text='Smooth', icon = 'ANTIALIASED')
+            row.operator('mesh.faces_shade_flat', text='Flat', icon = 'ALIASED')
+            
 
+        row = layout.row(align=True)
+        row.operator("ps.autosmooth",text='', icon_value=auto_s_icon.icon_id)
+        row.prop(context.object.data, 'auto_smooth_angle',text=' ', icon='META_BALL')
+        row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
+        sub = row.row()
+        #sub.scale_x = 1.0
+        sub.operator("ps.normalfix", text='Fix', icon_value=fix_icon.icon_id)
+
+
+# --- MODIFIERS Panel
+class PS_PT_modifiers(Panel):
+    bl_idname = 'PS_PT_modifiers'
+    bl_label = 'Modifiers'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+
+    @classmethod
+    def poll(cls, context):
+        return context.object.type == 'MESH'
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        x_icon = pcoll["x_icon"]
+        y_icon = pcoll["y_icon"]
+        z_icon = pcoll["z_icon"]
+        bevelSub = pcoll["bevelSub"]
+
+        layout = self.layout
+
+        # --- Triangulate
+        layout.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
+
+        # --- Subdivision
+        layout.operator('ps.submod', text='Bevel For Crease', icon_value=bevelSub.icon_id)
+
+        # --- Solidify
+        layout.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
+        
+        # --- Mirror
+        row = layout.row(align=True)     
+        #row.scale_x = 2
+        row.operator('ps.add_mirror_mod', text=" ", icon_value=x_icon.icon_id).axis = 'X'    
+        row.operator('ps.add_mirror_mod', text=" ", icon_value=y_icon.icon_id).axis = 'Y' 
+        row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z'
+
+
+# --- OPERATORS Panel
+class PS_PT_operators(Panel):
+    bl_idname = 'PS_PT_operators'
+    bl_label = 'Operators'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+
+    @classmethod
+    def poll(cls, context):
+        return context.object.type == 'MESH'
 
     def draw(self, context):
         layout = self.layout
-        flow = layout.grid_flow(row_major=False, columns=3, even_columns=True, even_rows=False, align=False)
-        #row = layout.row()
 
-        #flow = layout.column_flow(columns=4, align=False)
-        
-     
-        fast_tool_kit(self, context, flow)
-        
-        object_display(self, context, flow)
+        if context.mode == 'EDIT_MESH':
+            layout.operator('mesh.edges_select_sharp', icon = 'LINCURVE')
+            layout.operator('mesh.select_nth', icon = 'TEXTURE_DATA')
 
-        uv_maps(self, context, flow)
-
-        #unit(self, context, flow)
- 
-   
-    
+        layout.operator("ps.clear_dots", icon='SHADERFX')
+        layout.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
+        layout.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
+        layout.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
+        #box.operator("ps.fill_mesh", icon='MOD_LATTICE') # TODO 
+        layout.operator("ps.del_long_faces")
 
 
-class PS_OT_tk_menu(Menu):
-    bl_idname = 'PS_OT_tk_menu'
+
+# ---- PIE ----
+class PS_MT_tk_menu(Menu):
+    bl_idname = 'PS_MT_tk_menu'
     bl_label = 'Tool Kit'
 
     def draw(self, context):
@@ -160,143 +194,61 @@ class PS_OT_tk_menu(Menu):
         bevelW_icon = pcoll["bevelW"]
         creaseW_icon = pcoll["creaseW"]
 
-
-        
-
+        sca_y = 1.3
         layout = self.layout
-
-
         pie = layout.menu_pie()
 
+        pie.operator("view3d.copybuffer", text = '1', icon = 'BLENDER')                              # 1
+        pie.operator("view3d.copybuffer", text = '2', icon = 'BLENDER')                              # 2
+        pie.operator("view3d.copybuffer", text = '3', icon = 'BLENDER')                              # 3
+        pie.operator("view3d.copybuffer", text = '4', icon = 'BLENDER')                              # 4
 
+        pie.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'     # 5
+        pie.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'    # 6
+        pie.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'    # 7
+        pie.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE' # 8
+
+
+
+
+
+        # --- Bottom Menu
+        pie.separator()
+        pie.separator()
+        other = pie.column()
+        gap = other.column()
+        gap.separator()
+        gap.scale_y = 7
+        other_menu = other.box().column()
+        other_menu.scale_y=sca_y
+        other_menu.scale_x = 1.2
+        """ if context.mode == 'OBJECT':
+            other_menu.operator('object.shade_smooth', icon = 'ANTIALIASED')
+            other_menu.operator('object.shade_flat', icon = 'ALIASED')  """
         
-        # --- Transform ---
-        box = pie.box()
-        col = box.column(align=True)
-        
-        if context.mode == 'OBJECT':
-            row = col.row(align=True) 
-            #row.scale_x = 2
-            row.operator("ps.reset_location_object", text='', icon_value=x_icon.icon_id).axis = 'X'
-            row.operator("ps.reset_location_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
-            row.operator("ps.reset_location_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
-            row.operator("object.location_clear", text='Location').clear_delta=False
-            
-            row = col.row(align=True)
-            #row.scale_x = 2
-            row.operator("ps.reset_rotation_object", text='', icon_value=x_icon.icon_id).axis = 'X'
-            row.operator("ps.reset_rotation_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
-            row.operator("ps.reset_rotation_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
-            row.operator("object.rotation_clear", text='Rotation').clear_delta=False
-            
-            row = col.row(align=True)
-            #row.scale_x = 2
-            row.operator("ps.reset_scale_object", text='', icon_value=x_icon.icon_id).axis = 'X'
-            row.operator("ps.reset_scale_object", text='', icon_value=y_icon.icon_id).axis = 'Y'
-            row.operator("ps.reset_scale_object", text='', icon_value=z_icon.icon_id).axis = 'Z'
-            row.operator("object.scale_clear", text='Scale').clear_delta=False
-            
-            row = col.row(align=True)           
-            row.operator("ps.reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL'
+        other_menu.popover('PS_PT_modifiers', text='Modifiers', icon='MODIFIER')
+        other_menu.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')
+        other_menu.popover('PS_PT_operators')
+        other_menu.popover('OBJECT_PT_display')
+        other_menu.popover('SCENE_PT_unit')
 
 
-        elif context.mode == 'EDIT_MESH':
-            row = col.row(align=True) 
-            #row.scale_x = 2
-            row.operator("ps.locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
-            row.operator("ps.locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
-            row.operator("ps.locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
-            row.operator("ps.locvert", text='Location').axis = 'ALL'
-
-        
-        
-        
-        
-        # --- Modifiers --- 
-        box = pie.box()
-        row = box.row()        
-       
-        # --- Smooth
-        if context.active_object.type == 'MESH':
-            row = row.row(align=True)   
-            row.operator("ps.autosmooth",text='', icon_value=auto_s_icon.icon_id)
-            row.prop(context.object.data, 'auto_smooth_angle',text=' ', icon='META_BALL')
-            row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
-            sub = row.row()
-            #sub.scale_x = 1.0
-            sub.operator("ps.normalfix", text='Fix', icon_value=fix_icon.icon_id)
-            
-        # --- Triangulate
-        if context.active_object.type == 'MESH':
-            box.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
-
-        # --- Subdivision
-        box.operator('ps.submod', text='Bevel For Crease', icon_value=bevelSub.icon_id)
-
-        # --- Solidify
-        box.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
-        
-        # --- Mirror
-        row = box.row(align=True)     
-        #row.scale_x = 2
-        row.operator('ps.add_mirror_mod', text=" ", icon_value=x_icon.icon_id).axis = 'X'    
-        row.operator('ps.add_mirror_mod', text=" ", icon_value=y_icon.icon_id).axis = 'Y' 
-        row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z'
-
-
-
-
-
-        
-
-        # --- Operators --- 3
-
-        box = pie.box()
-
-        
-
-
-        if context.mode == 'EDIT_MESH':
-            # --- Seam
-            row = box.row(align=True)
-            row.label(text='Mark')
-            row.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'
-            row.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'
-            
-            # --- Weight
-            row = box.row(align=True)
-            row.label(text='Weight')
-            row.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
-            row.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
-
-            
-            
-            box.operator('mesh.edges_select_sharp', icon = 'LINCURVE')
-            box.operator('mesh.select_nth', icon = 'TEXTURE_DATA')
-
-
-      
-        
-        box.operator("ps.clear_dots", icon='SHADERFX')
-        box.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
-        box.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
-        box.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
-
-        #box.operator("ps.fill_mesh", icon='MOD_LATTICE') # TODO 
-        
-        box.operator("ps.del_long_faces")
-
-
-
-
-        box.popover(panel='OBJECT_PT_display') # --- Object Display
-        
-        
+        # --- Top Menu
+        other = pie.column()
+        other_menu = other.box().column()
+        other_menu.scale_y=sca_y
+        transform_panel(self, context, other_menu)
+        gap = other.column()
+        gap.separator()
+        gap.scale_y = 7
 
 
 
 classes = [
-    PS_OT_tk_menu,
+    PS_PT_shade,
+    PS_PT_modifiers,
+    PS_PT_operators,
+    PS_MT_tk_menu,
 ]
 
 
