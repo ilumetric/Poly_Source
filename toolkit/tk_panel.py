@@ -1,7 +1,7 @@
 import bpy
 from bpy.types import Panel, Menu
 from ..icons import preview_collections
-
+from ..ui import draw_panel
 
 
 # --- TRANSFORM ---
@@ -15,7 +15,10 @@ def transform_panel(self, context, pie):
     col = pie.column(align=False)
     
     if context.mode == 'OBJECT':
+        #row = col.row(align=True)
         col.label(text='Reset Transform')
+        #draw_panel(self, context, row.row(align=True), scale_x=1.0, scale_y=1.0)
+
         col.scale_x = 1.3
 
 
@@ -104,12 +107,12 @@ class PS_PT_shade(Panel):
             
 
         row = layout.row(align=True)
-        row.operator("ps.autosmooth",text='', icon_value=auto_s_icon.icon_id)
-        row.prop(context.object.data, 'auto_smooth_angle',text=' ', icon='META_BALL')
+        row.operator('ps.autosmooth', text='', icon_value=auto_s_icon.icon_id)
+        row.prop(context.object.data, 'auto_smooth_angle', text=' ', icon='META_BALL')
         row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
-        sub = row.row()
-        #sub.scale_x = 1.0
-        sub.operator("ps.normalfix", text='Fix', icon_value=fix_icon.icon_id)
+        #sub = row.row()
+        
+        layout.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
 
 
 # --- MODIFIERS Panel
@@ -183,14 +186,9 @@ class PS_MT_tk_menu(Menu):
 
     def draw(self, context):
         pcoll = preview_collections["main"]
-        x_icon = pcoll["x_icon"]
-        y_icon = pcoll["y_icon"]
-        z_icon = pcoll["z_icon"]
-        reset_all = pcoll["reset_icon"]
-        fix_icon = pcoll["fix_icon"]
-        bevelSub = pcoll["bevelSub"]
-        tool_icon = pcoll["tool"]
-        auto_s_icon = pcoll["180"]
+        ngon_icon = pcoll["ngon_icon"]
+        quad_icon = pcoll["quad_icon"]
+        tris_icon = pcoll["tris_icon"] 
         bevelW_icon = pcoll["bevelW"]
         creaseW_icon = pcoll["creaseW"]
 
@@ -203,11 +201,23 @@ class PS_MT_tk_menu(Menu):
         pie.operator("view3d.copybuffer", text = '3', icon = 'BLENDER')                              # 3
         pie.operator("view3d.copybuffer", text = '4', icon = 'BLENDER')                              # 4
 
-        pie.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'     # 5
-        pie.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'    # 6
-        pie.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'    # 7
-        pie.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE' # 8
+        if context.mode == 'EDIT_MESH':
+            pie.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'     # 5
+            pie.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'    # 6
+            pie.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'    # 7
+            pie.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE' # 8
 
+        elif context.mode == 'OBJECT':
+            pie.operator("view3d.copybuffer", text = '5', icon = 'BLENDER')
+            pie.operator("view3d.copybuffer", text = '6', icon = 'BLENDER')                            
+            pie.operator("view3d.copybuffer", text = '7', icon = 'BLENDER')                            
+            pie.operator("view3d.copybuffer", text = '8', icon = 'BLENDER')
+
+        else:
+            pie.operator("view3d.copybuffer", text = '5', icon = 'BLENDER')
+            pie.operator("view3d.copybuffer", text = '6', icon = 'BLENDER')                            
+            pie.operator("view3d.copybuffer", text = '7', icon = 'BLENDER')                            
+            pie.operator("view3d.copybuffer", text = '8', icon = 'BLENDER')
 
 
 
@@ -230,6 +240,7 @@ class PS_MT_tk_menu(Menu):
         other_menu.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')
         other_menu.popover('PS_PT_operators')
         other_menu.popover('OBJECT_PT_display')
+        other_menu.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)
         other_menu.popover('SCENE_PT_unit')
 
 

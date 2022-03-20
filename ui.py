@@ -188,9 +188,12 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
 
-def draw_panel(self, context, row):
+def draw_panel(self, context, row, scale_x=1.0, scale_y=1.0):
     props = context.preferences.addons[__package__.split(".")[0]].preferences
     pcoll = preview_collections["main"]
+    
+    row.scale_x = scale_x
+    row.scale_y = scale_y
 
     obj = context.active_object
     
