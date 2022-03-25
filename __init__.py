@@ -35,6 +35,7 @@ from .add_object import (
 )
 
 from .toolkit import (
+    tk_modifiers,
     tk_panel,
     tk_scripts,
 )
@@ -68,6 +69,7 @@ def register():
     cylinder.register()
     empty_mesh.register()
 
+    tk_modifiers.register()
     tk_panel.register()
     tk_scripts.register()
 
@@ -97,6 +99,7 @@ def unregister():
     cylinder.unregister()
     empty_mesh.unregister()
 
+    tk_modifiers.unregister()
     tk_panel.unregister()
     tk_scripts.unregister()
 
