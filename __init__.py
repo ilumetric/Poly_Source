@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Poly Source',
     "author": "Max Derksen",
-    'version': (2, 0, 0),
+    'version': (2, 1, 0),
     'blender': (3, 0, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': 'Mesh',
