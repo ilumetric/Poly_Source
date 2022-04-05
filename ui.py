@@ -73,7 +73,7 @@ class PS_PT_settings_draw_mesh(Panel):
             row.scale_x = 1.1
             row.prop(props, "use_mod_ret")
 
-            box.prop(props, 'maxP_retop')
+            box.prop(props, 'maxVerts_retop')
 
 
 
@@ -143,7 +143,7 @@ class PS_PT_settings_draw_mesh(Panel):
         else:
             box = layout.box()
             row = box.row()
-            row.prop(settings, "PS_envira_grid", icon_value=grid_icon.icon_id)
+            row.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
             row.prop(settings, 'box', icon_value=box_icon.icon_id)
         
 
@@ -179,86 +179,97 @@ class PS_PT_settings_draw_mesh(Panel):
 
         # --- Operators
         box = layout.box()
-        box.prop(props, "maxP")
-        
+        box.prop(props, 'maxVerts')
+        box.prop(props, 'maxObjs')
         if context.mode == 'EDIT_MESH':
-            box.prop(context.space_data.overlay, "show_occlude_wire")
+            box.prop(context.space_data.overlay, 'show_occlude_wire')
         
         
 
 
 
-def draw_panel(self, context, row, scale_x=1.0, scale_y=1.0):
+def draw_panel(self, context, row):
     props = context.preferences.addons[__package__.split(".")[0]].preferences
-    pcoll = preview_collections["main"]
-    
-    row.scale_x = scale_x
-    row.scale_y = scale_y
+    pcoll = preview_collections['main']
 
-    obj = context.active_object
     
     if context.region.alignment != 'RIGHT':
         if activate():
-            
-            
+            objs = context.selected_objects
+
             tris = 0
             quad = 0
             ngon = 0
+            count_len_=0
+            enum_coints=0
+
+            for enum_coint, obj in enumerate(objs):
+                count_len_+=len(obj.data.vertices)
+                enum_coints=enum_coint
+                if count_len_ > props.maxVerts or enum_coint > props.maxObjs:
+                    break
+
+
+            if count_len_ < props.maxVerts and enum_coints < props.maxObjs:
+                if context.mode == 'EDIT_MESH':
+                    for obj in objs:
+                        bm = bmesh.from_edit_mesh(obj.data)
+                        for face in bm.faces:
+                            verts = 0
+                            for i in face.verts:
+                                verts += 1
+                            if verts == 3:
+                                tris += 1
+                            elif verts == 4:
+                                quad += 1
+                            else:
+                                ngon += 1
+
+                else:
+                    for obj in objs: 
+                        for loop in obj.data.polygons:
+                            if tris < props.maxVerts:
+                                count = loop.loop_total
+                                if count == 3:
+                                    tris += 1
+                                elif count == 4:
+                                    quad += 1
+                                else:
+                                    ngon += 1
+                    
             
-            if len(obj.data.vertices) < props.maxP:
-                if context.mode != 'EDIT_MESH': 
-                    for loop in obj.data.polygons:
-                        count = loop.loop_total
-                        if count == 3:
-                            tris += 1
-                        elif count == 4:
-                            quad += 1
-                        else:
-                            ngon += 1 
-
-
-                else: 
-                    bm = bmesh.from_edit_mesh(obj.data)
-                    for face in bm.faces:
-                        verts = 0
-                        for i in face.verts:
-                            verts += 1
-
-                        if verts == 3:
-                            tris += 1
-                        elif verts == 4:
-                            quad += 1
-                        else:
-                            ngon += 1 
             
-
-
-            
-
                 #bmesh.update_edit_mesh(obj.data) 
 
                 polyNGon = str(ngon)
                 polyQuad = str(quad)
                 polyTris = str(tris)
-                
+                        
 
-                
+                        
                 #layout = self.layout
                 #layout.separator()
                 #row = layout.row(align=True) 
                 #row.alignment='LEFT'
-                ngon_icon = pcoll["ngon_icon"] 
-                quad_icon = pcoll["quad_icon"]
-                tris_icon = pcoll["tris_icon"] 
-                
-                row.operator("ps.ngons", text=polyNGon, icon_value=ngon_icon.icon_id)    
-                row.operator("ps.quads", text=polyQuad, icon_value=quad_icon.icon_id)
-                row.operator("ps.tris", text=polyTris, icon_value=tris_icon.icon_id)
+                ngon_icon = pcoll['ngon_icon'] 
+                quad_icon = pcoll['quad_icon']
+                tris_icon = pcoll['tris_icon'] 
+                        
+                row.operator('ps.ngons', text=polyNGon, icon_value=ngon_icon.icon_id)    
+                row.operator('ps.quads', text=polyQuad, icon_value=quad_icon.icon_id)
+                row.operator('ps.tris', text=polyTris, icon_value=tris_icon.icon_id)
 
             else:
-                box = row.box()
-                point_max = str(props.maxP)
-                box.label(text="Points > " + point_max, icon='ERROR')
+                # box = row.box()
+                # poly_point_max = str(props.maxVerts)
+                # obj_point_max = str(props.maxObjs)
+                # if count_len_ < props.maxVerts:
+                #     box.label(text="Points > " + poly_point_max, icon='ERROR')
+                # else:
+                #     box.label(text="Objects > " + obj_point_max, icon='ERROR')
+
+                box = row.box()   
+                box.label(text="High Vertex or Objs value", icon='ERROR')
 
 
 
@@ -383,21 +394,24 @@ class PS_OT_ps_tris(Operator):
 
 # --- ADD OBJECT
 # Layout
-def add_object(self, context):
-    pcoll = preview_collections["main"]
-    cylinder_icon = pcoll["cylinder"]
-    tube_icon = pcoll["tube"]
-    empty_PS_icon = pcoll["empty_mesh"]
-    cube_icon = pcoll["cube"]
+def custom_objects(self, context):
+    props = context.preferences.addons[__package__.split(".")[0]].preferences
 
-    layout = self.layout
-    layout.separator()
-    layout.label(text='Poly Source')
-    layout.operator("ps.create_empty_mesh", text="Empty Mesh", icon_value=empty_PS_icon.icon_id)
-    layout.operator("ps.create_cube", text="Cube", icon_value=cube_icon.icon_id)
-    layout.operator("ps.create_cylinder", text="Cylinder", icon_value=cylinder_icon.icon_id)
-    layout.operator("ps.create_tube", text="Tube", icon_value=tube_icon.icon_id)
+    if props.add_objects:
+        pcoll = preview_collections["main"]
+        cylinder_icon = pcoll["cylinder"]
+        tube_icon = pcoll["tube"]
+        cube_icon = pcoll["cube"]
 
+        layout = self.layout
+        layout.separator()
+        layout.label(text='Poly Source')
+        layout.operator("ps.create_cube", text="Cube", icon_value=cube_icon.icon_id)
+        layout.operator("ps.create_cylinder", text="Cylinder", icon_value=cylinder_icon.icon_id)
+        layout.operator("ps.create_tube", text="Tube", icon_value=tube_icon.icon_id)
+
+    else:
+        pass
 
 
 
@@ -426,7 +440,7 @@ def register():
     bpy.types.VIEW3D_MT_editor_menus.append(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.append(viewHeader_R_panel)
     bpy.types.VIEW3D_HT_tool_header.append(tool_panel)
-    bpy.types.VIEW3D_MT_mesh_add.append(add_object)
+    bpy.types.VIEW3D_MT_mesh_add.append(custom_objects)
 
 
 def unregister():
@@ -437,4 +451,4 @@ def unregister():
     bpy.types.VIEW3D_MT_editor_menus.remove(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.remove(viewHeader_R_panel)
     bpy.types.VIEW3D_HT_tool_header.remove(tool_panel)
-    bpy.types.VIEW3D_MT_mesh_add.append(add_object)
+    bpy.types.VIEW3D_MT_mesh_add.append(custom_objects)

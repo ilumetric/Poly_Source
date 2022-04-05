@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Poly Source',
-    "author": "Max Derksen",
-    'version': (2, 1, 0),
+    "author": "Max Derksen, Oxicid",
+    'version': (2, 2, 0),
     'blender': (3, 0, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': 'Mesh',
@@ -31,7 +31,6 @@ from .utils import (
 from .add_object import (
     cube,
     cylinder,
-    empty_mesh,
 )
 
 from .toolkit import (
@@ -67,7 +66,6 @@ def register():
     # --- Tool Kit
     cube.register()
     cylinder.register()
-    empty_mesh.register()
 
     tk_modifiers.register()
     tk_panel.register()
@@ -97,7 +95,6 @@ def unregister():
     # --- Tool Kit
     cube.unregister()
     cylinder.unregister()
-    empty_mesh.unregister()
 
     tk_modifiers.unregister()
     tk_panel.unregister()

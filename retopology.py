@@ -149,25 +149,32 @@ def PS_draw_bgl(self, context):
         #uniques = context.objects_in_mode
         for obj in uniques:
             if props.use_mod_ret:
-                if len(obj.modifiers) > 0: 
-                    depsgraph.update()
-
-                ob_eval = obj.evaluated_get(depsgraph)
+                #if len(obj.modifiers) > 0: 
+                
+                ob_eval = obj.evaluated_get(depsgraph) # obj.crazyspace_eval(depsgraph, context.scene) #obj.crazyspace_eval_clear()
+                
                 me = ob_eval.to_mesh()
-            
+                
                 bm = bmesh.new()
                 bm.from_mesh(me, face_normals=True, use_shape_key=False)
 
                 bm.verts.ensure_lookup_table()
                 bm.edges.ensure_lookup_table()
                 bm.faces.ensure_lookup_table()
-
+                
             else:
+                #print(obj.data)
                 bm = bmesh.from_edit_mesh(obj.data)
 
 
 
-            if len(bm.verts) <= props.maxP_retop:
+
+            
+
+
+
+
+            if len(bm.verts) <= props.maxVerts_retop:
                 # Если выбран инструмент ретопологии
                 if tool_retopo:
                     # все вертексы
@@ -264,8 +271,10 @@ def PS_draw_bgl(self, context):
             if props.use_mod_ret:     
                 bm.free()
                 
-            
-            
+
+
+        if props.use_mod_ret: 
+            depsgraph.update()   
 
         """ if props.line_smooth:
             bgl.glDisable(bgl.GL_LINE_SMOOTH) """

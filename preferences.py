@@ -1,15 +1,9 @@
 import bpy
 from bpy.types import AddonPreferences, PropertyGroup
-from bpy.props import EnumProperty, FloatVectorProperty, BoolProperty, FloatProperty, IntProperty, CollectionProperty
-
-
-
-import os
-import sys
-import importlib  
-
+from bpy.props import EnumProperty, FloatVectorProperty, BoolProperty, FloatProperty, IntProperty
 from .icons import preview_collections
 import rna_keymap_ui
+
 
 
 # --- Scene Settings
@@ -85,14 +79,16 @@ class PS_preferences(AddonPreferences):
     #Polycount
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
     
-    maxP: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=50000)
-    maxP_retop: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=30000)
+    maxVerts: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=50000)
+    maxVerts_retop: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=30000)
+    maxObjs: IntProperty(name="Maximum number of selected objects", description="If the active object has too many objects, this may affect performance during rendering.", min=1, soft_max=500, default=50)
 
 
     header: BoolProperty(name="Header", default=False)
     viewHeader_L: BoolProperty(name="Viewport Header Left", default=True)
     viewHeader_R: BoolProperty(name="Viewport Header Right", default=False)
     toolHeader: BoolProperty(name="Tool Header", default=False)
+    add_objects: BoolProperty(name="Custom Objects in Add Menu", default=True)
 
 
     line_smooth: BoolProperty(name="Line Smooth(If You Need Accelerate)", default=True)
@@ -178,14 +174,16 @@ class PS_preferences(AddonPreferences):
 
 
         col = layout.column()
-        col.prop(self, "maxP")
+        col.prop(self, "maxVerts")
+        col.prop(self, "maxObjs")
         col.separator()
         
         col.prop(self, "header", text="Header(Not Suport Advance Draw Mesh)")
         col.prop(self, "viewHeader_L")
         col.prop(self, "viewHeader_R")
         col.prop(self, "toolHeader")
-        
+        col.prop(self, "add_objects")
+
 
         box = layout.box()
         box.prop(self, "line_smooth")

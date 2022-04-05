@@ -31,9 +31,11 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14, 72)
         blf.color(font_id_name, 0.58, 0.72, 0.0, 1.0)
+        
+        blf.enable(font_id_name, blf.SHADOW)
+        blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
         blf.draw(font_id_name, name)
-        
-        
+
 
         if props.low_suffix == False:
             viewlayer = context.view_layer
@@ -79,9 +81,10 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14, 72)
         blf.color(font_id_name, col[0], col[1], col[2], 1.0)
-        blf.draw(font_id_name, apply_text)
-
-        #blf.shadow(font_id_name, 6, 0.0, 0.0, 0.0, 1.0)
+        
+        blf.enable(font_id_name, blf.SHADOW)
+        blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
+        blf.draw(font_id_name, name)
         
 
 
@@ -109,6 +112,9 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14, 72)
         blf.color(font_id_name, 0.58, 0.72, 0.0, 1.0)
+        
+        blf.enable(font_id_name, blf.SHADOW)
+        blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
         blf.draw(font_id_name, name)
 
 
@@ -118,7 +124,10 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14, 72)
         blf.color(font_id_name, 0.9, 0.9, 0.9, 1.0)
-        blf.draw(font_id_name, apply_text)
+        
+        blf.enable(font_id_name, blf.SHADOW)
+        blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
+        blf.draw(font_id_name, name)
 
 
 
