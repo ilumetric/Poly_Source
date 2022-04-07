@@ -310,7 +310,7 @@ class PS_OT_locvert(Operator):
 
         
         
-            bmesh.update_edit_mesh(ob.data)
+        bmesh.update_edit_mesh(ob.data)
         
         return {'FINISHED'} 
 

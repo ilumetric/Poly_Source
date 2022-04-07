@@ -240,10 +240,10 @@ class PS_MT_tk_menu(Menu):
         
         other_menu.popover('PS_PT_modifiers', text='Modifiers', icon='MODIFIER')
         other_menu.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')
-        other_menu.popover('PS_PT_operators')
-        other_menu.popover('OBJECT_PT_display')
+        other_menu.popover('PS_PT_operators', icon='TOOL_SETTINGS')
+        other_menu.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')
         other_menu.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)
-        other_menu.popover('SCENE_PT_unit')
+        other_menu.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')
 
 
         # --- Top Menu
