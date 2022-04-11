@@ -1,18 +1,9 @@
-import bpy
-
+import bpy, gpu, bmesh, mathutils
+from gpu import state
 
 from gpu_extras.batch import batch_for_shader
 from bpy.types import Operator, GizmoGroup, Gizmo
-import bmesh
 
-
-
-
-
-
-import bgl 
-
-import gpu
 from math import sin, cos, pi
 from gpu.types import (
         GPUBatch,
@@ -20,7 +11,6 @@ from gpu.types import (
         GPUVertFormat,
     )
 from mathutils import Matrix, Vector
-import mathutils
 
 
 
@@ -42,16 +32,16 @@ from .utils.active_tool import active_tool
 
 # --- Retopology Tool
 tools_ret = {
-        "PS_tool.poly_quilt",
-        "PS_tool.poly_quilt_poly",
-        "PS_tool.poly_quilt_extrude",
-        "PS_tool.poly_quilt_edgeloop",
-        "PS_tool.poly_quilt_loopcut",
-        "PS_tool.poly_quilt_knife",
-        "PS_tool.poly_quilt_delete",
-        "PS_tool.poly_quilt_brush",
-        "PS_tool.poly_quilt_seam",
-        "builtin.poly_build",
+        'PS_tool.poly_quilt',
+        'PS_tool.poly_quilt_poly',
+        'PS_tool.poly_quilt_extrude',
+        'PS_tool.poly_quilt_edgeloop',
+        'PS_tool.poly_quilt_loopcut',
+        'PS_tool.poly_quilt_knife',
+        'PS_tool.poly_quilt_delete',
+        'PS_tool.poly_quilt_brush',
+        'PS_tool.poly_quilt_seam',
+        'builtin.poly_build',
         'mesh_tool.poly_quilt',
         'mesh_tool.poly_quilt_poly',
         'mesh_tool.poly_quilt_extrude',
@@ -66,73 +56,53 @@ tools_ret = {
 
 
 
-def PS_draw_bgl(self, context):
+def draw_mesh(self, context):
     if context.mode == 'EDIT_MESH': # context.active_object != None and context.active_object.select_get() and 
         #start_time = time.time()
-        
-        props = context.preferences.addons[__package__].preferences
-        settings = context.scene.ps_set_
 
-        theme = context.preferences.themes['Default']
-        vertex_size = theme.view_3d.vertex_size
-
-        # Color
-        VA_Col = props.v_alone_color[0], props.v_alone_color[1], props.v_alone_color[2], props.v_alone_color[3]
-        VE_Col = props.VE_color[0], props.VE_color[1], props.VE_color[2], props.VE_color[3]
-        F_Col = props.F_color[0], props.F_color[1], props.F_color[2], props.opacity
-        sel_Col = props.select_color[0], props.select_color[1], props.select_color[2], 1.0
-        
+        props = context.preferences.addons[__package__.split('.')[0]].preferences
+        settings = context.scene.PS_scene_set
 
 
-        
-        
-        
+        # --- Set
+        state.blend_set('ALPHA')
+        state.line_width_set(props.edge_width)
+        state.point_size_set(props.verts_size)
 
-        bgl.glEnable(bgl.GL_BLEND)
-        bgl.glLineWidth(props.edge_width)
-        bgl.glPointSize(vertex_size + props.verts_size)
-        bgl.glCullFace(bgl.GL_BACK)
-        
-        
         if props.xray_ret == False:
-            bgl.glEnable(bgl.GL_DEPTH_TEST)
-            bgl.glEnable(bgl.GL_CULL_FACE)
+            state.depth_mask_set(False)
+            state.face_culling_set('BACK')
+            state.depth_test_set('LESS_EQUAL')
 
 
-        if props.line_smooth:
-            bgl.glEnable(bgl.GL_LINE_SMOOTH)
-
-        
-        #bgl.glDepthRange(0, 0.99999)
-        #bgl.glDepthFunc(600)
-        bgl.glDepthMask(False)
-
+        # --- Color
+        VA_Col = props.v_alone_color
+        VE_Col = props.VE_color
+        F_Col = *props.F_color, props.opacity
+        sel_Col = *props.select_color, 1.0
         
 
-        
-
+        # --- Perspective State
         is_perspective = context.region_data.is_perspective
         if is_perspective:
-            z_bias = props.z_bias / 350
+            z_bias = props.z_bias / 300
         else:
-            z_bias = 1.0
-
+            z_bias = 0.0
 
         
-
+        # --- Tool Retop
         tool_retopo = active_tool().idname in tools_ret # Retopology Tools
         if tool_retopo:
             shader = shader_uni
         else:
             shader = shader_sm
 
+
+        # --- Shader Setup
         shader.bind()
-
-
-        view_mat = context.region_data.perspective_matrix
-        shader.uniform_float("view_mat", view_mat)
-        shader.uniform_float("Z_Bias", z_bias)
-        shader.uniform_float("Z_Offset", props.z_offset)
+        shader.uniform_float('view_mat', context.region_data.perspective_matrix)
+        shader.uniform_float('Z_Bias', z_bias)
+        shader.uniform_float('Z_Offset', props.z_offset)
         
 
 
@@ -144,24 +114,24 @@ def PS_draw_bgl(self, context):
             depsgraph = context.evaluated_depsgraph_get()
 
 
-        uniques = context.objects_in_mode_unique_data
+        #uniques = context.objects_in_mode_unique_data
         #uniques = context.selected_objects
-        #uniques = context.objects_in_mode
+        uniques = context.objects_in_mode
         for obj in uniques:
             if props.use_mod_ret:
                 #if len(obj.modifiers) > 0: 
                 
+                    
                 ob_eval = obj.evaluated_get(depsgraph) # obj.crazyspace_eval(depsgraph, context.scene) #obj.crazyspace_eval_clear()
-                
                 me = ob_eval.to_mesh()
                 
                 bm = bmesh.new()
-                bm.from_mesh(me, face_normals=True, use_shape_key=False)
+                bm.from_mesh(me)
 
                 bm.verts.ensure_lookup_table()
                 bm.edges.ensure_lookup_table()
                 bm.faces.ensure_lookup_table()
-                
+                depsgraph.update()
             else:
                 #print(obj.data)
                 bm = bmesh.from_edit_mesh(obj.data)
@@ -273,19 +243,18 @@ def PS_draw_bgl(self, context):
                 
 
 
-        if props.use_mod_ret: 
-            depsgraph.update()   
-
-        """ if props.line_smooth:
-            bgl.glDisable(bgl.GL_LINE_SMOOTH) """
-        
-        """ bgl.glDisable(bgl.GL_DEPTH_TEST)
-        bgl.glDisable(bgl.GL_CULL_FACE)
-        bgl.glLineWidth(1)
-        bgl.glPointSize(1)
-        bgl.glDisable(bgl.GL_BLEND) """  
+          
 
 
+
+
+        # --- Restore
+        state.depth_mask_set(True)
+        state.depth_test_set('NONE')
+        state.face_culling_set('NONE')
+        state.point_size_set(3.0)
+        state.line_width_set(1.0)
+        state.blend_set('NONE')
 
         #end_time = time.time()
         #print(end_time-start_time)
@@ -301,9 +270,9 @@ class PS_GT_draw(Gizmo):
     bl_idname = 'PS_GT_draw'
 
     def draw(self, context):
-        global REFRESH
-        if REFRESH:
-            PS_draw_bgl(self, context)
+        #global REFRESH
+        #if REFRESH:
+        draw_mesh(self, context)
         #REFRESH = False
 
     def setup(self):
@@ -330,7 +299,7 @@ class PS_GGT_draw_group(GizmoGroup):
 
     @classmethod
     def poll(cls, context):
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
         return settings.PS_retopology
         
 
@@ -343,7 +312,7 @@ class PS_GGT_draw_group(GizmoGroup):
         REFRESH = True
 
     def draw_prepare(self, context):
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
 
         """ mesh = self.mesh
         if settings.PS_retopology:

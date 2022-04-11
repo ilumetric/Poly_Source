@@ -33,7 +33,7 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
         props = context.preferences.addons[__package__.split(".")[0]].preferences
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
 
         layout = self.layout
      

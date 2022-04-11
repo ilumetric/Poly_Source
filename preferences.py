@@ -103,7 +103,7 @@ class PS_preferences(AddonPreferences):
     unit_grid: FloatVectorProperty(name="Unit Grid Color", subtype='COLOR', default=(0.0, 0.48, 1.0, 0.1), size=4, min=0.0, max=1.0, description="Select a color for unit grid")
 
     # --- Draw Mesh
-    verts_size: IntProperty(name="Vertex", description="Verts Size", min=1, soft_max=5, default=1, subtype='FACTOR')
+    verts_size: IntProperty(name="Vertex", description="Verts Size", min=1, soft_max=12, default=5, subtype='FACTOR')
     edge_width: FloatProperty(name="Edge", description="Edge Width", min=1.0, soft_max=5.0, default=2, subtype='FACTOR')
     z_bias: FloatProperty(name="Z-Bias", description="Z-Bias", min=0.000001, soft_max=1.0, default=0.5, subtype='FACTOR')
     opacity: FloatProperty(name="Opacity", description="Face Opacity", min=0.0, max=1.0, default=0.75, subtype='PERCENTAGE')
@@ -113,8 +113,8 @@ class PS_preferences(AddonPreferences):
 
     
     VE_color: FloatVectorProperty(name="Vertex & Edge Color", subtype='COLOR', default=(0.0, 0.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Select a color for vertices & edges")
-    F_color: FloatVectorProperty(name="Face Color", subtype='COLOR', default=(0.0, 0.33, 1.0), min=0.0, max=1.0, description="Select a color for faces")
-    select_color: FloatVectorProperty(name="Select Color", subtype='COLOR', default=(1.0, 1.0, 1.0, 0.9), size=4, min=0.0, max=1.0, description="Select a color for elements")
+    F_color: FloatVectorProperty(name="Face Color", subtype='COLOR', default=(0.0, 0.33, 1.0), size=3, min=0.0, max=1.0, description="Select a color for faces")
+    select_color: FloatVectorProperty(name="Select Color", subtype='COLOR', default=(1.0, 1.0, 1.0), size=3, min=0.0, max=1.0, description="Select a color for elements")
 
 
     v_alone_color: FloatVectorProperty(name="Vertex Color", subtype='COLOR', default=(0.0, 1.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Vertexes that are not connected to the geometry")
@@ -306,7 +306,7 @@ def register():
         bpy.utils.register_class(cls)
 
 
-    bpy.types.Scene.ps_set_ = bpy.props.PointerProperty(type=PS_settings)
+    bpy.types.Scene.PS_scene_set = bpy.props.PointerProperty(type=PS_settings)
 
 
     
@@ -351,7 +351,7 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.ps_set_
+    del bpy.types.Scene.PS_scene_set
 
     
     

@@ -18,7 +18,7 @@ def polycount(self, context):
         }
 
         props = context.preferences.addons[__package__].preferences
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
 
  
     
@@ -156,7 +156,7 @@ class PS_GGT_polycount_group(GizmoGroup):
     @classmethod
     def poll(cls, context):
         if context.active_object != None:
-            settings = context.scene.ps_set_
+            settings = context.scene.PS_scene_set
             return settings.PS_polycount
         
   
@@ -167,7 +167,7 @@ class PS_GGT_polycount_group(GizmoGroup):
 
 
     def draw_prepare(self, context):
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
         #props = context.preferences.addons[__package__.split(".")[0]].preferences
         mesh = self.mesh
         if settings.PS_polycount:

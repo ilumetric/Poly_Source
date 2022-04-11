@@ -1,18 +1,6 @@
-import bpy
-
-
+import bpy, gpu, bmesh, mathutils
 from gpu_extras.batch import batch_for_shader
 from bpy.types import Operator, GizmoGroup, Gizmo
-import bmesh
-
-
-
-
-
-
-import bgl 
-
-import gpu
 from math import sin, cos, pi
 from gpu.types import (
         GPUBatch,
@@ -20,14 +8,12 @@ from gpu.types import (
         GPUVertFormat,
     )
 from mathutils import Matrix, Vector
-import mathutils
-
+from gpu import state
 
  
 
-
 def generate_grid():
-    settings = bpy.context.scene.ps_set_
+    settings = bpy.context.scene.PS_scene_set
     unit = settings.one_unit_length
     
 
@@ -102,9 +88,8 @@ def generate_grid():
     return line_co
 
 
-
 def lines():
-    settings = bpy.context.scene.ps_set_
+    settings = bpy.context.scene.PS_scene_set
 
     if settings.one_unit == 'CM':
         x = settings.unit_x / 100
@@ -158,9 +143,8 @@ def lines():
     return linesCo
 
 
-
 def box():
-    settings = bpy.context.scene.ps_set_
+    settings = bpy.context.scene.PS_scene_set
     
     if settings.one_unit == 'CM':
         xPad = (settings.unit_x - (settings.padding * 2) ) / 100
@@ -217,7 +201,7 @@ def box():
 
 
 def draw_grid(self, context):
-    settings = context.scene.ps_set_
+    settings = context.scene.PS_scene_set
 
 
 
@@ -236,17 +220,15 @@ def draw_grid(self, context):
     xray = False
 
 
-    bgl.glEnable(bgl.GL_BLEND)
-    bgl.glLineWidth(lineWidth)
-
-    bgl.glDepthMask(False)
+    # --- Set
+    state.blend_set('ALPHA')
+    state.line_width_set(lineWidth)
+    state.point_size_set(props.verts_size)
 
     if xray == False:
-        bgl.glEnable(bgl.GL_DEPTH_TEST)
-
-
-    if lineSmooth:
-        bgl.glEnable(bgl.GL_LINE_SMOOTH)
+        state.depth_mask_set(False)
+        #state.face_culling_set('BACK')
+        state.depth_test_set('LESS_EQUAL')
 
     
 
@@ -272,13 +254,13 @@ def draw_grid(self, context):
 
 
 
-
-    bgl.glDisable(bgl.GL_LINE_SMOOTH)
-
-    bgl.glDisable(bgl.GL_DEPTH_TEST)
-    #bgl.glDisable(bgl.GL_CULL_FACE)
-    bgl.glLineWidth(1)
-    bgl.glDisable(bgl.GL_BLEND) 
+    # --- Restore
+    state.depth_mask_set(True)
+    state.depth_test_set('NONE')
+    state.face_culling_set('NONE')
+    state.point_size_set(3.0)
+    state.line_width_set(1.0)
+    state.blend_set('NONE')
 
 
 
@@ -311,7 +293,7 @@ class PS_GGT_draw_grid_group(GizmoGroup):
 
     """ @classmethod
     def poll(cls, context):
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
         return settings.PS_envira_grid """
         
 

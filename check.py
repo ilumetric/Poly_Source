@@ -1,9 +1,7 @@
-import bpy
-import bgl 
-import gpu
+import bpy, gpu, bmesh
 from gpu_extras.batch import batch_for_shader
 from bpy.types import Operator, Gizmo, GizmoGroup
-import bmesh
+from gpu import state
 
 
 
@@ -48,51 +46,39 @@ def custom_batch(shader, type, content, indices=None):
 
 
 
-def check_draw_bgl(self, context):
+def check_draw(self, context):
     objs = context.selected_objects
     if len(objs) > 0:
-        props = context.preferences.addons[__package__].preferences
+        props = context.preferences.addons[__package__.split('.')[0]].preferences
 
         theme = context.preferences.themes['Default']
         vertex_size = theme.view_3d.vertex_size
 
- 
-        bgl.glEnable(bgl.GL_BLEND)
-        bgl.glLineWidth(props.edge_width + 1)
-        bgl.glPointSize(vertex_size + 5)
-        bgl.glCullFace(bgl.GL_BACK)
-        
-        
+
+        # --- Set
+        state.blend_set('ALPHA')
+        state.line_width_set(props.edge_width + 1)
+        state.point_size_set(vertex_size + 5)
+
         if props.xray_che == False:
-            bgl.glEnable(bgl.GL_DEPTH_TEST)
-            bgl.glEnable(bgl.GL_CULL_FACE)
+            state.depth_mask_set(False)
+            state.face_culling_set('BACK')
+            state.depth_test_set('LESS_EQUAL')
 
 
-        if props.line_smooth:
-            bgl.glEnable(bgl.GL_LINE_SMOOTH)
-
-        
-        bgl.glDepthRange(0, 0.9999)
-        #bgl.glDepthFunc(600)
-        bgl.glDepthMask(False)
-
-        
-
-       
         shader.bind()
         
         
-        # COLOR
-        #opacity_second = props.opacity + 0.1
-        ngone_col = props.ngone_col[0], props.ngone_col[1], props.ngone_col[2], props.ngone_col[3]
-        tris_col = props.tris_col[0], props.tris_col[1], props.tris_col[2], props.tris_col[3]
-        e_non_col = props.non_manifold_color[0], props.non_manifold_color[1], props.non_manifold_color[2], props.non_manifold_color[3]
-        e_pole_col = props.e_pole_col[0], props.e_pole_col[1], props.e_pole_col[2], props.e_pole_col[3]
-        n_pole_col = props.n_pole_col[0], props.n_pole_col[1], props.n_pole_col[2], props.n_pole_col[3]
-        f_pole_col = props.f_pole_col[0], props.f_pole_col[1], props.f_pole_col[2], props.f_pole_col[3]
-        v_bound_col = props.bound_col[0], props.bound_col[1], props.bound_col[2], props.bound_col[3]
-        v_alone_col = props.v_alone_color[0], props.v_alone_color[1], props.v_alone_color[2], props.v_alone_color[3]
-        custom_col = props.custom_col[0], props.custom_col[1], props.custom_col[2], props.custom_col[3]
+        # --- Color
+        ngone_col = props.ngone_col
+        tris_col = props.tris_col
+        e_non_col = props.non_manifold_color
+        e_pole_col = props.e_pole_col
+        n_pole_col = props.n_pole_col
+        f_pole_col = props.f_pole_col
+        v_bound_col = props.bound_col
+        v_alone_col = props.v_alone_color
+        custom_col = props.custom_col
 
         if props.use_mod_che:
             depsgraph = context.evaluated_depsgraph_get()
@@ -255,15 +241,13 @@ def check_draw_bgl(self, context):
 
 
 
-        if props.line_smooth:
-            bgl.glDisable(bgl.GL_LINE_SMOOTH)
-        
-        bgl.glDisable(bgl.GL_DEPTH_TEST)
-        bgl.glDisable(bgl.GL_CULL_FACE)
-        bgl.glLineWidth(2)
-        bgl.glPointSize(vertex_size)
-        
-        bgl.glDisable(bgl.GL_BLEND)  
+        # --- Restore
+        state.depth_mask_set(True)
+        state.depth_test_set('NONE')
+        state.face_culling_set('NONE')
+        state.point_size_set(3.0)
+        state.line_width_set(1.0)
+        state.blend_set('NONE') 
 
   
 
@@ -273,7 +257,7 @@ class PS_GT_check(Gizmo):
     bl_idname = 'PS_GT_check'
 
     def draw(self, context):
-        check_draw_bgl(self, context)
+        check_draw(self, context)
 
     def test_select(self, context, location):
         if context.area.type == 'VIEW_3D':
@@ -293,7 +277,7 @@ class PS_GGT_check_group(GizmoGroup):
 
     """ @classmethod
     def poll(cls, context):
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
         return settings.PS_check """
         
 
@@ -304,7 +288,7 @@ class PS_GGT_check_group(GizmoGroup):
 
 
     """ def draw_prepare(self, context):
-        settings = context.scene.ps_set_
+        settings = context.scene.PS_scene_set
         mesh = self.mesh
         if settings.PS_check == True:
             mesh.hide = False
