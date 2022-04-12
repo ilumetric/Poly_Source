@@ -78,6 +78,46 @@ def transform_panel(self, context, pie):
         sub.operator("ps.locvert", text='Location').axis = 'ALL'
 
 
+class PS_PT_transform(Panel):
+    bl_idname = 'PS_PT_transform'
+    bl_label = 'Transform'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+
+    @classmethod
+    def poll(cls, context):
+        return context.object.type == 'MESH'
+
+    def draw(self, context):
+        transform_panel(self, context, self.layout)
+
+
+
+# --- Set Data
+class PS_PT_set_data(Panel):
+    bl_idname = 'PS_PT_set_data'
+    bl_label = 'Set Data'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+
+    @classmethod
+    def poll(cls, context):
+        return context.object.type == 'MESH'
+
+    def draw(self, context):
+        pcoll = preview_collections["main"] 
+        bevelW_icon = pcoll["bevelW"]
+        creaseW_icon = pcoll["creaseW"]
+
+        layout = self.layout
+        
+        layout.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'
+        layout.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'
+        layout.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
+        layout.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
+
+
+
 # --- SHADE Panel
 class PS_PT_shade(Panel):
     bl_idname = 'PS_PT_shade'
@@ -113,6 +153,7 @@ class PS_PT_shade(Panel):
         #sub = row.row()
         
         layout.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
+
 
 
 # --- MODIFIERS Panel
@@ -152,6 +193,7 @@ class PS_PT_modifiers(Panel):
         row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z'
 
 
+
 # --- OPERATORS Panel
 class PS_PT_operators(Panel):
     bl_idname = 'PS_PT_operators'
@@ -181,8 +223,9 @@ class PS_PT_operators(Panel):
         layout.operator('ps.transfer_transform') # TODO перенести в другое место
 
 
+
 # ---- PIE ----
-class PS_MT_tk_menu(Menu):
+class PS_MT_tk_menu_old(Menu):
     bl_idname = 'PS_MT_tk_menu'
     bl_label = 'Tool Kit'
 
@@ -257,7 +300,37 @@ class PS_MT_tk_menu(Menu):
 
 
 
+# ---- PIE ----
+class PS_MT_tk_menu(Menu):
+    bl_idname = 'PS_MT_tk_menu'
+    bl_label = 'Tool Kit'
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        ngon_icon = pcoll["ngon_icon"]
+        bevelW_icon = pcoll["bevelW"]
+
+        #sca_y = 1.3
+        layout = self.layout
+        pie = layout.menu_pie()
+
+        pie.popover('PS_PT_modifiers', text='Modifiers', icon='MODIFIER')           # 1
+        pie.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')           # 2
+        pie.popover('PS_PT_operators', icon='TOOL_SETTINGS')                        # 3
+        pie.popover('PS_PT_transform', icon='OBJECT_ORIGIN')                        # 4
+
+        pie.popover('PS_PT_set_data', icon_value=bevelW_icon.icon_id)               # 5
+        pie.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)       # 6
+        pie.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')                   # 7
+        pie.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')                         # 8
+
+
+
+
+
 classes = [
+    PS_PT_transform,
+    PS_PT_set_data,
     PS_PT_shade,
     PS_PT_modifiers,
     PS_PT_operators,
