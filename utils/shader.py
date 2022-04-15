@@ -1,3 +1,6 @@
+from gpu.types import GPUShader
+
+
 # Shader Uniform
 vs_uni = '''
     uniform mat4 view_mat;
@@ -65,4 +68,6 @@ fs_sm = '''
         fragColor  = vec4(color.xyz, color.w);
     }
 '''
+
+
 

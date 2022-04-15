@@ -104,7 +104,7 @@ def check_draw(self, context):
                 
 
                         bm = bmesh.new()
-                        bm.from_mesh(me, face_normals=True, use_shape_key=False)
+                        bm.from_mesh(me)
 
                         bm.verts.ensure_lookup_table()
                         bm.edges.ensure_lookup_table()
