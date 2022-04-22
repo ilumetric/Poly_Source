@@ -1,16 +1,7 @@
-import bpy
-import bmesh
-import os
+import bpy, bmesh
 from bpy.types import Operator, Panel, Menu
-
 from .icons import preview_collections
 
-
-
-def activate():
-    if bpy.context.active_object != None:
-        #if bpy.context.active_object.select_get():
-        return bpy.context.object.type == 'MESH'
 
 
 class PS_PT_settings_draw_mesh(Panel):
@@ -19,9 +10,11 @@ class PS_PT_settings_draw_mesh(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'WINDOW'
 
+
     @classmethod
     def poll(self, context):
-        return activate()
+        return context.object.type == 'MESH'
+
 
     def draw(self, context):
         pcoll = preview_collections["main"]
@@ -194,82 +187,82 @@ def draw_panel(self, context, row):
 
     
     if context.region.alignment != 'RIGHT':
-        if activate():
-            objs = context.selected_objects
+        objs = context.selected_objects
 
-            tris = 0
-            quad = 0
-            ngon = 0
-            count_len_=0
-            enum_coints=0
+        tris = 0
+        quad = 0
+        ngon = 0
+        count_len_=0
+        enum_coints=0
 
-            for enum_coint, obj in enumerate(objs):
-                count_len_+=len(obj.data.vertices)
-                enum_coints=enum_coint
+        for enum_coint, obj in enumerate(objs):
+            if obj.type == 'MESH':
+                count_len_ += len( obj.data.vertices )
+                enum_coints = enum_coint
                 if count_len_ > props.maxVerts or enum_coint > props.maxObjs:
                     break
 
 
-            if count_len_ < props.maxVerts and enum_coints < props.maxObjs:
-                if context.mode == 'EDIT_MESH':
-                    for obj in objs:
-                        bm = bmesh.from_edit_mesh(obj.data)
-                        for face in bm.faces:
-                            verts = 0
-                            for i in face.verts:
-                                verts += 1
-                            if verts == 3:
+        if count_len_ < props.maxVerts and enum_coints < props.maxObjs:
+            if context.mode == 'EDIT_MESH':
+                for obj in objs:
+                    bm = bmesh.from_edit_mesh(obj.data)
+                    for face in bm.faces:
+                        verts = 0
+                        for i in face.verts:
+                            verts += 1
+                        if verts == 3:
+                            tris += 1
+                        elif verts == 4:
+                            quad += 1
+                        else:
+                            ngon += 1
+
+            else:
+                for obj in objs: 
+                    for loop in obj.data.polygons:
+                        if tris < props.maxVerts:
+                            count = loop.loop_total
+                            if count == 3:
                                 tris += 1
-                            elif verts == 4:
+                            elif count == 4:
                                 quad += 1
                             else:
                                 ngon += 1
+                
+        
+        
+            #bmesh.update_edit_mesh(obj.data) 
 
-                else:
-                    for obj in objs: 
-                        for loop in obj.data.polygons:
-                            if tris < props.maxVerts:
-                                count = loop.loop_total
-                                if count == 3:
-                                    tris += 1
-                                elif count == 4:
-                                    quad += 1
-                                else:
-                                    ngon += 1
+            polyNGon = str(ngon)
+            polyQuad = str(quad)
+            polyTris = str(tris)
                     
-            
-            
-                #bmesh.update_edit_mesh(obj.data) 
 
-                polyNGon = str(ngon)
-                polyQuad = str(quad)
-                polyTris = str(tris)
-                        
+                    
+            #layout = self.layout
+            #layout.separator()
+            #row = layout.row(align=True) 
+            #row.alignment='LEFT'
+            ngon_icon = pcoll['ngon_icon'] 
+            quad_icon = pcoll['quad_icon']
+            tris_icon = pcoll['tris_icon'] 
+                    
+            row.operator('ps.ngons', text=polyNGon, icon_value=ngon_icon.icon_id)    
+            row.operator('ps.quads', text=polyQuad, icon_value=quad_icon.icon_id)
+            row.operator('ps.tris', text=polyTris, icon_value=tris_icon.icon_id)
 
-                        
-                #layout = self.layout
-                #layout.separator()
-                #row = layout.row(align=True) 
-                #row.alignment='LEFT'
-                ngon_icon = pcoll['ngon_icon'] 
-                quad_icon = pcoll['quad_icon']
-                tris_icon = pcoll['tris_icon'] 
-                        
-                row.operator('ps.ngons', text=polyNGon, icon_value=ngon_icon.icon_id)    
-                row.operator('ps.quads', text=polyQuad, icon_value=quad_icon.icon_id)
-                row.operator('ps.tris', text=polyTris, icon_value=tris_icon.icon_id)
+        else:
+            # box = row.box()
+            # poly_point_max = str(props.maxVerts)
+            # obj_point_max = str(props.maxObjs)
+            # if count_len_ < props.maxVerts:
+            #     box.label(text="Points > " + poly_point_max, icon='ERROR')
+            # else:
+            #     box.label(text="Objects > " + obj_point_max, icon='ERROR')
 
-            else:
-                # box = row.box()
-                # poly_point_max = str(props.maxVerts)
-                # obj_point_max = str(props.maxObjs)
-                # if count_len_ < props.maxVerts:
-                #     box.label(text="Points > " + poly_point_max, icon='ERROR')
-                # else:
-                #     box.label(text="Objects > " + obj_point_max, icon='ERROR')
-
-                box = row.box()   
-                box.label(text="High Vertex or Objs value", icon='ERROR')
+            box = row.box()   
+            box.label(text="High Vertex or Objs value", icon='ERROR')
 
 
 
@@ -278,17 +271,18 @@ def draw_panel(self, context, row):
 def header_panel(self, context):
     props = context.preferences.addons[__package__].preferences
 
-    if activate():
-        if props.header == True:
+    if context.object.type == 'MESH':
+        if props.header:
             layout = self.layout
             row = layout.row(align=True) 
             draw_panel(self, context, row)
             #row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
+
 def viewHeader_L_panel(self, context):
     props = context.preferences.addons[__package__].preferences
-    if activate():
-        if props.viewHeader_L == True:
+    if context.object.type == 'MESH':
+        if props.viewHeader_L:
             layout = self.layout
             row = layout.row(align=True) 
             draw_panel(self, context, row)
@@ -297,28 +291,20 @@ def viewHeader_L_panel(self, context):
 
 def viewHeader_R_panel(self, context):
     props = context.preferences.addons[__package__].preferences
-    if activate():
-        if props.viewHeader_R == True:
+    if context.object.type == 'MESH':
+        if props.viewHeader_R:
             layout = self.layout
             row = layout.row(align=True) 
             draw_panel(self, context, row)
             row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 
-
-
-
 def tool_panel(self, context):
     props = context.preferences.addons[__package__].preferences
-    if activate():
+    if context.object.type == 'MESH':
         layout = self.layout
-        row = layout.row(align=True) 
-        """ # Gizmo PRO
-        if hasattr(bpy.types, bpy.ops.gizmopro.reset_location_object.idname()):
-            draw_panel(self, context, row)
-            row.popover(panel='PS_PT_settings_draw_mesh', text="") """
-
-        if props.toolHeader == True:
+        row = layout.row(align=True)
+        if props.toolHeader:
             draw_panel(self, context, row)
             row.popover(panel='PS_PT_settings_draw_mesh', text="")
 

@@ -160,7 +160,7 @@ class PS_OT_reset_scale_object(Operator):
 class PS_OT_locvert(Operator):
     bl_idname = 'ps.locvert'
     bl_label = 'Reset Vertex Location'
-    bl_options = {'REGISTER', 'UNDO', 'DEPENDS_ON_CURSOR' }
+    bl_options = {'REGISTER', 'UNDO'} #, 'DEPENDS_ON_CURSOR' 
 
     axis: EnumProperty(
         name='Axis',
