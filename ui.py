@@ -182,11 +182,11 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
 def draw_panel(self, context, row):
-    props = context.preferences.addons[__package__.split(".")[0]].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     pcoll = preview_collections['main']
 
     
-    if context.region.alignment != 'RIGHT':
+    if context.region.alignment != 'RIGHT' and context.object:
         objs = context.selected_objects
 
         tris = 0
@@ -255,21 +255,21 @@ def draw_panel(self, context, row):
         else:
             # box = row.box()
             # poly_point_max = str(props.maxVerts)
-            # obj_point_max = str(props.maxObjs)
+            # obj_point_max = str(props.maxObjs)2
             # if count_len_ < props.maxVerts:
             #     box.label(text="Points > " + poly_point_max, icon='ERROR')
             # else:
             #     box.label(text="Objects > " + obj_point_max, icon='ERROR')
 
             box = row.box()   
-            box.label(text="High Vertex or Objs value", icon='ERROR')
+            box.label( text = 'High Vertex or Objs value', icon = 'ERROR' )
 
 
 
 
 
 def header_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
 
     if context.object.type == 'MESH':
         if props.header:
@@ -280,7 +280,7 @@ def header_panel(self, context):
 
 
 def viewHeader_L_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     if context.object.type == 'MESH':
         if props.viewHeader_L:
             layout = self.layout
@@ -290,7 +290,7 @@ def viewHeader_L_panel(self, context):
 
 
 def viewHeader_R_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     if context.object.type == 'MESH':
         if props.viewHeader_R:
             layout = self.layout
@@ -300,7 +300,7 @@ def viewHeader_R_panel(self, context):
 
 
 def tool_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     if context.object.type == 'MESH':
         layout = self.layout
         row = layout.row(align=True)
@@ -381,7 +381,7 @@ class PS_OT_ps_tris(Operator):
 # --- ADD OBJECT
 # Layout
 def custom_objects(self, context):
-    props = context.preferences.addons[__package__.split(".")[0]].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
 
     if props.add_objects:
         pcoll = preview_collections["main"]
