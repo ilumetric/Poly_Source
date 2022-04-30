@@ -13,7 +13,8 @@ class PS_PT_settings_draw_mesh(Panel):
 
     @classmethod
     def poll(self, context):
-        return context.object.type == 'MESH'
+        if context.object:
+            return context.object.type == 'MESH'
 
 
     def draw(self, context):
@@ -270,43 +271,46 @@ def draw_panel(self, context, row):
 
 def header_panel(self, context):
     props = context.preferences.addons['Poly_Source'].preferences
-
-    if context.object.type == 'MESH':
-        if props.header:
-            layout = self.layout
-            row = layout.row(align=True) 
-            draw_panel(self, context, row)
-            #row.popover(panel='PS_PT_settings_draw_mesh', text="")
+    if context.object:
+        if context.object.type == 'MESH':
+            if props.header:
+                layout = self.layout
+                row = layout.row(align=True) 
+                draw_panel(self, context, row)
+                #row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 
 def viewHeader_L_panel(self, context):
     props = context.preferences.addons['Poly_Source'].preferences
-    if context.object.type == 'MESH':
-        if props.viewHeader_L:
-            layout = self.layout
-            row = layout.row(align=True) 
-            draw_panel(self, context, row)
-            row.popover(panel='PS_PT_settings_draw_mesh', text="")
+    if context.object:
+        if context.object.type == 'MESH':
+            if props.viewHeader_L:
+                layout = self.layout
+                row = layout.row(align=True) 
+                draw_panel(self, context, row)
+                row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 
 def viewHeader_R_panel(self, context):
     props = context.preferences.addons['Poly_Source'].preferences
-    if context.object.type == 'MESH':
-        if props.viewHeader_R:
-            layout = self.layout
-            row = layout.row(align=True) 
-            draw_panel(self, context, row)
-            row.popover(panel='PS_PT_settings_draw_mesh', text="")
+    if context.object:
+        if context.object.type == 'MESH':
+            if props.viewHeader_R:
+                layout = self.layout
+                row = layout.row(align=True) 
+                draw_panel(self, context, row)
+                row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 
 def tool_panel(self, context):
     props = context.preferences.addons['Poly_Source'].preferences
-    if context.object.type == 'MESH':
-        layout = self.layout
-        row = layout.row(align=True)
-        if props.toolHeader:
-            draw_panel(self, context, row)
-            row.popover(panel='PS_PT_settings_draw_mesh', text="")
+    if context.object:
+        if context.object.type == 'MESH':
+            layout = self.layout
+            row = layout.row(align=True)
+            if props.toolHeader:
+                draw_panel(self, context, row)
+                row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
         
 
@@ -324,7 +328,9 @@ class PS_OT_ps_ngons(Operator):
              
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None and context.active_object.type == 'MESH'
+        if context.active_object:
+            return context.active_object.type == 'MESH'
+
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
@@ -332,6 +338,7 @@ class PS_OT_ps_ngons(Operator):
         context.tool_settings.mesh_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER')
         return {'FINISHED'}
+
 
 
 class PS_OT_ps_quads(Operator):
@@ -342,7 +349,9 @@ class PS_OT_ps_quads(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None and context.active_object.type == 'MESH'
+        if context.active_object:
+            return context.active_object.type == 'MESH'
+
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
@@ -350,6 +359,7 @@ class PS_OT_ps_quads(Operator):
         context.tool_settings.mesh_select_mode=(False, False, True)
         bpy.ops.mesh.select_face_by_sides(number=4, type='EQUAL')
         return {'FINISHED'}
+
 
 
 class PS_OT_ps_tris(Operator):
@@ -360,7 +370,9 @@ class PS_OT_ps_tris(Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None and context.active_object.type == 'MESH'
+        if context.active_object:
+            return context.active_object.type == 'MESH'
+            
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')

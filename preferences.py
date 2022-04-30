@@ -324,8 +324,11 @@ def register():
     """ kmi = km.keymap_items.new("ps.tk_panel", type = "SPACE", value="PRESS", ctrl=False, alt=False, shift=False, oskey=False)
     addon_keymaps.append((km, kmi)) """
 
-    kmi = km.keymap_items.new('wm.call_menu_pie', type = 'SPACE', value = 'PRESS')
+    """ kmi = km.keymap_items.new('wm.call_menu_pie', type = 'SPACE', value = 'PRESS')
     kmi.properties.name = 'PS_MT_tk_menu'
+    addon_keymaps.append((km, kmi)) """
+
+    kmi = km.keymap_items.new('ps.tool_kit_panel', type = 'SPACE', value = 'PRESS')
     addon_keymaps.append((km, kmi))
 
     # Pie

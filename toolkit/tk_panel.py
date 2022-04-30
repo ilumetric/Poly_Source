@@ -1,5 +1,5 @@
 import bpy
-from bpy.types import Panel, Menu
+from bpy.types import Panel, Menu, Operator
 from ..icons import preview_collections
 from ..ui import draw_panel
 
@@ -175,6 +175,7 @@ class PS_PT_modifiers(Panel):
         bevelSub = pcoll["bevelSub"]
 
         layout = self.layout
+        #layout.alignment = 'LEFT'
 
         # --- Triangulate
         layout.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
@@ -224,107 +225,53 @@ class PS_PT_operators(Panel):
 
 
 
-# ---- PIE ----
-class PS_MT_tk_menu_old(Menu):
-    bl_idname = 'PS_MT_tk_menu'
+
+
+
+
+
+
+
+class PS_OT_tool_kit_panel(Operator):
+    bl_idname = 'ps.tool_kit_panel'
     bl_label = 'Tool Kit'
+    #bl_description = ' '
+    #bl_options = {'REGISTER'}
+    
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        """ print('region', context.region.width, context.region.x)
+        print('area', context.area.width, context.area.x)
+        x = event.mouse_region_x + 20
+        y = event.mouse_region_y - 20
+        context.window.cursor_warp(x, y) """
+        #return wm.invoke_props_popup(self, event)
+        #return wm.invoke_props_dialog(self, width=100) # --- с конпкой ОК
+        #return wm.invoke_confirm(self, event) # --- как при сохранении настроек
+        #return context.window_manager.invoke_search_popup(self)
+        wm = context.window_manager
+        return wm.invoke_popup(self, width=200)
+
 
     def draw(self, context):
-        pcoll = preview_collections["main"]
-        ngon_icon = pcoll["ngon_icon"]
-        quad_icon = pcoll["quad_icon"]
-        tris_icon = pcoll["tris_icon"] 
-        bevelW_icon = pcoll["bevelW"]
-        creaseW_icon = pcoll["creaseW"]
+        pcoll = preview_collections['main']
+        ngon_icon = pcoll['ngon_icon']
+        bevelW_icon = pcoll['bevelW']
 
-        sca_y = 1.3
         layout = self.layout
-        pie = layout.menu_pie()
+        layout.emboss = 'PULLDOWN_MENU'
 
-        pie.operator("view3d.copybuffer", text = '1', icon = 'BLENDER')                              # 1
-        pie.operator("view3d.copybuffer", text = '2', icon = 'BLENDER')                              # 2
-        pie.operator("view3d.copybuffer", text = '3', icon = 'BLENDER')                              # 3
-        pie.operator("view3d.copybuffer", text = '4', icon = 'BLENDER')                              # 4
+        layout.popover('PS_PT_modifiers', text='Modifiers', icon='MODIFIER')           # 1
+        layout.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')           # 2
+        layout.popover('PS_PT_operators', icon='TOOL_SETTINGS')                        # 3
+        layout.popover('PS_PT_transform', icon='OBJECT_ORIGIN')                        # 4
 
-        if context.mode == 'EDIT_MESH':
-            pie.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'     # 5
-            pie.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'    # 6
-            pie.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'    # 7
-            pie.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE' # 8
-
-        elif context.mode == 'OBJECT':
-            pie.operator("view3d.copybuffer", text = '5', icon = 'BLENDER')
-            pie.operator("view3d.copybuffer", text = '6', icon = 'BLENDER')                            
-            pie.operator("view3d.copybuffer", text = '7', icon = 'BLENDER')                            
-            pie.operator("view3d.copybuffer", text = '8', icon = 'BLENDER')
-
-        else:
-            pie.operator("view3d.copybuffer", text = '5', icon = 'BLENDER')
-            pie.operator("view3d.copybuffer", text = '6', icon = 'BLENDER')                            
-            pie.operator("view3d.copybuffer", text = '7', icon = 'BLENDER')                            
-            pie.operator("view3d.copybuffer", text = '8', icon = 'BLENDER')
-
-
-
-
-        # --- Bottom Menu
-        pie.separator()
-        pie.separator()
-        other = pie.column()
-        gap = other.column()
-        gap.separator()
-        gap.scale_y = 7
-        other_menu = other.box().column()
-        other_menu.scale_y=sca_y
-        other_menu.scale_x = 1.2
-        """ if context.mode == 'OBJECT':
-            other_menu.operator('object.shade_smooth', icon = 'ANTIALIASED')
-            other_menu.operator('object.shade_flat', icon = 'ALIASED')  """
-        
-        other_menu.popover('PS_PT_modifiers', text='Modifiers', icon='MODIFIER')
-        other_menu.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')
-        other_menu.popover('PS_PT_operators', icon='TOOL_SETTINGS')
-        other_menu.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')
-        other_menu.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)
-        other_menu.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')
-
-
-        # --- Top Menu
-        other = pie.column()
-        other_menu = other.box().column()
-        other_menu.scale_y=sca_y
-        transform_panel(self, context, other_menu)
-        gap = other.column()
-        gap.separator()
-        gap.scale_y = 7
-
-
-
-# ---- PIE ----
-class PS_MT_tk_menu(Menu):
-    bl_idname = 'PS_MT_tk_menu'
-    bl_label = 'Tool Kit'
-
-    def draw(self, context):
-        pcoll = preview_collections["main"]
-        ngon_icon = pcoll["ngon_icon"]
-        bevelW_icon = pcoll["bevelW"]
-
-        #sca_y = 1.3
-        layout = self.layout
-        pie = layout.menu_pie()
-
-        pie.popover('PS_PT_modifiers', text='Modifiers', icon='MODIFIER')           # 1
-        pie.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')           # 2
-        pie.popover('PS_PT_operators', icon='TOOL_SETTINGS')                        # 3
-        pie.popover('PS_PT_transform', icon='OBJECT_ORIGIN')                        # 4
-
-        pie.popover('PS_PT_set_data', icon_value=bevelW_icon.icon_id)               # 5
-        pie.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)       # 6
-        pie.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')                   # 7
-        pie.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')                         # 8
-
-
+        layout.popover('PS_PT_set_data', icon_value=bevelW_icon.icon_id)               # 5
+        layout.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)       # 6
+        layout.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')                   # 7
+        layout.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')                         # 8
 
 
 
@@ -334,7 +281,7 @@ classes = [
     PS_PT_shade,
     PS_PT_modifiers,
     PS_PT_operators,
-    PS_MT_tk_menu,
+    PS_OT_tool_kit_panel,
 ]
 
 
