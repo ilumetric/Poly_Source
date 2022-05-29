@@ -18,12 +18,12 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
     def draw(self, context):
-        pcoll = preview_collections["main"]
-        calculate_icon = pcoll["calculate_icon"]
-        check_icon = pcoll["check_icon"]
-        box_icon = pcoll["box_icon"]
-        grid_icon = pcoll["grid_icon"]
-        draw_icon = pcoll["draw_icon"]
+        pcoll = preview_collections[ 'main' ]
+        calculate_icon = pcoll[ 'calculate_icon' ]
+        check_icon = pcoll[ 'check_icon' ]
+        box_icon = pcoll[ 'box_icon' ]
+        grid_icon = pcoll[ 'grid_icon' ]
+        draw_icon = pcoll[ 'draw_icon' ]
 
 
         props = context.preferences.addons[__package__.split(".")[0]].preferences
@@ -38,16 +38,16 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
         if settings.PS_retopology == False: 
-            layout.prop(settings, "PS_retopology", icon_value=draw_icon.icon_id)
+            layout.prop(settings, 'PS_retopology', icon_value = draw_icon.icon_id )
 
         else:
             box = layout.box()
-            box.prop(settings, "PS_retopology", icon_value=draw_icon.icon_id)
+            box.prop(settings, 'PS_retopology', icon_value = draw_icon.icon_id )
 
             row = box.row(align=True)
-            row.prop(settings, 'draw_verts', icon='VERTEXSEL')
-            row.prop(settings, 'draw_edges', icon='EDGESEL')
-            row.prop(settings, 'draw_faces', icon='FACESEL')
+            row.prop( settings, 'draw_verts', icon = 'VERTEXSEL' )
+            row.prop( settings, 'draw_edges', icon = 'EDGESEL' )
+            row.prop( settings, 'draw_faces', icon = 'FACESEL' )
 
 
             row = box.row(align=True)
@@ -190,21 +190,20 @@ def draw_panel(self, context, row):
     if context.region.alignment != 'RIGHT' and context.object:
         objs = context.selected_objects
 
-        tris = 0
-        quad = 0
-        ngon = 0
-        count_len_=0
-        enum_coints=0
+        _tris = 0
+        _quad = 0
+        _ngon = 0
+        _count_len = 0
+        _enum_coints = 0
 
-        for enum_coint, obj in enumerate(objs):
+        for i, obj in enumerate(objs):
             if obj.type == 'MESH':
-                count_len_ += len( obj.data.vertices )
-                enum_coints = enum_coint
-                if count_len_ > props.maxVerts or enum_coint > props.maxObjs:
+                _count_len += len( obj.data.vertices )
+                _enum_coints = i
+                if _count_len > props.maxVerts or i > props.maxObjs:
                     break
 
-
-        if count_len_ < props.maxVerts and enum_coints < props.maxObjs:
+        if _count_len < props.maxVerts and _enum_coints < props.maxObjs:
             if context.mode == 'EDIT_MESH':
                 for obj in objs:
                     bm = bmesh.from_edit_mesh(obj.data)
@@ -213,45 +212,40 @@ def draw_panel(self, context, row):
                         for i in face.verts:
                             verts += 1
                         if verts == 3:
-                            tris += 1
+                            _tris += 1
                         elif verts == 4:
-                            quad += 1
+                            _quad += 1
                         else:
-                            ngon += 1
+                            _ngon += 1
 
             else:
-                for obj in objs: 
-                    for loop in obj.data.polygons:
-                        if tris < props.maxVerts:
-                            count = loop.loop_total
-                            if count == 3:
-                                tris += 1
-                            elif count == 4:
-                                quad += 1
-                            else:
-                                ngon += 1
-                
-        
-        
+                for obj in objs:
+                    if obj.type == 'MESH':
+                        for loop in obj.data.polygons:
+                            if _tris < props.maxVerts:
+                                count = loop.loop_total
+                                if count == 3:
+                                    _tris += 1
+                                elif count == 4:
+                                    _quad += 1
+                                else:
+                                    _ngon += 1
+
+
+
             #bmesh.update_edit_mesh(obj.data) 
 
-            polyNGon = str(ngon)
-            polyQuad = str(quad)
-            polyTris = str(tris)
-                    
+            polyNGon = str(_ngon)
+            polyQuad = str(_quad)
+            polyTris = str(_tris)
 
-                    
-            #layout = self.layout
-            #layout.separator()
-            #row = layout.row(align=True) 
-            #row.alignment='LEFT'
-            ngon_icon = pcoll['ngon_icon'] 
-            quad_icon = pcoll['quad_icon']
-            tris_icon = pcoll['tris_icon'] 
-                    
-            row.operator('ps.ngons', text=polyNGon, icon_value=ngon_icon.icon_id)    
-            row.operator('ps.quads', text=polyQuad, icon_value=quad_icon.icon_id)
-            row.operator('ps.tris', text=polyTris, icon_value=tris_icon.icon_id)
+            ngon_icon = pcoll[ 'ngon_icon' ] 
+            quad_icon = pcoll[ 'quad_icon' ]
+            tris_icon = pcoll[ 'tris_icon' ] 
+
+            row.operator( 'ps.ngons', text = polyNGon, icon_value = ngon_icon.icon_id )    
+            row.operator( 'ps.quads', text = polyQuad, icon_value = quad_icon.icon_id )
+            row.operator( 'ps.tris', text = polyTris, icon_value = tris_icon.icon_id )
 
         else:
             # box = row.box()

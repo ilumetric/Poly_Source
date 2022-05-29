@@ -2,6 +2,8 @@ import bpy
 from bpy.types import Panel, Menu, Operator
 from ..icons import preview_collections
 from ..ui import draw_panel
+from bpy.props import EnumProperty
+
 
 
 # --- TRANSFORM ---
@@ -78,150 +80,86 @@ def transform_panel(self, context, pie):
         sub.operator("ps.locvert", text='Location').axis = 'ALL'
 
 
-class PS_PT_transform(Panel):
-    bl_idname = 'PS_PT_transform'
-    bl_label = 'Transform'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
+# --- MODIFIERS Panel
+def modifier_panel(self, context, layout):
+    pcoll = preview_collections["main"]
+    x_icon = pcoll["x_icon"]
+    y_icon = pcoll["y_icon"]
+    z_icon = pcoll["z_icon"]
+    bevelSub = pcoll["bevelSub"]
 
-    @classmethod
-    def poll(cls, context):
-        return context.object.type == 'MESH'
+    #layout.alignment = 'LEFT'
 
-    def draw(self, context):
-        transform_panel(self, context, self.layout)
+    # --- Triangulate
+    layout.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
 
+    # --- Subdivision
+    layout.operator('ps.submod', text='Bevel For Crease', icon_value=bevelSub.icon_id)
+
+    # --- Solidify
+    layout.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
+    
+    # --- Mirror
+    row = layout.row(align=True)     
+    #row.scale_x = 2
+    row.operator('ps.add_mirror_mod', text=" ", icon_value=x_icon.icon_id).axis = 'X'    
+    row.operator('ps.add_mirror_mod', text=" ", icon_value=y_icon.icon_id).axis = 'Y' 
+    row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z'
 
 
 # --- Set Data
-class PS_PT_set_data(Panel):
-    bl_idname = 'PS_PT_set_data'
-    bl_label = 'Set Data'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
+def set_data_panel(self, context, layout):
+    pcoll = preview_collections["main"] 
+    bevelW_icon = pcoll["bevelW"]
+    creaseW_icon = pcoll["creaseW"]
 
-    @classmethod
-    def poll(cls, context):
-        return context.object.type == 'MESH'
-
-    def draw(self, context):
-        pcoll = preview_collections["main"] 
-        bevelW_icon = pcoll["bevelW"]
-        creaseW_icon = pcoll["creaseW"]
-
-        layout = self.layout
-        
-        layout.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'
-        layout.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'
-        layout.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
-        layout.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
-
+    layout.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'
+    layout.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'
+    layout.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
+    layout.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
 
 
 # --- SHADE Panel
-class PS_PT_shade(Panel):
-    bl_idname = 'PS_PT_shade'
-    bl_label = 'Shade'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
+def shade_panel(self, context, layout):
+    pcoll = preview_collections["main"]
+    fix_icon = pcoll["fix_icon"]
+    auto_s_icon = pcoll["180"]
 
-    @classmethod
-    def poll(cls, context):
-        return context.object.type == 'MESH'
 
-    def draw(self, context):
-        pcoll = preview_collections["main"]
-        fix_icon = pcoll["fix_icon"]
-        auto_s_icon = pcoll["180"]
+    row = layout.row()
+    if context.mode == 'OBJECT':
+        row.operator('object.shade_smooth', text='Smooth', icon = 'ANTIALIASED')
+        row.operator('object.shade_flat', text='Flat', icon = 'ALIASED')
 
-        layout = self.layout
-
-        row = layout.row()
-        if context.mode == 'OBJECT':
-            row.operator('object.shade_smooth', text='Smooth', icon = 'ANTIALIASED')
-            row.operator('object.shade_flat', text='Flat', icon = 'ALIASED')
-
-        elif context.mode == 'EDIT_MESH':
-            row.operator('mesh.faces_shade_smooth', text='Smooth', icon = 'ANTIALIASED')
-            row.operator('mesh.faces_shade_flat', text='Flat', icon = 'ALIASED')
-            
-
-        row = layout.row(align=True)
-        row.operator('ps.autosmooth', text='', icon_value=auto_s_icon.icon_id)
-        row.prop(context.object.data, 'auto_smooth_angle', text=' ', icon='META_BALL')
-        row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
-        #sub = row.row()
+    elif context.mode == 'EDIT_MESH':
+        row.operator('mesh.faces_shade_smooth', text='Smooth', icon = 'ANTIALIASED')
+        row.operator('mesh.faces_shade_flat', text='Flat', icon = 'ALIASED')
         
-        layout.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
 
-
-
-# --- MODIFIERS Panel
-class PS_PT_modifiers(Panel):
-    bl_idname = 'PS_PT_modifiers'
-    bl_label = 'Modifiers'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
-
-    @classmethod
-    def poll(cls, context):
-        return context.object.type == 'MESH'
-
-    def draw(self, context):
-        pcoll = preview_collections["main"]
-        x_icon = pcoll["x_icon"]
-        y_icon = pcoll["y_icon"]
-        z_icon = pcoll["z_icon"]
-        bevelSub = pcoll["bevelSub"]
-
-        layout = self.layout
-        #layout.alignment = 'LEFT'
-
-        # --- Triangulate
-        layout.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
-
-        # --- Subdivision
-        layout.operator('ps.submod', text='Bevel For Crease', icon_value=bevelSub.icon_id)
-
-        # --- Solidify
-        layout.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
-        
-        # --- Mirror
-        row = layout.row(align=True)     
-        #row.scale_x = 2
-        row.operator('ps.add_mirror_mod', text=" ", icon_value=x_icon.icon_id).axis = 'X'    
-        row.operator('ps.add_mirror_mod', text=" ", icon_value=y_icon.icon_id).axis = 'Y' 
-        row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z'
-
+    row = layout.row(align=True)
+    row.operator('ps.autosmooth', text='', icon_value=auto_s_icon.icon_id)
+    row.prop(context.object.data, 'auto_smooth_angle', text=' ', icon='META_BALL')
+    row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
+    #sub = row.row()
+    
+    layout.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
 
 
 # --- OPERATORS Panel
-class PS_PT_operators(Panel):
-    bl_idname = 'PS_PT_operators'
-    bl_label = 'Operators'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
+def operators_panel(self, context, layout):
+    if context.mode == 'EDIT_MESH':
+        layout.operator('mesh.edges_select_sharp', icon = 'LINCURVE')
+        layout.operator('mesh.select_nth', icon = 'TEXTURE_DATA')
 
-    @classmethod
-    def poll(cls, context):
-        return context.object.type == 'MESH'
+    layout.operator("ps.clear_dots", icon='SHADERFX')
+    layout.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
+    layout.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
+    layout.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
+    #box.operator("ps.fill_mesh", icon='MOD_LATTICE') # TODO 
+    layout.operator("ps.del_long_faces")
 
-    def draw(self, context):
-        layout = self.layout
-
-        if context.mode == 'EDIT_MESH':
-            layout.operator('mesh.edges_select_sharp', icon = 'LINCURVE')
-            layout.operator('mesh.select_nth', icon = 'TEXTURE_DATA')
-
-        layout.operator("ps.clear_dots", icon='SHADERFX')
-        layout.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
-        layout.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
-        layout.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
-        #box.operator("ps.fill_mesh", icon='MOD_LATTICE') # TODO 
-        layout.operator("ps.del_long_faces")
-
-        layout.separator()
-        layout.operator('ps.transfer_transform') # TODO перенести в другое место
+    layout.separator()
+    layout.operator('ps.transfer_transform') # TODO перенести в другое место
 
 
 
@@ -238,8 +176,24 @@ class PS_OT_tool_kit_panel(Operator):
     #bl_description = ' '
     #bl_options = {'REGISTER'}
     
+
+    groops: EnumProperty(
+                        name='Groops', 
+                        description = '',
+                        items = [
+                            ('TRANSFORM', 'Transform', '', 'EMPTY_ARROWS', 0), 
+                            ('MODIFIER', 'Blender', '', 'MODIFIER', 1),
+                            ('SHADE', 'Shade', '', 'SHADING_RENDERED', 2),
+                            ('OP', 'operators', '', 'NODETREE', 3),
+                            ('DATA', 'Set Data', '', 'OUTLINER_DATA_MESH', 4),
+                            ],
+                        default = 'TRANSFORM',
+                        )
+
+
     def execute(self, context):
         return {'FINISHED'}
+
 
     def invoke(self, context, event):
         """ print('region', context.region.width, context.region.x)
@@ -252,7 +206,7 @@ class PS_OT_tool_kit_panel(Operator):
         #return wm.invoke_confirm(self, event) # --- как при сохранении настроек
         #return context.window_manager.invoke_search_popup(self)
         wm = context.window_manager
-        return wm.invoke_popup(self, width=200)
+        return  wm.invoke_popup(self, width=300) # wm.invoke_props_popup(self, event) #
 
 
     def draw(self, context):
@@ -261,26 +215,42 @@ class PS_OT_tool_kit_panel(Operator):
         bevelW_icon = pcoll['bevelW']
 
         layout = self.layout
-        layout.emboss = 'PULLDOWN_MENU'
 
-        layout.popover('PS_PT_modifiers', text='Modifiers', icon='MODIFIER')           # 1
-        layout.popover('PS_PT_shade', text='Shade', icon='SHADING_RENDERED')           # 2
-        layout.popover('PS_PT_operators', icon='TOOL_SETTINGS')                        # 3
-        layout.popover('PS_PT_transform', icon='OBJECT_ORIGIN')                        # 4
+        row = layout.row(align=False)
 
-        layout.popover('PS_PT_set_data', icon_value=bevelW_icon.icon_id)               # 5
-        layout.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)       # 6
-        layout.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')                   # 7
-        layout.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')                         # 8
+        right = row.column(align=False)
+        right.scale_x = 1.5
+        right.scale_y = 1.5
+        right.prop(self, 'groops', expand=True, icon_only=True)
+
+
+
+        left = row.box()
+        #layout.emboss = 'PULLDOWN_MENU'
+
+        if self.groops == 'TRANSFORM':
+            transform_panel(self, context, left)
+
+        elif self.groops == 'MODIFIER':
+            modifier_panel(self, context, left)
+
+        elif self.groops == 'SHADE':
+            shade_panel(self, context, left)
+
+        elif self.groops == 'OP':
+            operators_panel(self, context, left)
+        
+        elif self.groops == 'DATA':
+            set_data_panel(self, context, left)
+   
+
+        """left.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)       # 6
+        left.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')                   # 7
+        left.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')                         # 8 """
 
 
 
 classes = [
-    PS_PT_transform,
-    PS_PT_set_data,
-    PS_PT_shade,
-    PS_PT_modifiers,
-    PS_PT_operators,
     PS_OT_tool_kit_panel,
 ]
 
