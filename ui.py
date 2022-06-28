@@ -1,6 +1,7 @@
 import bpy, bmesh
 from bpy.types import Operator, Panel, Menu
 from .icons import preview_collections
+from . import check
 
 
 
@@ -182,9 +183,9 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
 
-def draw_panel(self, context, row):
-    props = context.preferences.addons['Poly_Source'].preferences
-    pcoll = preview_collections['main']
+def polygons_panel(self, context, layout):
+    props = context.preferences.addons[ 'Poly_Source' ].preferences
+    pcoll = preview_collections[ 'main' ]
 
     
     if context.region.alignment != 'RIGHT' and context.object:
@@ -243,9 +244,9 @@ def draw_panel(self, context, row):
             quad_icon = pcoll[ 'quad_icon' ]
             tris_icon = pcoll[ 'tris_icon' ] 
 
-            row.operator( 'ps.ngons', text = polyNGon, icon_value = ngon_icon.icon_id )    
-            row.operator( 'ps.quads', text = polyQuad, icon_value = quad_icon.icon_id )
-            row.operator( 'ps.tris', text = polyTris, icon_value = tris_icon.icon_id )
+            layout.operator( 'ps.ngons', text = polyNGon, icon_value = ngon_icon.icon_id )    
+            layout.operator( 'ps.quads', text = polyQuad, icon_value = quad_icon.icon_id )
+            layout.operator( 'ps.tris', text = polyTris, icon_value = tris_icon.icon_id )
 
         else:
             # box = row.box()
@@ -256,55 +257,72 @@ def draw_panel(self, context, row):
             # else:
             #     box.label(text="Objects > " + obj_point_max, icon='ERROR')
 
-            box = row.box()   
+            box = layout.box()   
             box.label( text = 'High Vertex or Objs value', icon = 'ERROR' )
 
 
 
+def check_panel(self, context, layout):
+    
+    CHECK = False
+    
+    if context.mode == 'OBJECT' and context.object:
+
+        objs = context.selected_objects
+        for obj in objs:
+            verts = obj.data.vertices
+            edges = obj.data.edges
+            faces = obj.data.polygons
+
+
+    if CHECK:
+        layout.operator( 'ps.ngons', text = '', icon = 'ERROR' )
 
 
 def header_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[ 'Poly_Source' ].preferences
     if context.object:
         if context.object.type == 'MESH':
             if props.header:
                 layout = self.layout
-                row = layout.row(align=True) 
-                draw_panel(self, context, row)
+                row = layout.row( align = True ) 
+                polygons_panel( self, context, row )
                 #row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 
 def viewHeader_L_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[ 'Poly_Source' ].preferences
     if context.object:
         if context.object.type == 'MESH':
             if props.viewHeader_L:
                 layout = self.layout
-                row = layout.row(align=True) 
-                draw_panel(self, context, row)
-                row.popover(panel='PS_PT_settings_draw_mesh', text="")
+                row = layout.row( align = True )
+                if check.DIRT:
+                    row.operator( 'ps.ngons', text = '', icon = 'ERROR' )
+                polygons_panel( self, context, row )
+                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
 
 def viewHeader_R_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[ 'Poly_Source' ].preferences
     if context.object:
         if context.object.type == 'MESH':
             if props.viewHeader_R:
                 layout = self.layout
-                row = layout.row(align=True) 
-                draw_panel(self, context, row)
-                row.popover(panel='PS_PT_settings_draw_mesh', text="")
+                row = layout.row( align = True ) 
+                polygons_panel(self, context, row)
+                row.popover( panel = 'PS_PT_settings_draw_mesh', text='' )
 
 
 def tool_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[ 'Poly_Source' ].preferences
     if context.object:
         if context.object.type == 'MESH':
             layout = self.layout
-            row = layout.row(align=True)
+            row = layout.row( align = True )
             if props.toolHeader:
-                draw_panel(self, context, row)
-                row.popover(panel='PS_PT_settings_draw_mesh', text="")
+                polygons_panel(self, context, row)
+                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
         
 
@@ -313,66 +331,64 @@ def tool_panel(self, context):
 
 
 
-#OPERATOR
+# --- OPERATORS
+
 class PS_OT_ps_ngons(Operator):
-    bl_idname = "ps.ngons"
-    bl_label = "NGons"
+    bl_idname = 'ps.ngons'
+    bl_label = 'NGons'
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "Number Of NGons. Click To Select"
+    bl_description = 'Number Of NGons. Click To Select'
              
     @classmethod
     def poll(cls, context):
         if context.active_object:
             return context.active_object.type == 'MESH'
 
-
     def execute(self, context):
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.mesh_select_mode=(False, False, True)
-        bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER')
+        bpy.ops.object.mode_set( mode = 'EDIT' )
+        bpy.ops.mesh.select_all( action = 'DESELECT' )
+        #context.tool_settings.mesh_select_mode = ( False, False, True )
+        bpy.ops.mesh.select_face_by_sides( number = 4, type = 'GREATER' )
         return {'FINISHED'}
 
 
 
 class PS_OT_ps_quads(Operator):
-    bl_idname = "ps.quads"
-    bl_label = "Quads"
+    bl_idname = 'ps.quads'
+    bl_label = 'Quads'
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "Number Of Quads. Click To Select"
+    bl_description = 'Number Of Quads. Click To Select'
 
     @classmethod
     def poll(cls, context):
         if context.active_object:
             return context.active_object.type == 'MESH'
 
-
     def execute(self, context):
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.mesh_select_mode=(False, False, True)
-        bpy.ops.mesh.select_face_by_sides(number=4, type='EQUAL')
+        bpy.ops.object.mode_set( mode = 'EDIT' )
+        bpy.ops.mesh.select_all( action = 'DESELECT' )
+        #context.tool_settings.mesh_select_mode=(False, False, True)
+        bpy.ops.mesh.select_face_by_sides( number = 4, type = 'EQUAL' )
         return {'FINISHED'}
 
 
 
 class PS_OT_ps_tris(Operator):
-    bl_idname = "ps.tris"
-    bl_label = "Tris"
+    bl_idname = 'ps.tris'
+    bl_label = 'Tris'
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "Number Of Tris. Click To Select"
+    bl_description = 'Number Of Tris. Click To Select'
 
     @classmethod
     def poll(cls, context):
         if context.active_object:
             return context.active_object.type == 'MESH'
             
-
     def execute(self, context):
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='DESELECT')
-        context.tool_settings.mesh_select_mode=(False, False, True)
-        bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL')
+        bpy.ops.object.mode_set( mode = 'EDIT' )
+        bpy.ops.mesh.select_all( action = 'DESELECT' )
+        #context.tool_settings.mesh_select_mode=(False, False, True)
+        bpy.ops.mesh.select_face_by_sides( number = 3, type = 'EQUAL' )
         return {'FINISHED'}
 
 

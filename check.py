@@ -4,7 +4,7 @@ from bpy.types import Operator, Gizmo, GizmoGroup
 from gpu import state
 
 
-
+DIRT = False
 shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
 
 
@@ -40,10 +40,6 @@ def custom_batch(shader, type, content, indices=None):
     else:
         ibo = GPUIndexBuf(type=type, seq=indices)
         return GPUBatch(type=type, buf=vbo, elem=ibo)
-
-
-
-
 
 
 def check_draw(self, context):
@@ -250,8 +246,6 @@ def check_draw(self, context):
         state.blend_set('NONE') 
 
   
-
-
 
 class PS_GT_check(Gizmo):
     bl_idname = 'PS_GT_check'
