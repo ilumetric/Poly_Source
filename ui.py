@@ -297,8 +297,7 @@ def viewHeader_L_panel(self, context):
             if props.viewHeader_L:
                 layout = self.layout
                 row = layout.row( align = True )
-                if check.DIRT:
-                    row.operator( 'ps.ngons', text = '', icon = 'ERROR' )
+                check_panel( self, context, row )
                 polygons_panel( self, context, row )
                 row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
@@ -309,8 +308,9 @@ def viewHeader_R_panel(self, context):
         if context.object.type == 'MESH':
             if props.viewHeader_R:
                 layout = self.layout
-                row = layout.row( align = True ) 
-                polygons_panel(self, context, row)
+                row = layout.row( align = True )
+                check_panel( self, context, row )
+                polygons_panel( self, context, row )
                 row.popover( panel = 'PS_PT_settings_draw_mesh', text='' )
 
 
@@ -321,7 +321,8 @@ def tool_panel(self, context):
             layout = self.layout
             row = layout.row( align = True )
             if props.toolHeader:
-                polygons_panel(self, context, row)
+                check_panel( self, context, row )
+                polygons_panel( self, context, row )
                 row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
         

@@ -1,7 +1,6 @@
 import bpy
 from bpy.types import Panel, Menu, Operator
 from ..icons import preview_collections
-from ..ui import draw_panel
 from bpy.props import EnumProperty
 
 
@@ -19,7 +18,6 @@ def transform_panel(self, context, pie):
     if context.mode == 'OBJECT':
         #row = col.row(align=True)
         col.label(text='Reset Transform')
-        #draw_panel(self, context, row.row(align=True), scale_x=1.0, scale_y=1.0)
 
         col.scale_x = 1.3
 
@@ -160,7 +158,8 @@ def operators_panel(self, context, layout):
 
     layout.separator()
     layout.operator('ps.transfer_transform') # TODO перенести в другое место
-
+    
+    layout.operator('ps.add_material')
 
 
 

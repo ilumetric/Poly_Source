@@ -74,6 +74,7 @@ class PS_OT_reset_location_object(Operator):
         return {'FINISHED'}
 
 
+
 class PS_OT_reset_rotation_object(Operator):
     bl_idname = 'ps.reset_rotation_object'
     bl_label = 'Reset Rotation'
@@ -123,6 +124,7 @@ class PS_OT_reset_rotation_object(Operator):
         return {'FINISHED'} 
 
 
+
 class PS_OT_reset_scale_object(Operator):
     bl_idname = 'ps.reset_scale_object'
     bl_label = 'Reset Scale'
@@ -155,6 +157,7 @@ class PS_OT_reset_scale_object(Operator):
                 ob.scale = Vector((1.0, 1.0, 1.0))
 
         return {'FINISHED'} 
+
 
 
 class PS_OT_locvert(Operator):
@@ -315,6 +318,7 @@ class PS_OT_locvert(Operator):
         return {'FINISHED'} 
 
 
+
 class PS_OT_autosmooth(Operator): # --- Auto Smooth 
     bl_idname = "ps.autosmooth"
     bl_label = "Angle 180"
@@ -326,6 +330,7 @@ class PS_OT_autosmooth(Operator): # --- Auto Smooth
             obj.data.use_auto_smooth = True
             obj.data.auto_smooth_angle = 3.14159
         return {'FINISHED'} 
+
 
 
 class PS_OT_transfer_transform(Operator): # --- Transfer Transform Data
@@ -372,9 +377,6 @@ class PS_OT_transfer_transform(Operator): # --- Transfer Transform Data
 
 
 
-
-
-
 class PS_OT_addcamera(Operator): # FIXME
     bl_idname = "ps.addcamera"
     bl_label = "Add Camera"
@@ -389,6 +391,36 @@ class PS_OT_addcamera(Operator): # FIXME
         return {'FINISHED'} 
 
 
+
+class PS_OT_add_material(Operator): # --- Add Material
+    bl_idname = 'ps.add_material'
+    bl_label = 'Add Material'
+    bl_description = 'Auto Smooth Angle 180'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        # --- Get material
+        mat = bpy.data.materials.get( 'PS Material' )
+        if mat is None:
+            # --- Create material
+            mat = bpy.data.materials.new( name = 'PS Material' )
+
+
+        for obj in context.selected_objects:
+            """ # Assign it to object
+            if obj.data.materials:
+                # assign to 1st material slot
+                obj.data.materials[0] = mat
+            else:
+                # no slots """
+            obj.data.materials.append(mat)
+
+            """ if context.mode == 'EDIT_MESH':
+                bpy.ops.object.material_slot_assign() """
+        return {'FINISHED'}
+
+
+
 classes = [
     PS_OT_reset_location_object,
     PS_OT_reset_rotation_object,
@@ -397,6 +429,7 @@ classes = [
     PS_OT_autosmooth,
     PS_OT_transfer_transform,
     PS_OT_addcamera,
+    PS_OT_add_material,
 ]
 
 def register():
