@@ -421,6 +421,32 @@ class PS_OT_add_material(Operator): # --- Add Material
 
 
 
+class PS_OT_delaunay_triangulation(Operator):
+    bl_idname = 'ps.delaunay_triangulation'
+    bl_label = 'Delaunay Triangulation'
+    bl_options = {'REGISTER', 'UNDO'} #, 'DEPENDS_ON_CURSOR' 
+
+
+    #vi: BoolProperty(name='Vertex Individual', description = ' ', default=True)
+
+
+    def execute(self, context):
+        from mathutils.geometry import delaunay_2d_cdt
+        import random
+
+        obj = context.object
+        bm = bmesh.from_edit_mesh(obj.data)
+        verts = [obj.matrix_world @ v.co for v in bm.verts]
+        random.shuffle(verts)
+        v2d = [v.to_2d() for v in verts]
+        overts, edges, faces, orig_verts, orig_edges, orig_faces = delaunay_2d_cdt(v2d, [], [], 0, 0.00001)
+
+        print(overts, edges, faces)
+        
+        #bmesh.update_edit_mesh(ob.data)
+        
+        return {'FINISHED'} 
+
 classes = [
     PS_OT_reset_location_object,
     PS_OT_reset_rotation_object,
@@ -430,6 +456,7 @@ classes = [
     PS_OT_transfer_transform,
     PS_OT_addcamera,
     PS_OT_add_material,
+    PS_OT_delaunay_triangulation,
 ]
 
 def register():

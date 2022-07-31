@@ -159,8 +159,8 @@ def operators_panel(self, context, layout):
     layout.separator()
     layout.operator('ps.transfer_transform') # TODO перенести в другое место
     
-    layout.operator('ps.add_material')
-
+    #layout.operator('ps.add_material')
+    #layout.operator('ps.delaunay_triangulation')
 
 
 
