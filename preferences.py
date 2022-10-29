@@ -6,7 +6,7 @@ import rna_keymap_ui
 
 
 def get_preferences():
-    return bpy.context.preferences.addons[__package__].preferences
+    return bpy.context.preferences.addons['Poly_Source'].preferences
 
 # --- Scene Settings
 class PS_settings(PropertyGroup):
