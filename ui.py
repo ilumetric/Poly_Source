@@ -180,7 +180,17 @@ class PS_PT_settings_draw_mesh(Panel):
         if context.mode == 'EDIT_MESH':
             box.prop(context.space_data.overlay, 'show_occlude_wire')
 
-            
+def activate():
+    
+    sel_ob = bpy.context.selected_objects
+    
+    if sel_ob:
+        for ob in sel_ob:
+            if ob.type == 'MESH':
+                return True
+    else:
+        return False
+
 def get_maxObjs_status(maxObjs):
     
     sel_ob = bpy.context.selected_objects
@@ -252,8 +262,8 @@ def polygons_panel(self, context, layout):
     pcoll = preview_collections[ 'main' ]
 
     
-    if context.region.alignment != 'RIGHT' and context.object:
-        if get_maxObjs_status(props.maxObjs) and get_maxP_status(props.maxVerts):
+    if context.region.alignment != 'RIGHT' and activate():
+        if get_maxObjs_status(props.maxObjs) and get_maxVerts_status(props.maxVerts):
             polygons = polygon_counter()
 
             polyNGon = polygons[0]
@@ -293,49 +303,45 @@ def check_panel(self, context, layout):
 
 def header_panel(self, context):
     props = get_preferences()
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.header:
-                layout = self.layout
-                row = layout.row( align = True ) 
-                polygons_panel( self, context, row )
-                #row.popover(panel='PS_PT_settings_draw_mesh', text="")
+    if activate():
+        if props.header:
+            layout = self.layout
+            row = layout.row( align = True ) 
+            polygons_panel( self, context, row )
+            #row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 
 def viewHeader_L_panel(self, context):
     props = get_preferences()
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.viewHeader_L:
-                layout = self.layout
-                row = layout.row( align = True )
-                #check_panel( self, context, row ) # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
+    if activate():
+        if props.viewHeader_L:
+            layout = self.layout
+            row = layout.row( align = True )
+            #check_panel( self, context, row ) # TODO
+            polygons_panel( self, context, row )
+            row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
 
 def viewHeader_R_panel(self, context):
     props = get_preferences()
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.viewHeader_R:
-                layout = self.layout
-                row = layout.row( align = True )
-                #check_panel( self, context, row ) # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text='' )
+    if activate():
+        if props.viewHeader_R:
+            layout = self.layout
+            row = layout.row( align = True )
+            #check_panel( self, context, row ) # TODO
+            polygons_panel( self, context, row )
+            row.popover( panel = 'PS_PT_settings_draw_mesh', text='' )
 
 
 def tool_panel(self, context):
     props = get_preferences()
-    if context.object:
-        if context.object.type == 'MESH':
-            layout = self.layout
-            row = layout.row( align = True )
-            if props.toolHeader:
-                #check_panel( self, context, row )  # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
+    if activate():
+        layout = self.layout
+        row = layout.row( align = True )
+        if props.toolHeader:
+            #check_panel( self, context, row )  # TODO
+            polygons_panel( self, context, row )
+            row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
         
 
@@ -408,11 +414,6 @@ class PS_OT_ps_tris(Operator):
 
 
 
-
-
-
-
-
 # --- ADD OBJECT
 # Layout
 def custom_objects(self, context):
@@ -433,17 +434,6 @@ def custom_objects(self, context):
 
     else:
         pass
-
-
-
-
-
-
-
-
-
-
-
 
 
 classes = [
