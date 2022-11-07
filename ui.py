@@ -1,6 +1,7 @@
 import bpy, bmesh
 from bpy.types import Operator, Panel, Menu
 from .icons import preview_collections
+from .preferences import get_preferences
 from . import check
 
 
@@ -27,7 +28,7 @@ class PS_PT_settings_draw_mesh(Panel):
         draw_icon = pcoll[ 'draw_icon' ]
 
 
-        props = context.preferences.addons[__package__.split(".")[0]].preferences
+        props = get_preferences()
         settings = context.scene.PS_scene_set
 
         layout = self.layout
@@ -178,67 +179,96 @@ class PS_PT_settings_draw_mesh(Panel):
         box.prop(props, 'maxObjs')
         if context.mode == 'EDIT_MESH':
             box.prop(context.space_data.overlay, 'show_occlude_wire')
-        
-        
 
+def activate():
+    
+    sel_ob = bpy.context.selected_objects
+    
+    if sel_ob:
+        for ob in sel_ob:
+            if ob.type == 'MESH':
+                return True
+    else:
+        return False
+
+def get_maxObjs_status(maxObjs):
+    
+    sel_ob = bpy.context.selected_objects
+    
+    objs_count = 0
+    maxObjs_status = True
+        
+    for obj in sel_ob:
+        if obj.type == 'MESH':
+            objs_count += 1
+            if objs_count > maxObjs:
+                maxObjs_status = False
+                break
+    return maxObjs_status
+
+def get_maxVerts_status(maxVerts):
+    
+    sel_ob = bpy.context.selected_objects
+    
+    vertex_count = 0
+    maxVerts_status = True
+        
+    for obj in sel_ob:
+        if obj.type == 'MESH':
+            vertex_count += len(obj.data.vertices)
+            if vertex_count > maxVerts:
+                maxVerts_status = False
+                break
+    return maxVerts_status
+
+def polygon_counter():
+    
+    sel_ob = bpy.context.selected_objects
+
+    ngon = 0    
+    quad = 0
+    tris = 0
+    
+    if bpy.context.mode != 'EDIT_MESH':
+        for obj in sel_ob:
+            if obj.type == 'MESH':    
+                for loop in obj.data.polygons:
+                    count = loop.loop_total
+                    if count == 3:
+                        tris += 1
+                    elif count == 4:
+                        quad += 1
+                    else:
+                        ngon += 1
+    else:
+        for obj in sel_ob:
+            if obj.type == 'MESH':
+                bm = bmesh.from_edit_mesh(obj.data)
+                for face in bm.faces:
+                    verts = 0
+                    for i in face.verts:
+                        verts += 1
+                    if verts == 3:
+                        tris += 1
+                    elif verts == 4:
+                        quad += 1
+                    else:
+                        ngon += 1
+    return str(ngon), str(quad), str(tris)        
 
 
 def polygons_panel(self, context, layout):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
+    props = get_preferences()
     pcoll = preview_collections[ 'main' ]
 
     
-    if context.region.alignment != 'RIGHT' and context.object:
-        objs = context.selected_objects
+    if context.region.alignment != 'RIGHT' and activate():
+        if get_maxObjs_status(props.maxObjs) and get_maxVerts_status(props.maxVerts):
+            polygons = polygon_counter()
 
-        _tris = 0
-        _quad = 0
-        _ngon = 0
-        _count_len = 0
-        _enum_coints = 0
-
-        for i, obj in enumerate(objs):
-            if obj.type == 'MESH':
-                _count_len += len( obj.data.vertices )
-                _enum_coints = i
-                if _count_len > props.maxVerts or i > props.maxObjs:
-                    break
-
-        if _count_len < props.maxVerts and _enum_coints < props.maxObjs:
-            if context.mode == 'EDIT_MESH':
-                for obj in objs:
-                    bm = bmesh.from_edit_mesh(obj.data)
-                    for face in bm.faces:
-                        verts = 0
-                        for i in face.verts:
-                            verts += 1
-                        if verts == 3:
-                            _tris += 1
-                        elif verts == 4:
-                            _quad += 1
-                        else:
-                            _ngon += 1
-
-            else:
-                for obj in objs:
-                    if obj.type == 'MESH':
-                        for loop in obj.data.polygons:
-                            if _tris < props.maxVerts:
-                                count = loop.loop_total
-                                if count == 3:
-                                    _tris += 1
-                                elif count == 4:
-                                    _quad += 1
-                                else:
-                                    _ngon += 1
-
-
-
-            #bmesh.update_edit_mesh(obj.data) 
-
-            polyNGon = str(_ngon)
-            polyQuad = str(_quad)
-            polyTris = str(_tris)
+            polyNGon = polygons[0]
+            polyQuad = polygons[1]
+            polyTris = polygons[2]
 
             ngon_icon = pcoll[ 'ngon_icon' ] 
             quad_icon = pcoll[ 'quad_icon' ]
@@ -249,14 +279,6 @@ def polygons_panel(self, context, layout):
             layout.operator( 'ps.tris', text = polyTris, icon_value = tris_icon.icon_id )
 
         else:
-            # box = row.box()
-            # poly_point_max = str(props.maxVerts)
-            # obj_point_max = str(props.maxObjs)2
-            # if count_len_ < props.maxVerts:
-            #     box.label(text="Points > " + poly_point_max, icon='ERROR')
-            # else:
-            #     box.label(text="Objects > " + obj_point_max, icon='ERROR')
-
             box = layout.box()   
             box.label( text = 'High Vertex or Objs value', icon = 'ERROR' )
 
@@ -280,50 +302,46 @@ def check_panel(self, context, layout):
 
 
 def header_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.header:
-                layout = self.layout
-                row = layout.row( align = True ) 
-                polygons_panel( self, context, row )
-                #row.popover(panel='PS_PT_settings_draw_mesh', text="")
+    props = get_preferences()
+    if activate():
+        if props.header:
+            layout = self.layout
+            row = layout.row( align = True ) 
+            polygons_panel( self, context, row )
+            #row.popover(panel='PS_PT_settings_draw_mesh', text="")
 
 
 def viewHeader_L_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.viewHeader_L:
-                layout = self.layout
-                row = layout.row( align = True )
-                #check_panel( self, context, row ) # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
+    props = get_preferences()
+    if activate():
+        if props.viewHeader_L:
+            layout = self.layout
+            row = layout.row( align = True )
+            #check_panel( self, context, row ) # TODO
+            polygons_panel( self, context, row )
+            row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
 
 def viewHeader_R_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.viewHeader_R:
-                layout = self.layout
-                row = layout.row( align = True )
-                #check_panel( self, context, row ) # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text='' )
+    props = get_preferences()
+    if activate():
+        if props.viewHeader_R:
+            layout = self.layout
+            row = layout.row( align = True )
+            #check_panel( self, context, row ) # TODO
+            polygons_panel( self, context, row )
+            row.popover( panel = 'PS_PT_settings_draw_mesh', text='' )
 
 
 def tool_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
-    if context.object:
-        if context.object.type == 'MESH':
-            layout = self.layout
-            row = layout.row( align = True )
-            if props.toolHeader:
-                #check_panel( self, context, row )  # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
+    props = get_preferences()
+    if activate():
+        layout = self.layout
+        row = layout.row( align = True )
+        if props.toolHeader:
+            #check_panel( self, context, row )  # TODO
+            polygons_panel( self, context, row )
+            row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
 
         
 
@@ -396,15 +414,10 @@ class PS_OT_ps_tris(Operator):
 
 
 
-
-
-
-
-
 # --- ADD OBJECT
 # Layout
 def custom_objects(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_preferences()
 
     if props.add_objects:
         pcoll = preview_collections["main"]
@@ -421,17 +434,6 @@ def custom_objects(self, context):
 
     else:
         pass
-
-
-
-
-
-
-
-
-
-
-
 
 
 classes = [
