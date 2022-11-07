@@ -5,6 +5,8 @@ from .icons import preview_collections
 import rna_keymap_ui
 
 
+def get_preferences():
+    return bpy.context.preferences.addons['Poly_Source'].preferences
 
 # --- Scene Settings
 class PS_settings(PropertyGroup):
