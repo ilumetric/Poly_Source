@@ -68,15 +68,15 @@ class PS_OT_add_mirror_mod(Operator):
 
             if self.axis == 'X':
                 obj.modifiers[name].use_axis[0] = True
-                obj.modifiers[name].use_bisect_axis[0] = True
+                #obj.modifiers[name].use_bisect_axis[0] = True
 
             elif self.axis == 'Y':
                 obj.modifiers[name].use_axis[1] = True
-                obj.modifiers[name].use_bisect_axis[1] = True
+                #obj.modifiers[name].use_bisect_axis[1] = True
 
             elif self.axis == 'Z':
                 obj.modifiers[name].use_axis[2] = True
-                obj.modifiers[name].use_bisect_axis[2] = True
+                #obj.modifiers[name].use_bisect_axis[2] = True
 
             if self.uv_offset:
                 obj.modifiers[name].offset_u = 1.0

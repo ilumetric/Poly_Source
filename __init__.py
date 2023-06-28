@@ -1,8 +1,8 @@
 bl_info = {
     'name': 'Poly Source',
     "author": "Max Derksen, Oxicid",
-    'version': (2, 2, 0),
-    'blender': (3, 0, 0),
+    'version': (3, 0, 0),
+    'blender': (3, 6, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': 'Mesh',
 }
@@ -11,7 +11,6 @@ bl_info = {
 
 from . import (
     preferences,
-    retopology,
     ui,
     check,
     polycount,
@@ -52,7 +51,6 @@ def register():
     preferences.register()
     
     ui.register()
-    retopology.register()
     check.register()
     polycount.register()
     envira_grid.register()
@@ -81,7 +79,6 @@ def unregister():
     preferences.unregister()
 
     ui.unregister()
-    retopology.unregister()
     check.unregister()
     polycount.unregister()
     envira_grid.unregister()

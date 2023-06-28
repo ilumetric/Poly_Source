@@ -12,20 +12,25 @@ def transform_panel(self, context, pie):
     y_icon = pcoll["y_icon"]
     z_icon = pcoll["z_icon"]
     reset_all = pcoll["reset_icon"]
+    bevelSub = pcoll["bevelSub"]
+    fix_icon = pcoll["fix_icon"]
+    auto_s_icon = pcoll["180"]
 
-    col = pie.column(align=False)
-    
+
+    #col = pie.column(align=False)
+    box = pie.box()
+
     if context.mode == 'OBJECT':
         #row = col.row(align=True)
-        col.label(text='Reset Transform')
+        box.label(text='Reset Transform')
 
-        col.scale_x = 1.3
+        box.scale_x = 1.3
 
 
         # --- Bool Tool
         addons = context.preferences.addons.keys()[:]
         if 'object_boolean_tools' in addons:
-            row = col.row(align=True)
+            row = box.row(align=True)
             row.label(icon='AUTO')
             row.operator('object.booltool_auto_difference', text='', icon='SELECT_SUBTRACT')
             row.operator('object.booltool_auto_union', text='', icon="SELECT_EXTEND")
@@ -41,36 +46,36 @@ def transform_panel(self, context, pie):
 
 
 
-        row = col.row(align=True) 
+        row = box.row(align=True) 
         row.operator('ps.reset_location_object', text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator('ps.reset_location_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator('ps.reset_location_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
         sub = row.row()
         sub.operator('ps.reset_location_object', text='Location').axis = 'ALL'
         
-        row = col.row(align=True)
+        row = box.row(align=True)
         row.operator('ps.reset_rotation_object', text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator('ps.reset_rotation_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator('ps.reset_rotation_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
         sub = row.row()
         sub.operator('ps.reset_rotation_object', text='Rotation').axis = 'ALL'
         
-        row = col.row(align=True)
+        row = box.row(align=True)
         row.operator('ps.reset_scale_object', text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator('ps.reset_scale_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator('ps.reset_scale_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
         sub = row.row()
         sub.operator('ps.reset_scale_object', text='Scale').axis = 'ALL'
         
-        row = col.row(align=True)           
+        row = box.row(align=True)           
         row.operator("ps.reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL_T'
 
 
     elif context.mode == 'EDIT_MESH':
-        col.label(text='Reset Transform')
-        col.scale_x = 1.3
+        box.label(text='Reset Transform')
+        box.scale_x = 1.3
 
-        row = col.row(align=True)
+        row = box.row(align=True)
         row.operator("ps.locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator("ps.locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator("ps.locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
@@ -78,7 +83,54 @@ def transform_panel(self, context, pie):
         sub.operator("ps.locvert", text='Location').axis = 'ALL'
 
 
-# --- MODIFIERS Panel
+    pie.separator()
+
+    box = pie.box()
+    # --- Mirror
+    row = box.row(align=True)
+    row.scale_x = 20
+    row.operator('ps.add_mirror_mod', text="", icon_value=x_icon.icon_id).axis = 'X'
+    row.separator(factor=0.15)
+    row.operator('ps.add_mirror_mod', text="", icon_value=y_icon.icon_id).axis = 'Y'
+    row.separator(factor=0.15)
+    row.operator('ps.add_mirror_mod', text="", icon_value=z_icon.icon_id).axis = 'Z'
+
+    
+
+    # --- Subdivision
+    box.operator('ps.submod', text='Bevel For Crease', icon_value=bevelSub.icon_id)
+
+    # --- Solidify
+    box.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
+
+    # --- Triangulate
+    box.operator("ps.triangulate", text='', icon='MOD_TRIANGULATE')
+
+    
+    pie.separator()
+    # --- SHADE
+    box = pie.box()
+    #row = box.row()
+    """ if context.mode == 'OBJECT':
+        row.operator('object.shade_smooth', text='Smooth', icon = 'ANTIALIASED')
+        row.operator('object.shade_flat', text='Flat', icon = 'ALIASED')
+
+    elif context.mode == 'EDIT_MESH':
+        row.operator('mesh.faces_shade_smooth', text='Smooth', icon = 'ANTIALIASED')
+        row.operator('mesh.faces_shade_flat', text='Flat', icon = 'ALIASED') """
+        
+    box.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
+
+    row = box.row(align=True)
+    row.operator('ps.autosmooth', text='', icon_value=auto_s_icon.icon_id)
+    row.prop(context.object.data, 'auto_smooth_angle', text=' ', icon='META_BALL')
+    row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
+    #sub = row.row()
+    
+    
+
+
+""" # --- MODIFIERS Panel
 def modifier_panel(self, context, layout):
     pcoll = preview_collections["main"]
     x_icon = pcoll["x_icon"]
@@ -102,11 +154,11 @@ def modifier_panel(self, context, layout):
     #row.scale_x = 2
     row.operator('ps.add_mirror_mod', text=" ", icon_value=x_icon.icon_id).axis = 'X'    
     row.operator('ps.add_mirror_mod', text=" ", icon_value=y_icon.icon_id).axis = 'Y' 
-    row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z'
+    row.operator('ps.add_mirror_mod', text=" ", icon_value=z_icon.icon_id).axis = 'Z' """
 
 
-# --- Set Data
-def set_data_panel(self, context, layout):
+
+def set_data_panel(self, context, layout): # --- Set Data
     pcoll = preview_collections["main"] 
     bevelW_icon = pcoll["bevelW"]
     creaseW_icon = pcoll["creaseW"]
@@ -117,8 +169,8 @@ def set_data_panel(self, context, layout):
     layout.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
 
 
-# --- SHADE Panel
-def shade_panel(self, context, layout):
+
+def shade_panel(self, context, layout): # --- SHADE Panel
     pcoll = preview_collections["main"]
     fix_icon = pcoll["fix_icon"]
     auto_s_icon = pcoll["180"]
@@ -143,8 +195,8 @@ def shade_panel(self, context, layout):
     layout.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
 
 
-# --- OPERATORS Panel
-def operators_panel(self, context, layout):
+
+def operators_panel(self, context, layout): # --- OPERATORS Panel
     if context.mode == 'EDIT_MESH':
         layout.operator('mesh.edges_select_sharp', icon = 'LINCURVE')
         layout.operator('mesh.select_nth', icon = 'TEXTURE_DATA')
@@ -153,9 +205,11 @@ def operators_panel(self, context, layout):
     layout.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
     layout.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
     layout.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
-    #box.operator("ps.fill_mesh", icon='MOD_LATTICE') # TODO 
+    
     layout.operator("ps.del_long_faces")
-
+    layout.operator('ps.clear_materials')
+    layout.operator('ps.clear_data')
+    layout.operator("outliner.orphans_purge", text="Purge")
     layout.separator()
     layout.operator('ps.transfer_transform') # TODO перенести в другое место
     
@@ -181,10 +235,10 @@ class PS_OT_tool_kit_panel(Operator):
                         description = '',
                         items = [
                             ('TRANSFORM', 'Transform', '', 'EMPTY_ARROWS', 0), 
-                            ('MODIFIER', 'Blender', '', 'MODIFIER', 1),
-                            ('SHADE', 'Shade', '', 'SHADING_RENDERED', 2),
-                            ('OP', 'operators', '', 'NODETREE', 3),
-                            ('DATA', 'Set Data', '', 'OUTLINER_DATA_MESH', 4),
+                            #('MODIFIER', 'Blender', '', 'MODIFIER', 1),
+                            #('SHADE', 'Shade', '', 'SHADING_RENDERED', 1),
+                            ('OP', 'operators', '', 'NODETREE', 1),
+                            ('DATA', 'Set Data', '', 'OUTLINER_DATA_MESH', 2),
                             ],
                         default = 'TRANSFORM',
                         )
@@ -209,38 +263,28 @@ class PS_OT_tool_kit_panel(Operator):
 
 
     def draw(self, context):
-        pcoll = preview_collections['main']
-        ngon_icon = pcoll['ngon_icon']
-        bevelW_icon = pcoll['bevelW']
-
         layout = self.layout
-
         row = layout.row(align=False)
-
         right = row.column(align=False)
         right.scale_x = 1.5
         right.scale_y = 1.5
         right.prop(self, 'groops', expand=True, icon_only=True)
-
-
-
-        left = row.box()
-        #layout.emboss = 'PULLDOWN_MENU'
+        col = row.column()
 
         if self.groops == 'TRANSFORM':
-            transform_panel(self, context, left)
+            transform_panel(self, context, col)
 
-        elif self.groops == 'MODIFIER':
-            modifier_panel(self, context, left)
+            """ elif self.groops == 'MODIFIER':
+                modifier_panel(self, context, col) """
 
-        elif self.groops == 'SHADE':
-            shade_panel(self, context, left)
+            """     elif self.groops == 'SHADE':
+                shade_panel(self, context, col) """
 
         elif self.groops == 'OP':
-            operators_panel(self, context, left)
+            operators_panel(self, context, col)
         
         elif self.groops == 'DATA':
-            set_data_panel(self, context, left)
+            set_data_panel(self, context, col)
    
 
         """left.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)       # 6
@@ -249,8 +293,54 @@ class PS_OT_tool_kit_panel(Operator):
 
 
 
+# --- Panels For Gizmo PRO
+class PS_PT_tool_kit_transform_panel(Panel):
+    bl_idname = 'PS_PT_tool_kit_transform_panel'
+    bl_label = 'Tool Kit: Transform'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+    bl_ui_units_x = 12
+
+
+    def draw(self, context):
+        layout = self.layout
+        transform_panel(self, context, layout)
+
+
+
+class PS_PT_tool_kit_operators_panel(Panel):
+    bl_idname = 'PS_PT_tool_kit_operators_panel'
+    bl_label = 'Tool Kit: Operators'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+    bl_ui_units_x = 12
+
+
+    def draw(self, context):
+        layout = self.layout
+        operators_panel(self, context, layout)
+
+
+
+class PS_PT_tool_kit_data_panel(Panel):
+    bl_idname = 'PS_PT_tool_kit_data_panel'
+    bl_label = 'Tool Kit: Data'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+    bl_ui_units_x = 12
+
+
+    def draw(self, context):
+        layout = self.layout
+        set_data_panel(self, context, layout)
+
+
+
 classes = [
     PS_OT_tool_kit_panel,
+    PS_PT_tool_kit_transform_panel,
+    PS_PT_tool_kit_operators_panel,
+    PS_PT_tool_kit_data_panel,
 ]
 
 

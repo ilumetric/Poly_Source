@@ -9,21 +9,6 @@ import rna_keymap_ui
 # --- Scene Settings
 class PS_settings(PropertyGroup):
 
-    # --- Retopology
-    def retop_widget(self, context):
-        wm = context.window_manager
-        if self.PS_retopology:
-            from . import retopology
-            retopology.REFRESH = True
-            wm.gizmo_group_type_ensure('PS_GGT_draw_mesh')
-        else:
-            wm.gizmo_group_type_unlink_delayed('PS_GGT_draw_mesh')
-
-
-    PS_retopology: BoolProperty(name="Retopology Mode", default=False, update=retop_widget)
-    draw_verts: BoolProperty(name="Vertex", default=True)
-    draw_edges: BoolProperty(name="Edge", default=True)
-    draw_faces: BoolProperty(name="Face", default=True)
 
     # --- Check
     def check_widget(self, context):
@@ -80,7 +65,7 @@ class PS_preferences(AddonPreferences):
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
     
     maxVerts: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=50000)
-    maxVerts_retop: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=30000)
+    
     maxObjs: IntProperty(name="Maximum number of selected objects", description="If the active object has too many objects, this may affect performance during rendering.", min=1, soft_max=500, default=50)
 
 
@@ -99,15 +84,15 @@ class PS_preferences(AddonPreferences):
 
     # --- Props Grid
     lines_props_grid: FloatVectorProperty(name="Lines Props Grid Color", subtype='COLOR', default=(0.1, 0.1, 0.1, 0.9), size=4, min=0.0, max=1.0, description="Select a color for lines props grid") # TODO description 
-    box_props_grid: FloatVectorProperty(name="Box Color", subtype='COLOR', default=(0.1, 0.3, 1.0, 0.05), size=4, min=0.0, max=1.0, description="Select a color for Box")
+    box_props_grid: FloatVectorProperty(name="Box Color", subtype='COLOR', default=(1.0, 0.03, 0.17, 0.05), size=4, min=0.0, max=1.0, description="Select a color for Box")
     unit_grid: FloatVectorProperty(name="Unit Grid Color", subtype='COLOR', default=(0.0, 0.48, 1.0, 0.1), size=4, min=0.0, max=1.0, description="Select a color for unit grid")
 
     # --- Draw Mesh
     verts_size: IntProperty(name="Vertex", description="Verts Size", min=1, soft_max=12, default=5, subtype='FACTOR')
     edge_width: FloatProperty(name="Edge", description="Edge Width", min=1.0, soft_max=5.0, default=2, subtype='FACTOR')
-    z_bias: FloatProperty(name="Z-Bias", description="Z-Bias", min=0.000001, soft_max=1.0, default=0.5, subtype='FACTOR')
-    opacity: FloatProperty(name="Opacity", description="Face Opacity", min=0.0, max=1.0, default=0.75, subtype='PERCENTAGE')
-    z_offset: FloatProperty(name="Z-Offset", description="Z-Offset", min=0.0, soft_max=3.0, default=0.0, subtype='FACTOR')
+    
+   
+    
 
 
 
@@ -128,10 +113,10 @@ class PS_preferences(AddonPreferences):
     
 
 
-    use_mod_ret: BoolProperty(name="Use Modifiers", description="Use the data from the modifiers", default=False)
+    
     use_mod_che: BoolProperty(name="Use Modifiers", description="Use the data from the modifiers", default=False)
 
-    xray_ret: BoolProperty(name="X-Ray", description="", default=False)
+    
     xray_che: BoolProperty(name="X-Ray", description="", default=False)
 
 

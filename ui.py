@@ -12,10 +12,10 @@ class PS_PT_settings_draw_mesh(Panel):
     bl_region_type = 'WINDOW'
 
 
-    @classmethod
+    """ @classmethod
     def poll(self, context):
         if context.object:
-            return context.object.type == 'MESH'
+            return context.object.type == 'MESH' """
 
 
     def draw(self, context):
@@ -37,39 +37,21 @@ class PS_PT_settings_draw_mesh(Panel):
         #layout.prop(props, "draw_", toggle=True) # TODO TEST 
 
 
+        overlay = context.space_data.overlay
 
-        if settings.PS_retopology == False: 
-            layout.prop(settings, 'PS_retopology', icon_value = draw_icon.icon_id )
-
-        else:
+        if overlay.show_retopology:
             box = layout.box()
-            box.prop(settings, 'PS_retopology', icon_value = draw_icon.icon_id )
+            box.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
+            box.prop(overlay, 'retopology_offset')
 
-            row = box.row(align=True)
-            row.prop( settings, 'draw_verts', icon = 'VERTEXSEL' )
-            row.prop( settings, 'draw_edges', icon = 'EDGESEL' )
-            row.prop( settings, 'draw_faces', icon = 'FACESEL' )
+            theme = context.preferences.themes[0].view_3d
+            box.prop(theme, 'face_retopology')
+            box.prop(theme, 'edge_width')
+            box.prop(theme, 'vertex_size')
+        else:
+            layout.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
 
-
-            row = box.row(align=True)
-            row.scale_x = 1.0
-            row.label(text="Width")
-            row.scale_x = 3.0
-            row.prop(props, "verts_size")
-            row.prop(props, "edge_width")
-
-            box.prop(props, "z_bias", text="Z-Bias:")
-            box.prop(props, "z_offset", text="Z-Offset:")
-            box.prop(props, "opacity", text="Opacity:")
-
-            row = box.row()
-            row.scale_x = 1.0
-            row.prop(props, "xray_ret")
-            row.scale_x = 1.1
-            row.prop(props, "use_mod_ret")
-
-            box.prop(props, 'maxVerts_retop')
-
+        
 
 
 
@@ -176,8 +158,7 @@ class PS_PT_settings_draw_mesh(Panel):
         box = layout.box()
         box.prop(props, 'maxVerts')
         box.prop(props, 'maxObjs')
-        if context.mode == 'EDIT_MESH':
-            box.prop(context.space_data.overlay, 'show_occlude_wire')
+        
         
         
 
@@ -263,20 +244,12 @@ def polygons_panel(self, context, layout):
 
 
 def check_panel(self, context, layout):
-    
-    CHECK = False
-    
-    if context.mode == 'OBJECT' and context.object:
-
-        objs = context.selected_objects
-        for obj in objs:
-            verts = obj.data.vertices
-            edges = obj.data.edges
-            faces = obj.data.polygons
-
-
-    if CHECK:
-        layout.operator( 'ps.ngons', text = '', icon = 'ERROR' )
+    sel_obj = context.selected_objects
+    scale_check = [True for s in sel_obj if s.scale[0] != 1 or s.scale[1] != 1 or s.scale[2] != 1]
+    if True in scale_check:
+        row = layout.row(align=True)
+        row.alert = True
+        row.label(text='', icon='ERROR')
 
 
 def header_panel(self, context):
@@ -291,40 +264,39 @@ def header_panel(self, context):
 
 
 def viewHeader_L_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.viewHeader_L:
-                layout = self.layout
-                row = layout.row( align = True )
-                #check_panel( self, context, row ) # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
+    props = context.preferences.addons['Poly_Source'].preferences
+    if props.viewHeader_L:
+        layout = self.layout
+        row = layout.row(align=True)
+        if context.object:
+            if context.object.type == 'MESH':
+                polygons_panel(self, context, row)
+        row.popover(panel='PS_PT_settings_draw_mesh', text='')
+        check_panel(self, context, row)
 
 
 def viewHeader_R_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.viewHeader_R:
-                layout = self.layout
-                row = layout.row( align = True )
-                #check_panel( self, context, row ) # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text='' )
+    props = context.preferences.addons['Poly_Source'].preferences
+    if props.viewHeader_R:
+        layout = self.layout
+        row = layout.row(align=True)
+        if context.object:
+            if context.object.type == 'MESH':
+                polygons_panel(self, context, row)
+        row.popover(panel='PS_PT_settings_draw_mesh', text='')
+        check_panel(self, context, row)
 
 
 def tool_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
-    if context.object:
-        if context.object.type == 'MESH':
-            layout = self.layout
-            row = layout.row( align = True )
-            if props.toolHeader:
-                #check_panel( self, context, row )  # TODO
-                polygons_panel( self, context, row )
-                row.popover( panel = 'PS_PT_settings_draw_mesh', text = '' )
-
+    props = context.preferences.addons['Poly_Source'].preferences
+    if props.toolHeader:
+        layout = self.layout
+        row = layout.row(align=True)
+        if context.object:
+            if context.object.type == 'MESH':
+                polygons_panel(self, context, row)
+        row.popover(panel='PS_PT_settings_draw_mesh', text='')
+        check_panel(self, context, row)
         
 
 
