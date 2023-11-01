@@ -4,7 +4,7 @@ bl_info = {
     'version': (3, 0, 0),
     'blender': (3, 6, 0),
     'location': 'VIEW 3D > Top Bar',
-    'category': 'Mesh',
+    'category': '3D View',
 }
 
 
@@ -33,7 +33,6 @@ from .add_object import (
 )
 
 from .toolkit import (
-    tk_modifiers,
     tk_panel,
     tk_scripts,
 )
@@ -65,7 +64,6 @@ def register():
     cube.register()
     cylinder.register()
 
-    tk_modifiers.register()
     tk_panel.register()
     tk_scripts.register()
 
@@ -93,7 +91,6 @@ def unregister():
     cube.unregister()
     cylinder.unregister()
 
-    tk_modifiers.unregister()
     tk_panel.unregister()
     tk_scripts.unregister()
 
