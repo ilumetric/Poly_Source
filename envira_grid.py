@@ -205,7 +205,7 @@ def draw_grid(self, context):
 
 
 
-    shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+    shader = gpu.shader.from_builtin('UNIFORM_COLOR')
     shader.bind()
 
     # Color

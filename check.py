@@ -5,7 +5,7 @@ from gpu import state
 
 
 DIRT = False
-shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 
 
 
