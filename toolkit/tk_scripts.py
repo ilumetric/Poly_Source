@@ -210,11 +210,11 @@ class PS_OT_locvert(Operator):
             l_g = sum(v_g, Vector()) / len(v_g)
             l = sum(verts, Vector()) / len(verts)
         
-        vs_g = {}
+        vs_g = {} # DEL ??
         vs = {}
         for ob in uniques:
             for v in bms[ob].verts:
-                vs_g[v] = l_g - v.co
+                vs_g[v] = l_g - v.co # DEL ??
                 vs[v] = l - v.co
         # ---
 
