@@ -97,7 +97,7 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
 
-        # --- Polycount
+        """ # --- Polycount
         if settings.PS_polycount == False:
             layout.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id)
         
@@ -108,7 +108,7 @@ class PS_PT_settings_draw_mesh(Panel):
             row = box.row(align=True)
             row.prop(settings, "tris_count")
             row.scale_x = 0.4
-            row.prop(props, "low_suffix", toggle=True)
+            row.prop(props, "low_suffix", toggle=True) """
 
 
 
