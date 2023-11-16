@@ -27,7 +27,7 @@ class PS_PT_settings_draw_mesh(Panel):
         draw_icon = pcoll[ 'draw_icon' ]
 
 
-        props = context.preferences.addons[__package__.split(".")[0]].preferences
+        props = context.preferences.addons[__package__].preferences
         settings = context.scene.PS_scene_set
 
         layout = self.layout
@@ -165,7 +165,7 @@ class PS_PT_settings_draw_mesh(Panel):
 
 
 def polygons_panel(self, context, layout):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
+    props = context.preferences.addons[__package__].preferences
     pcoll = preview_collections[ 'main' ]
 
     
@@ -253,7 +253,7 @@ def check_panel(self, context, layout):
 
 
 def header_panel(self, context):
-    props = context.preferences.addons[ 'Poly_Source' ].preferences
+    props = context.preferences.addons[__package__].preferences
     if context.object:
         if context.object.type == 'MESH':
             if props.header:
@@ -264,7 +264,7 @@ def header_panel(self, context):
 
 
 def viewHeader_L_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[__package__].preferences
     if props.viewHeader_L:
         layout = self.layout
         row = layout.row(align=True)
@@ -276,7 +276,7 @@ def viewHeader_L_panel(self, context):
 
 
 def viewHeader_R_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[__package__].preferences
     if props.viewHeader_R:
         layout = self.layout
         row = layout.row(align=True)
@@ -288,7 +288,7 @@ def viewHeader_R_panel(self, context):
 
 
 def tool_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[__package__].preferences
     if props.toolHeader:
         layout = self.layout
         row = layout.row(align=True)
@@ -376,7 +376,7 @@ class PS_OT_ps_tris(Operator):
 # --- ADD OBJECT
 # Layout
 def custom_objects(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = context.preferences.addons[__package__].preferences
 
     if props.add_objects:
         pcoll = preview_collections["main"]

@@ -168,7 +168,7 @@ class PS_GGT_polycount_group(GizmoGroup):
 
     def draw_prepare(self, context):
         settings = context.scene.PS_scene_set
-        #props = context.preferences.addons[__package__.split(".")[0]].preferences
+        #props = context.preferences.addons[__package__].preferences
         mesh = self.mesh
         if settings.PS_polycount:
             mesh.hide = False

@@ -45,7 +45,7 @@ def custom_batch(shader, type, content, indices=None):
 def check_draw(self, context):
     objs = context.selected_objects
     if len(objs) > 0:
-        props = context.preferences.addons[__package__.split('.')[0]].preferences
+        props = context.preferences.addons[__package__].preferences
 
         theme = context.preferences.themes['Default']
         vertex_size = theme.view_3d.vertex_size
