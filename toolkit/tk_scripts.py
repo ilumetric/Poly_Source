@@ -628,35 +628,40 @@ class PS_OT_edge_data(Operator): # --- Bevel & Crease
 
 
     def execute(self, context):
-        
-        for obj in context.selected_objects:
+        for obj in context.objects_in_mode_unique_data:
             bm = bmesh.from_edit_mesh(obj.data)
             
             if self.mode == 'BEVEL':
-                bw = bm.edges.layers.bevel_weight.verify()
+                if 'bevel_weight_edge' not in obj.data.attributes:
+                    bevel_edge = bm.edges.layers.float.new('bevel_weight_edge')
+                else:
+                    bevel_edge = bm.edges.layers.float.get('bevel_weight_edge')
 
                 for edge in bm.edges:
                     if edge.select:
-                        if edge[bw] > 0.0:
+                        if edge[bevel_edge] > 0.0:
                             for e in bm.edges:
                                 if e.select:
-                                    e[bw] = 0.0
+                                    e[bevel_edge] = 0.0
                             break
                         else:
-                            edge[bw] = 1.0
+                            edge[bevel_edge] = 1.0
            
             elif self.mode == 'CREASE':
-                cw = bm.edges.layers.crease.verify()
+                if 'crease_edge' not in obj.data.attributes:
+                    crease_edge = bm.edges.layers.float.new('crease_edge')
+                else:
+                    crease_edge = bm.edges.layers.float.get('crease_edge')
 
                 for edge in bm.edges:
                     if edge.select:
-                        if edge[cw] > 0.0:
+                        if edge[crease_edge] > 0.0:
                             for e in bm.edges:
                                 if e.select:
-                                    e[cw] = 0.0
+                                    e[crease_edge] = 0.0
                             break
                         else:
-                            edge[cw] = 1.0
+                            edge[crease_edge] = 1.0
 
             elif self.mode == 'SEAM':
                 for edge in bm.edges:
@@ -680,15 +685,7 @@ class PS_OT_edge_data(Operator): # --- Bevel & Crease
                         else:
                             edge.smooth = True
 
-
             bmesh.update_edit_mesh(obj.data)
-
-
-        #dg = context.evaluated_depsgraph_get()
-        #dg.update()
-        #context.view_layer.update()
-        #if context.area:
-        #context.area.tag_redraw()
         return {'FINISHED'}
 
 
