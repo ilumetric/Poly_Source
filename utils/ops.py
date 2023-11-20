@@ -1,8 +1,231 @@
 import bpy
 import bmesh
-from mathutils import Vector, Euler
 from bpy.types import Operator
-from bpy.props import EnumProperty, BoolProperty
+from bpy.props import EnumProperty, BoolProperty, FloatProperty, IntProperty
+from mathutils import Vector, Euler
+
+
+
+
+# --- Get Polygons
+class PS_OT_ngons_select(Operator):
+    bl_idname = 'ps.ngons_select'
+    bl_label = 'N-Gons Select'
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = 'Number Of N-Gons. Click To Select'
+             
+    @classmethod
+    def poll(cls, context):
+        if context.active_object:
+            return context.active_object.type == 'MESH'
+
+    def execute(self, context):
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.mesh.select_face_by_sides(number=4, type='GREATER')
+        return {'FINISHED'}
+
+
+class PS_OT_quads_select(Operator):
+    bl_idname = 'ps.quads_select'
+    bl_label = 'Quads Select'
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = 'Number Of Quads. Click To Select'
+
+    @classmethod
+    def poll(cls, context):
+        if context.active_object:
+            return context.active_object.type == 'MESH'
+
+    def execute(self, context):
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.mesh.select_face_by_sides(number=4, type='EQUAL')
+        return {'FINISHED'}
+
+
+class PS_OT_tris_select(Operator):
+    bl_idname = 'ps.tris_select'
+    bl_label = 'Tris Select'
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = 'Number Of Tris. Click To Select'
+
+    @classmethod
+    def poll(cls, context):
+        if context.active_object:
+            return context.active_object.type == 'MESH'
+            
+    def execute(self, context):
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.mesh.select_face_by_sides(number=3, type='EQUAL')
+        return {'FINISHED'}
+
+
+
+
+
+
+class PS_OT_clear_dots(Operator):
+    bl_idname = "ps.clear_dots"
+    bl_label = "Clear Dots"
+    bl_description="To Remove A Single Vertex"
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH'
+
+    def execute(self, context):
+        vCount = 0
+
+        uniques = context.selected_objects
+        for obj in uniques:
+            me = obj.data
+            mesh = bmesh.from_edit_mesh(me)
+
+            vDots = []
+            for v in mesh.verts:
+                if len(v.link_edges) < 1:
+                    vDots.append(v)
+                    vCount += 1
+
+            bmesh.ops.delete(mesh, geom=vDots, context='VERTS')
+            bmesh.update_edit_mesh(me)
+        
+        self.report({'INFO'}, "Clear Dots - " + str(vCount))
+        return {'FINISHED'}
+
+
+
+class PS_OT_remove_vertex_non_manifold(Operator):
+    bl_idname = "ps.remove_vertex_non_manifold"
+    bl_label = "Remove Non Manifold Vertex"
+    bl_description="Remove Vertexes That Are Not Connected To Polygons"
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH'
+
+    def execute(self, context):
+        vCount = 0
+
+        uniques = context.selected_objects
+        for obj in uniques:
+            me = obj.data
+            mesh = bmesh.from_edit_mesh(me)
+
+            vDots = []
+            for v in mesh.verts:
+                if len(v.link_faces)<1:
+                    vDots.append(v)
+                    vCount += 1
+
+            bmesh.ops.delete(mesh, geom=vDots, context='VERTS')
+            bmesh.update_edit_mesh(me)
+        
+        self.report({'INFO'}, "Removed Vertexes - " + str(vCount))
+        return {'FINISHED'}
+
+
+
+class PS_OT_clear_materials(Operator):
+    bl_idname = 'ps.clear_materials'
+    bl_label = 'Clear Materials'
+    bl_description = 'To Remove All Materials From The Object'
+    bl_optios = {'REGISTER', 'UNDO'}
+
+    #sceen: BoolProperty( name='Scene', default = False )
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
+
+    def execute(self, context):
+        sel_objs = context.selected_objects
+        for obj in sel_objs:
+            obj.data.materials.clear()
+        
+        """ if self.sceen:
+            for material in bpy.data.materials:
+                material.user_clear()
+                bpy.data.materials.remove(material) """
+        return {'FINISHED'}
+
+
+
+class PS_OT_clear_data(Operator):
+    bl_idname = 'ps.clear_data'
+    bl_label = 'Clear Data'
+    bl_description = 'To Remove All Data From The Object'
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
+
+    def execute(self, context):
+        #sel_objs = context.selected_objects.copy()
+        #active_obj = context.active_object.copy()
+
+        # deselect all objects
+        #bpy.ops.object.select_all(action='DESELECT')
+
+        sel_objs = context.selected_objects
+        for obj in sel_objs:
+            #obj.select_set(True)
+            #context.view_layer.objects.active = obj
+
+            # --- Clear Vertex Groups ---
+            if len(obj.vertex_groups) > 0:
+                for vg in obj.vertex_groups:
+                    obj.vertex_groups.remove(vg)
+
+            # --- Clear Shape Keys ---
+            if obj.data.shape_keys is not None:
+                if len(obj.data.shape_keys.key_blocks):
+                    for sk in obj.data.shape_keys.key_blocks:
+                        obj.shape_key_remove(sk)
+            
+            """ # --- Clear UV Maps ---
+            if len(obj.data.uv_layers) > 0:
+                for uv in obj.data.uv_layers:
+                    obj.data.uv_layers.remove(uv) """
+
+            # --- Clear Color Attributes ---
+            if len(obj.data.color_attributes) > 0:
+                for ca in obj.data.color_attributes:
+                    obj.data.color_attributes.remove(ca)
+
+            # --- Clear Face Maps ---
+            if len(obj.face_maps) > 0:
+                for fm in obj.face_maps:
+                    obj.face_maps.remove(fm)
+                    
+            # --- Clear Atrributes ---
+            if len(obj.data.attributes) > 0:
+                for at in obj.data.attributes:
+                    obj.data.attributes.remove(at)
+
+
+            """ # --- Clear Geometry Data ---
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.customdata_custom_splitnormals_clear()
+            bpy.ops.mesh.customdata_bevel_weight_edge_clear()
+            bpy.ops.mesh.customdata_bevel_weight_vertex_clear()
+            bpy.ops.mesh.customdata_crease_edge_clear()
+            bpy.ops.mesh.customdata_crease_vertex_clear()
+            bpy.ops.object.mode_set(mode='OBJECT') """
+
+            #obj.select_set(False)
+        
+
+        # select all objects
+        """ for obj in sel_objs:
+            obj.select_set(True) """
+        #context.view_layer.objects.active = active_obj
+        return {'FINISHED'}
+
+
+
 
 
 
@@ -421,29 +644,124 @@ class PS_OT_add_material(Operator): # --- Add Material
 
 
 
-class PS_OT_delaunay_triangulation(Operator):
-    bl_idname = 'ps.delaunay_triangulation'
-    bl_label = 'Delaunay Triangulation'
+
+
+class PS_OT_fill_from_points(Operator):
+    bl_idname = 'ps.fill_from_points'
+    bl_label = 'Fill From Points'
     bl_options = {'REGISTER', 'UNDO'} #, 'DEPENDS_ON_CURSOR' 
 
 
-    #vi: BoolProperty(name='Vertex Individual', description = ' ', default=True)
-
+    #faces: BoolProperty(name='Faces', description = ' ', default=False)
+    angle: FloatProperty(name='Angle', default=90.0)
+    range_count: IntProperty(name='Range Count', default=1, min=1, max=100)
 
     def execute(self, context):
-        from mathutils.geometry import delaunay_2d_cdt
+        from mathutils.geometry import tessellate_polygon, delaunay_2d_cdt
         import random
+        import heapq
+        from itertools import combinations
+        from math import degrees, radians
 
-        obj = context.object
-        bm = bmesh.from_edit_mesh(obj.data)
-        verts = [obj.matrix_world @ v.co for v in bm.verts]
-        random.shuffle(verts)
-        v2d = [v.to_2d() for v in verts]
-        overts, edges, faces, orig_verts, orig_edges, orig_faces = delaunay_2d_cdt(v2d, [], [], 0, 0.00001)
-
-        print(overts, edges, faces)
         
-        #bmesh.update_edit_mesh(ob.data)
+        obj = context.object
+        me = obj.data
+        obj.update_from_editmode()
+        bm = bmesh.from_edit_mesh(me)
+
+   
+        verts_old = [v for v in bm.verts]
+
+        # Копируем вершины из исходного объекта
+        verts = [bm.verts.new(v.co) for v in me.vertices]
+
+        # --- удаление старых вершин
+        for v in verts_old:
+            bm.verts.remove(v)
+
+        # Функция для расчета расстояния между двумя вершинами
+        def calc_distance(vert1, vert2):
+            return (vert1.co - vert2.co).length
+
+        # Создаем минимальное остовное дерево
+        # Используем кучу для оптимизации выбора минимального ребра
+        edge_heap = []
+        added_verts = set([verts[0]])
+        for vert in verts[1:]:
+            heapq.heappush(edge_heap, (calc_distance(verts[0], vert), 0, verts.index(vert)))
+
+        while len(added_verts) < len(verts):
+            dist, vert_from_idx, vert_to_idx = heapq.heappop(edge_heap)
+            if verts[vert_to_idx] not in added_verts:
+                added_verts.add(verts[vert_to_idx])
+                bm.edges.new((verts[vert_from_idx], verts[vert_to_idx]))
+
+                # Добавляем соседние ребра новой вершины в кучу
+                for v_idx, vert in enumerate(verts):
+                    if vert not in added_verts:
+                        heapq.heappush(edge_heap, (calc_distance(verts[vert_to_idx], vert), vert_to_idx, v_idx))
+            
+      
+
+
+        
+
+
+
+
+            #
+            """ for v in bm.verts:
+                if len(v.link_edges) > 1:
+                    edge0 = v.link_edges[0]
+                    edge1 = v.link_edges[1]
+                    vert0 = edge0.verts[0] if edge0.verts[0] in edge1.verts else edge0.verts[1]
+                    vert1 = edge0.other_vert(vert0)
+                    vert2 = edge1.other_vert(vert0)
+                    vec0 = vert0.co - vert1.co
+                    vec1 = vert0.co - vert2.co
+                    angle = vec0.angle(vec1)
+                    angle = angle if angle < radians(180) else (radians(360) - angle)
+                    if angle <= radians(self.angle):
+                        bmesh.ops.contextual_create(bm, geom=[vert0, vert1, vert2]) """
+            
+            
+
+            """ def can_create_face(bm, verts):
+                # Проверка на наличие существующих граней между вершинами
+                existing_faces = set(frozenset(face.verts) for face in bm.faces)
+                return not frozenset(verts) in existing_faces
+
+            for _ in range(self.range_count):
+                edge_pairs = []
+                for v in bm.verts:
+                    if len(v.link_edges) > 1:
+                        boundary_edges = [e for e in v.link_edges if len(e.link_faces) <= 1]
+                        for i, edge0 in enumerate(boundary_edges):
+                            for edge1 in boundary_edges[i + 1:]:
+                                edge_pairs.append((edge0, edge1, v))
+
+                for edge0, edge1, common_vert in edge_pairs:
+                    vert0 = edge0.other_vert(common_vert)
+                    vert1 = edge1.other_vert(common_vert)
+                    vec0 = common_vert.co - vert0.co
+                    vec1 = common_vert.co - vert1.co
+                    angle = vec0.angle(vec1)
+                    if angle <= radians(self.angle):
+                        if can_create_face(bm, [common_vert, vert0, vert1]):
+                            bmesh.ops.contextual_create(bm, geom=[common_vert, vert0, vert1]) """
+
+
+
+
+            
+
+
+
+            bmesh.update_edit_mesh(me)
+
+
+        
+
         
         return {'FINISHED'} 
 
@@ -690,7 +1008,18 @@ class PS_OT_edge_data(Operator): # --- Bevel & Crease
 
 
 
+
+
 classes = [
+    PS_OT_ngons_select,
+    PS_OT_tris_select,
+    PS_OT_quads_select,
+
+    PS_OT_clear_dots,
+    PS_OT_remove_vertex_non_manifold,
+    PS_OT_clear_materials,
+    PS_OT_clear_data,
+
     PS_OT_reset_location_object,
     PS_OT_reset_rotation_object,
     PS_OT_reset_scale_object,
@@ -699,7 +1028,7 @@ classes = [
     PS_OT_transfer_transform,
     PS_OT_addcamera,
     PS_OT_add_material,
-    PS_OT_delaunay_triangulation,
+    PS_OT_fill_from_points,
     PS_OT_submod,
     PS_OT_add_mirror_mod,
     PS_OT_triangulate,
