@@ -83,18 +83,20 @@ def header_panel(self, context):
     pcoll = preview_collections['main']
     check_icon = pcoll['check_icon']
 
-    if context.object:
-        if context.object.type == 'MESH':
-            if props.header:
-                layout = self.layout
-                row = layout.row(align=True)
-                row.popover(panel='PS_PT_tool_kit', text='')
-                get_polygons_count_ui(context, row)
-                row.separator(factor=0.2)
-                row.prop(settings, 'PS_check', text='', icon_value=check_icon.icon_id)
-                if settings.PS_check:
-                    row.popover(panel='PS_PT_check', text='')
-                #check_panel(self, context, row)
+    
+    if context.region.alignment == 'TOP':
+        if context.object:
+            if context.object.type == 'MESH':
+                if props.header:
+                    layout = self.layout
+                    row = layout.row(align=True)
+                    row.popover(panel='PS_PT_tool_kit', text='')
+                    get_polygons_count_ui(context, row)
+                    row.separator(factor=0.2)
+                    row.prop(settings, 'PS_check', text='', icon_value=check_icon.icon_id)
+                    if settings.PS_check:
+                        row.popover(panel='PS_PT_check', text='')
+                    #check_panel(self, context, row)
 
 
 def viewHeader_L_panel(self, context):
