@@ -6,156 +6,7 @@ from .utils.utils import get_active_3d_view
 from bpy.props import EnumProperty
 
 
-
-class PS_PT_settings_draw_mesh(Panel):
-    bl_idname = 'PS_PT_settings_draw_mesh'
-    bl_label = 'Draw Mesh Settings'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
-
-
-    """ @classmethod
-    def poll(self, context):
-        if context.object:
-            return context.object.type == 'MESH' """
-
-
-    def draw(self, context):
-        pcoll = preview_collections[ 'main' ]
-        calculate_icon = pcoll[ 'calculate_icon' ]
-        check_icon = pcoll[ 'check_icon' ]
-        box_icon = pcoll[ 'box_icon' ]
-        grid_icon = pcoll[ 'grid_icon' ]
-        draw_icon = pcoll[ 'draw_icon' ]
-
-
-        props = context.preferences.addons[__package__].preferences
-        settings = context.scene.PS_scene_set
-
-        layout = self.layout
-     
-        space_data = get_active_3d_view()
-
-        if space_data is not None:
-            overlay = space_data.overlay
-
-            if overlay.show_retopology:
-                box = layout.box()
-                box.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
-                box.prop(overlay, 'retopology_offset')
-
-                theme = context.preferences.themes[0].view_3d
-                box.prop(theme, 'face_retopology')
-                box.prop(theme, 'edge_width')
-                box.prop(theme, 'vertex_size')
-            else:
-                layout.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
-
-        
-
-
-
-        # --- Mesh Check
-        if settings.PS_check: 
-            box = layout.box()
-            box.prop(settings, 'PS_check', icon_value=check_icon.icon_id)
     
-            row = box.row()
-            col = row.column()
-            col.scale_y = 1.5
-            col.prop(props, "v_alone", toggle=True)
-            col.prop(props, "v_bound", toggle=True)
-            col.prop(props, "e_pole", toggle=True)
-            col.prop(props, "n_pole", toggle=True)
-            col.prop(props, "f_pole", toggle=True)
-
-            col = row.column()
-            col.scale_y = 1.5
-            col.prop(props, "tris", toggle=True)
-            col.prop(props, "ngone", toggle=True)
-            col.prop(props, "non_manifold_check", toggle=True)
-            
-
-            rowC = box.row(align=True)
-            rowC.prop(props, "custom_count")
-            sub_rowC = rowC.row()
-            sub_rowC.scale_x = 1.5
-            sub_rowC.active = props.custom_count
-            sub_rowC.prop(props, "custom_count_verts")
-
-            row_P = box.row()
-            row_P.scale_x = 1.0
-            row_P.prop(props, "xray_che")
-            row_P.scale_x = 1.1
-            row_P.prop(props, "use_mod_che")
-                
-        else:
-            layout.prop(settings, 'PS_check', icon_value=check_icon.icon_id)
-            
-            
-
-            
-
-
-
-        """ # --- Polycount
-        if settings.PS_polycount:
-            box = layout.box()
-            box.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id)
-            
-            row = box.row(align=True)
-            row.prop(settings, "tris_count")
-            row.scale_x = 0.4
-            row.prop(props, "low_suffix", toggle=True)
-        else:
-            layout.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id) """
-        
-            
-
-
-
-
-        # --- Envira Grid
-        if settings.PS_envira_grid:
-            box = layout.box()
-            row = box.row()
-            row.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
-            row.prop(settings, 'box', icon_value=box_icon.icon_id)
-        
-            row = box.row()
-            row.prop(settings, 'one_unit', expand=True)
-            row.prop(settings, 'one2one', toggle=True)
-            
-            row_all = box.row()
-            if settings.one2one:
-                row_all.prop(settings, 'unit_x')
-
-            else:
-                row = row_all.row(align=True)
-                row.prop(settings, 'unit_x')
-                row.prop(settings, 'unit_y')
-
-            box.prop(settings, 'float_z')
-            box.prop(settings, 'padding')
-
-            if settings.box:
-                box.prop(settings, 'box_height')
-
-            box.prop(settings, 'draw_unit_grid')
-            if settings.draw_unit_grid:
-                box.prop(settings, 'one_unit_length')
-        
-        else:
-            layout.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
-
-           
-
-
-
-        # --- Operators
-        box = layout.box()
-        box.prop(props, 'maxVerts')
-        box.prop(props, 'maxObjs')
         
         
         
@@ -234,7 +85,6 @@ def header_panel(self, context):
                 layout = self.layout
                 row = layout.row(align=True) 
                 get_polygons_count_ui(context, row)
-                row.popover(panel='PS_PT_settings_draw_mesh', text='')
                 row.popover(panel='PS_PT_tool_kit', text='')
 
 def viewHeader_L_panel(self, context):
@@ -245,10 +95,8 @@ def viewHeader_L_panel(self, context):
         if context.object:
             if context.object.type == 'MESH':
                 get_polygons_count_ui(context, row)
-        row.popover(panel='PS_PT_settings_draw_mesh', text='')
         row.popover(panel='PS_PT_tool_kit', text='')
         check_panel(self, context, row)
-
 
 def viewHeader_R_panel(self, context):
     props = context.preferences.addons[__package__].preferences
@@ -258,10 +106,8 @@ def viewHeader_R_panel(self, context):
         if context.object:
             if context.object.type == 'MESH':
                 get_polygons_count_ui(context, row)
-        row.popover(panel='PS_PT_settings_draw_mesh', text='')
         row.popover(panel='PS_PT_tool_kit', text='')
         check_panel(self, context, row)
-
 
 def tool_panel(self, context):
     props = context.preferences.addons[__package__].preferences
@@ -271,7 +117,6 @@ def tool_panel(self, context):
         if context.object:
             if context.object.type == 'MESH':
                 get_polygons_count_ui(context, row)
-        row.popover(panel='PS_PT_settings_draw_mesh', text='')
         row.popover(panel='PS_PT_tool_kit', text='')
         check_panel(self, context, row)
         
@@ -431,19 +276,141 @@ def transform_panel(self, context, pie):
     row.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
 
 
+def display_panel(self, context, layout):
+    pcoll = preview_collections[ 'main' ]
+    calculate_icon = pcoll[ 'calculate_icon' ]
+    check_icon = pcoll[ 'check_icon' ]
+    box_icon = pcoll[ 'box_icon' ]
+    grid_icon = pcoll[ 'grid_icon' ]
+    draw_icon = pcoll[ 'draw_icon' ]
 
 
+    props = context.preferences.addons[__package__].preferences
+    settings = context.scene.PS_scene_set
 
-def set_data_panel(self, context, layout): # --- Set Data
-    pcoll = preview_collections["main"] 
-    bevelW_icon = pcoll["bevelW"]
-    creaseW_icon = pcoll["creaseW"]
-    layout.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'
-    layout.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'
-    layout.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
-    layout.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
+    
+    space_data = get_active_3d_view()
+
+    if space_data is not None:
+        overlay = space_data.overlay
+
+        if overlay.show_retopology:
+            box = layout.box()
+            box.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
+            box.prop(overlay, 'retopology_offset')
+
+            theme = context.preferences.themes[0].view_3d
+            box.prop(theme, 'face_retopology')
+            box.prop(theme, 'edge_width')
+            box.prop(theme, 'vertex_size')
+        else:
+            layout.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
+
     
 
+
+
+    # --- Mesh Check
+    if settings.PS_check: 
+        box = layout.box()
+        box.prop(settings, 'PS_check', icon_value=check_icon.icon_id)
+
+        row = box.row()
+        col = row.column()
+        col.scale_y = 1.5
+        col.prop(props, "v_alone", toggle=True)
+        col.prop(props, "v_bound", toggle=True)
+        col.prop(props, "e_pole", toggle=True)
+        col.prop(props, "n_pole", toggle=True)
+        col.prop(props, "f_pole", toggle=True)
+
+        col = row.column()
+        col.scale_y = 1.5
+        col.prop(props, "tris", toggle=True)
+        col.prop(props, "ngone", toggle=True)
+        col.prop(props, "non_manifold_check", toggle=True)
+        
+
+        rowC = box.row(align=True)
+        rowC.prop(props, "custom_count")
+        sub_rowC = rowC.row()
+        sub_rowC.scale_x = 1.5
+        sub_rowC.active = props.custom_count
+        sub_rowC.prop(props, "custom_count_verts")
+
+        row_P = box.row()
+        row_P.scale_x = 1.0
+        row_P.prop(props, "xray_for_check")
+        row_P.scale_x = 1.1
+        row_P.prop(props, "use_mod_che")
+            
+    else:
+        layout.prop(settings, 'PS_check', icon_value=check_icon.icon_id)
+        
+        
+
+        
+
+
+
+    """ # --- Polycount
+    if settings.PS_polycount:
+        box = layout.box()
+        box.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id)
+        
+        row = box.row(align=True)
+        row.prop(settings, "tris_count")
+        row.scale_x = 0.4
+        row.prop(props, "low_suffix", toggle=True)
+    else:
+        layout.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id) """
+    
+        
+
+
+
+
+    # --- Envira Grid
+    if settings.PS_envira_grid:
+        box = layout.box()
+        row = box.row()
+        row.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
+        row.prop(settings, 'box', icon_value=box_icon.icon_id)
+    
+        row = box.row()
+        row.prop(settings, 'one_unit', expand=True)
+        row.prop(settings, 'one2one', toggle=True)
+        
+        row_all = box.row()
+        if settings.one2one:
+            row_all.prop(settings, 'unit_x')
+
+        else:
+            row = row_all.row(align=True)
+            row.prop(settings, 'unit_x')
+            row.prop(settings, 'unit_y')
+
+        box.prop(settings, 'float_z')
+        box.prop(settings, 'padding')
+
+        if settings.box:
+            box.prop(settings, 'box_height')
+
+        box.prop(settings, 'draw_unit_grid')
+        if settings.draw_unit_grid:
+            box.prop(settings, 'one_unit_length')
+    
+    else:
+        layout.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
+
+        
+
+
+
+    # --- Operators
+    box = layout.box()
+    box.prop(props, 'maxVerts')
+    box.prop(props, 'maxObjs')
 
 
 def shade_panel(self, context, layout): # --- SHADE Panel
@@ -469,7 +436,6 @@ def shade_panel(self, context, layout): # --- SHADE Panel
     #sub = row.row()
     
     layout.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
-
 
 
 def operators_panel(self, context, layout): # --- OPERATORS Panel
@@ -517,124 +483,17 @@ class PS_PT_tool_kit(Panel):
         if settings.panel_groops == 'TRANSFORM':
             transform_panel(self, context, col)
 
-        elif settings.panel_groops == 'OP':
+        elif settings.panel_groops == 'OPS':
             operators_panel(self, context, col)
 
+        elif settings.panel_groops == 'DISPLAY':
+            display_panel(self, context, col)
 
 
 
 
 
-class PS_OT_tool_kit_panel(Operator):
-    bl_idname = 'ps.tool_kit_panel'
-    bl_label = 'Tool Kit'
-    #bl_description = ' '
-    #bl_options = {'REGISTER'}
-    
 
-    groops: EnumProperty(
-                        name='Groops', 
-                        description = '',
-                        items = [
-                            ('TRANSFORM', 'Transform', '', 'EMPTY_ARROWS', 0), 
-                            #('MODIFIER', 'Blender', '', 'MODIFIER', 1),
-                            #('SHADE', 'Shade', '', 'SHADING_RENDERED', 1),
-                            ('OP', 'operators', '', 'NODETREE', 1),
-                            ('DATA', 'Set Data', '', 'OUTLINER_DATA_MESH', 2),
-                            ],
-                        default = 'TRANSFORM',
-                        )
-
-
-    def execute(self, context):
-        return {'FINISHED'}
-
-
-    def invoke(self, context, event):
-        """ print('region', context.region.width, context.region.x)
-        print('area', context.area.width, context.area.x)
-        x = event.mouse_region_x + 20
-        y = event.mouse_region_y - 20
-        context.window.cursor_warp(x, y) """
-        #return wm.invoke_props_popup(self, event)
-        #return wm.invoke_props_dialog(self, width=100) # --- с конпкой ОК
-        #return wm.invoke_confirm(self, event) # --- как при сохранении настроек
-        #return context.window_manager.invoke_search_popup(self)
-        wm = context.window_manager
-        return  wm.invoke_popup(self, width=300) # wm.invoke_props_popup(self, event) #
-
-
-    def draw(self, context):
-        layout = self.layout
-        row = layout.row(align=False)
-        right = row.column(align=False)
-        right.scale_x = 1.5
-        right.scale_y = 1.5
-        right.prop(self, 'groops', expand=True, icon_only=True)
-        col = row.column()
-
-        if self.groops == 'TRANSFORM':
-            transform_panel(self, context, col)
-
-            """ elif self.groops == 'MODIFIER':
-                modifier_panel(self, context, col) """
-
-            """     elif self.groops == 'SHADE':
-                shade_panel(self, context, col) """
-
-        elif self.groops == 'OP':
-            operators_panel(self, context, col)
-        
-        elif self.groops == 'DATA':
-            set_data_panel(self, context, col)
-   
-
-        """left.popover('PS_PT_settings_draw_mesh', icon_value=ngon_icon.icon_id)       # 6
-        left.popover('OBJECT_PT_display', icon='RESTRICT_VIEW_ON')                   # 7
-        left.popover('SCENE_PT_unit', icon='SNAP_INCREMENT')                         # 8 """
-
-
-
-# --- Panels For Gizmo PRO
-class PS_PT_tool_kit_transform_panel(Panel):
-    bl_idname = 'PS_PT_tool_kit_transform_panel'
-    bl_label = 'Tool Kit: Transform'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
-    bl_ui_units_x = 12
-
-
-    def draw(self, context):
-        layout = self.layout
-        transform_panel(self, context, layout)
-
-
-
-class PS_PT_tool_kit_operators_panel(Panel):
-    bl_idname = 'PS_PT_tool_kit_operators_panel'
-    bl_label = 'Tool Kit: Operators'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
-    bl_ui_units_x = 12
-
-
-    def draw(self, context):
-        layout = self.layout
-        operators_panel(self, context, layout)
-
-
-
-class PS_PT_tool_kit_data_panel(Panel):
-    bl_idname = 'PS_PT_tool_kit_data_panel'
-    bl_label = 'Tool Kit: Data'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
-    bl_ui_units_x = 12
-
-
-    def draw(self, context):
-        layout = self.layout
-        set_data_panel(self, context, layout)
 
 
 
@@ -660,13 +519,7 @@ class PS_PT_tool_kit_data_panel(Panel):
 
 
 classes = [
-    PS_PT_settings_draw_mesh,
-
     PS_PT_tool_kit,
-    PS_OT_tool_kit_panel,
-    PS_PT_tool_kit_transform_panel,
-    PS_PT_tool_kit_operators_panel,
-    PS_PT_tool_kit_data_panel,
 ]
 
 

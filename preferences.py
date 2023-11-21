@@ -4,22 +4,13 @@ from bpy.props import EnumProperty, FloatVectorProperty, BoolProperty, FloatProp
 from .icons import preview_collections
 import rna_keymap_ui
 from .utils.utils import get_hotkey_entry_item
-
+from . import check
 
 
 # --- Scene Settings
 class PS_settings(PropertyGroup):
 
-
-    # --- Check
-    def check_widget(self, context):
-        wm = context.window_manager
-        if self.PS_check:
-            wm.gizmo_group_type_ensure('PS_GGT_check_group')
-        else:
-            wm.gizmo_group_type_unlink_delayed('PS_GGT_check_group')
-    
-    PS_check: BoolProperty(name="Mesh Check", default=False, update=check_widget)
+    PS_check: BoolProperty(name="Mesh Check", default=False)
 
 
     # --- Polycount
@@ -64,7 +55,8 @@ class PS_settings(PropertyGroup):
                     description = '',
                     items = [
                         ('TRANSFORM', 'Transform', '', 'EMPTY_ARROWS', 0),
-                        ('OP', 'operators', '', 'NODETREE', 1),
+                        ('OPS', 'Operators', '', 'NODETREE', 1),
+                        ('DISPLAY', 'Display', '', 'RESTRICT_VIEW_OFF', 2),
                         ],
                     default = 'TRANSFORM',
                     )
@@ -73,7 +65,11 @@ class PS_settings(PropertyGroup):
 class PS_preferences(AddonPreferences):
     bl_idname = __package__
     
+
+    def update_check(self, context):
+        check.UPDATE = True
     
+
     #Polycount
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
     
@@ -82,8 +78,8 @@ class PS_preferences(AddonPreferences):
     maxObjs: IntProperty(name="Maximum number of selected objects", description="If the active object has too many objects, this may affect performance during rendering.", min=1, soft_max=500, default=50)
 
 
-    header: BoolProperty(name="Header", default=False)
-    viewHeader_L: BoolProperty(name="Viewport Header Left", default=True)
+    header: BoolProperty(name="Header", default=True)
+    viewHeader_L: BoolProperty(name="Viewport Header Left", default=False)
     viewHeader_R: BoolProperty(name="Viewport Header Right", default=False)
     toolHeader: BoolProperty(name="Tool Header", default=False)
     add_objects: BoolProperty(name="Custom Objects in Add Menu", default=True)
@@ -126,25 +122,21 @@ class PS_preferences(AddonPreferences):
 
 
     
-    use_mod_che: BoolProperty(name="Use Modifiers", description="Use the data from the modifiers", default=False)
+    use_mod_che: BoolProperty(name="Use Modifiers", description="Use the data from the modifiers", default=False, update=update_check)
 
+    xray_for_check: BoolProperty(name="X-Ray", description="", default=False, update=update_check)
+
+    non_manifold_check: BoolProperty(name="Non Manifold", description="Non Manifold Edges", default=True, update=update_check)
+    v_alone: BoolProperty(name="Vertex Alone", description="Vertexes that are not connected to the geometry", default=True, update=update_check)
+    v_bound: BoolProperty(name="Vertex Boundary", description="Vertexes that are located at the edge of the geometry", default=False, update=update_check)
+    e_pole: BoolProperty(name="Vertex E-Pole", description="Vertexes that are connected to 5 edges", default=False, update=update_check)
+    n_pole: BoolProperty(name="Vertex N-Pole", description="Vertexes that are connected to 3 edges", default=False, update=update_check)
+    f_pole: BoolProperty(name="More 5 Pole", description="Vertexes that are connected to more than 5 edges", default=False, update=update_check)
+    tris: BoolProperty(name="Tris", description="Polygons with three vertexes", default=False, update=update_check)
+    ngone: BoolProperty(name="N-Gone", description="Polygons with more than 4 vertexes", default=True, update=update_check)
     
-    xray_che: BoolProperty(name="X-Ray", description="", default=False)
-
-
-    non_manifold_check: BoolProperty(name="Non Manifold", description="Non Manifold Edges", default=True)
-    v_alone: BoolProperty(name="Vertex Alone", description="Vertexes that are not connected to the geometry", default=True)
-    v_bound: BoolProperty(name="Vertex Boundary", description="Vertexes that are located at the edge of the geometry", default=False)
-    e_pole: BoolProperty(name="Vertex E-Pole", description="Vertexes that are connected to 5 edges", default=False)
-    n_pole: BoolProperty(name="Vertex N-Pole", description="Vertexes that are connected to 3 edges", default=False)
-    f_pole: BoolProperty(name="More 5 Pole", description="Vertexes that are connected to more than 5 edges", default=False)
-    tris: BoolProperty(name="Tris", description="Polygons with three vertexes", default=False)
-    ngone: BoolProperty(name="N-Gone", description="Polygons with more than 4 vertexes", default=True)
-    
-
-
-    custom_count: BoolProperty(name="Custom", description="Custom number of vertexes in the polygon", default=False)
-    custom_count_verts: IntProperty(name="Number of vertexes in the polygon", description=" ", min=3, default=5)
+    custom_count: BoolProperty(name="Custom", description="Custom number of vertexes in the polygon", default=False, update=update_check)
+    custom_count_verts: IntProperty(name="Number of vertexes in the polygon", description=" ", min=3, default=5, update=update_check)
     custom_col: FloatVectorProperty(name="Polygon Color For Custom Mode", subtype='COLOR', default=(0.95, 0.78, 0.0, 0.5), size=4, min=0.0, max=1.0, description=" ")
 
 
@@ -175,7 +167,7 @@ class PS_preferences(AddonPreferences):
         col.prop(self, "maxObjs")
         col.separator()
         
-        col.prop(self, "header", text="Header(Not Suport Advance Draw Mesh)")
+        col.prop(self, "header")
         col.prop(self, "viewHeader_L")
         col.prop(self, "viewHeader_R")
         col.prop(self, "toolHeader")
@@ -257,7 +249,7 @@ class PS_preferences(AddonPreferences):
 
 
 
-        kmi = get_hotkey_entry_item(km, 'ps.tool_kit_panel', 'none', 'none')
+        kmi = get_hotkey_entry_item(km, 'wm.call_panel', 'PS_PT_tool_kit', 'none')
         if kmi:
             col.context_pointer_set('keymap', km)
             rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
@@ -332,7 +324,8 @@ def register():
     km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
 
 
-    kmi = km.keymap_items.new('ps.tool_kit_panel', type = 'SPACE', value = 'PRESS')
+    kmi = km.keymap_items.new('wm.call_panel', type='SPACE', value='PRESS')
+    kmi.properties.name = 'PS_PT_tool_kit'
     addon_keymaps.append((km, kmi))
 
     # Pie
