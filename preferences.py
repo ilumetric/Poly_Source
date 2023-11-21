@@ -10,7 +10,9 @@ from . import check
 # --- Scene Settings
 class PS_settings(PropertyGroup):
 
-    PS_check: BoolProperty(name="Mesh Check", default=False)
+    
+
+    
 
 
     # --- Polycount
@@ -47,8 +49,22 @@ class PS_settings(PropertyGroup):
     box_height: FloatProperty(name="Box Height", description = " ", min=0.0, soft_max=2.0, default=1.0, subtype='FACTOR')
 
 
-
-
+    def update_check(self, context):
+        check.UPDATE = True
+    PS_check: BoolProperty(name="Mesh Check", default=False)
+    use_mod_che: BoolProperty(name="Use Modifiers", description="Use the data from the modifiers", default=False, update=update_check)
+    xray_for_check: BoolProperty(name="X-Ray", description="", default=False, update=update_check)
+    non_manifold_check: BoolProperty(name="Non Manifold", description="Non Manifold Edges", default=True, update=update_check)
+    v_alone: BoolProperty(name="Vertex Alone", description="Vertexes that are not connected to the geometry", default=True, update=update_check)
+    v_bound: BoolProperty(name="Vertex Boundary", description="Vertexes that are located at the edge of the geometry", default=False, update=update_check)
+    e_pole: BoolProperty(name="Vertex E-Pole", description="Vertexes that are connected to 5 edges", default=False, update=update_check)
+    n_pole: BoolProperty(name="Vertex N-Pole", description="Vertexes that are connected to 3 edges", default=False, update=update_check)
+    f_pole: BoolProperty(name="More 5 Pole", description="Vertexes that are connected to more than 5 edges", default=False, update=update_check)
+    tris: BoolProperty(name="Tris", description="Polygons with three vertexes", default=False, update=update_check)
+    ngone: BoolProperty(name="N-Gone", description="Polygons with more than 4 vertexes", default=True, update=update_check)
+    custom_count: BoolProperty(name="Custom", description="Custom number of vertexes in the polygon", default=False, update=update_check)
+    custom_count_verts: IntProperty(name="Number of Vertices in the Polygon", description=" ", min=3, default=5, update=update_check)
+    
 
     panel_groops: EnumProperty(
                     name='Groops', 
@@ -61,13 +77,19 @@ class PS_settings(PropertyGroup):
                     default = 'TRANSFORM',
                     )
 
+
+
 # --- Addon preferences
 class PS_preferences(AddonPreferences):
     bl_idname = __package__
     
 
-    def update_check(self, context):
-        check.UPDATE = True
+    header: BoolProperty(name="Header", default=True)
+    viewHeader_L: BoolProperty(name="Viewport Header Left", default=False)
+    viewHeader_R: BoolProperty(name="Viewport Header Right", default=False)
+    toolHeader: BoolProperty(name="Tool Header", default=False)
+    add_objects: BoolProperty(name="Custom Objects in Add Menu", default=True)
+
     
 
     #Polycount
@@ -78,16 +100,7 @@ class PS_preferences(AddonPreferences):
     maxObjs: IntProperty(name="Maximum number of selected objects", description="If the active object has too many objects, this may affect performance during rendering.", min=1, soft_max=500, default=50)
 
 
-    header: BoolProperty(name="Header", default=True)
-    viewHeader_L: BoolProperty(name="Viewport Header Left", default=False)
-    viewHeader_R: BoolProperty(name="Viewport Header Right", default=False)
-    toolHeader: BoolProperty(name="Tool Header", default=False)
-    add_objects: BoolProperty(name="Custom Objects in Add Menu", default=True)
-
-
-
-
-    tabs: EnumProperty(name="Tabs", items = [("GENERAL", "General", ""), ("KEYMAPS", "Keymaps", "")], default="GENERAL")
+    
 
 
     # --- Props Grid
@@ -100,16 +113,9 @@ class PS_preferences(AddonPreferences):
     edge_width: FloatProperty(name="Edge", description="Edge Width", min=1.0, soft_max=5.0, default=2, subtype='FACTOR')
     
    
-    
-
-
-
-    
     VE_color: FloatVectorProperty(name="Vertex & Edge Color", subtype='COLOR', default=(0.0, 0.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Select a color for vertices & edges")
     F_color: FloatVectorProperty(name="Face Color", subtype='COLOR', default=(0.0, 0.33, 1.0), size=3, min=0.0, max=1.0, description="Select a color for faces")
     select_color: FloatVectorProperty(name="Select Color", subtype='COLOR', default=(1.0, 1.0, 1.0), size=3, min=0.0, max=1.0, description="Select a color for elements")
-
-
     v_alone_color: FloatVectorProperty(name="Vertex Color", subtype='COLOR', default=(0.0, 1.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Vertexes that are not connected to the geometry")
     non_manifold_color: FloatVectorProperty(name="Non Manifold Color", subtype='COLOR', default=(1.0, 0.0, 0.0, 0.5), size=4, min=0.0, max=1.0, description="Non Manifold Edges")
     bound_col: FloatVectorProperty(name="Bound Color", subtype='COLOR', default=(0.5, 0.0, 1.0, 0.5), size=4, min=0.0, max=1.0, description="Vertexes that are located at the edge of the geometry")
@@ -118,28 +124,10 @@ class PS_preferences(AddonPreferences):
     f_pole_col: FloatVectorProperty(name="More 5 Pole Color", subtype='COLOR', default=(1.0, 0.0, 1.0, 0.5), size=4, min=0.0, max=1.0, description="Vertexes that are connected to more than 5 edges")
     tris_col: FloatVectorProperty(name="Tris Color", subtype='COLOR', default=(0.0, 0.5, 1.0, 0.5), size=4, min=0.0, max=1.0, description="Polygons with three vertexes")
     ngone_col: FloatVectorProperty(name="NGone Color", subtype='COLOR', default=(1.0, 0.1, 0.0, 0.5), size=4, min=0.0, max=1.0, description="Polygons with more than 4 vertexes")
-    
-
-
-    
-    use_mod_che: BoolProperty(name="Use Modifiers", description="Use the data from the modifiers", default=False, update=update_check)
-
-    xray_for_check: BoolProperty(name="X-Ray", description="", default=False, update=update_check)
-
-    non_manifold_check: BoolProperty(name="Non Manifold", description="Non Manifold Edges", default=True, update=update_check)
-    v_alone: BoolProperty(name="Vertex Alone", description="Vertexes that are not connected to the geometry", default=True, update=update_check)
-    v_bound: BoolProperty(name="Vertex Boundary", description="Vertexes that are located at the edge of the geometry", default=False, update=update_check)
-    e_pole: BoolProperty(name="Vertex E-Pole", description="Vertexes that are connected to 5 edges", default=False, update=update_check)
-    n_pole: BoolProperty(name="Vertex N-Pole", description="Vertexes that are connected to 3 edges", default=False, update=update_check)
-    f_pole: BoolProperty(name="More 5 Pole", description="Vertexes that are connected to more than 5 edges", default=False, update=update_check)
-    tris: BoolProperty(name="Tris", description="Polygons with three vertexes", default=False, update=update_check)
-    ngone: BoolProperty(name="N-Gone", description="Polygons with more than 4 vertexes", default=True, update=update_check)
-    
-    custom_count: BoolProperty(name="Custom", description="Custom number of vertexes in the polygon", default=False, update=update_check)
-    custom_count_verts: IntProperty(name="Number of vertexes in the polygon", description=" ", min=3, default=5, update=update_check)
     custom_col: FloatVectorProperty(name="Polygon Color For Custom Mode", subtype='COLOR', default=(0.95, 0.78, 0.0, 0.5), size=4, min=0.0, max=1.0, description=" ")
 
-
+    tabs: EnumProperty(name="Tabs", items = [("GENERAL", "General", ""), ("KEYMAPS", "Keymaps", "")], default="GENERAL")
+    
 
     def draw(self, context):
         layout = self.layout

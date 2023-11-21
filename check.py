@@ -25,10 +25,13 @@ n_pole_co = []
 f_pole_co = []
 v_bound_co = []
 v_alone_co = []
-
+ngone_idx = []
+e_non_idx = []
+custom_faces_idx = []
 
 def check_draw(self, context):
     props = context.preferences.addons[__package__].preferences
+    settings = context.scene.PS_scene_set
     theme = context.preferences.themes['Default']
     vertex_size = theme.view_3d.vertex_size
 
@@ -36,54 +39,54 @@ def check_draw(self, context):
     state.line_width_set(props.edge_width + 1)
     state.point_size_set(vertex_size + 5)
     
-    if not props.xray_for_check:
+    if not settings.xray_for_check:
         state.depth_mask_set(False)
         state.face_culling_set('BACK')
         state.depth_test_set('LESS_EQUAL')
 
     shader.bind()
 
-    if props.ngone:
+    if settings.ngone:
         NGONE = batch_for_shader(shader, 'TRIS', {"pos": ngone_co}, indices=ngons_indices)
         shader.uniform_float("color", props.ngone_col)
         NGONE.draw(shader)
 
-    if props.tris:
+    if settings.tris:
         TRIS = batch_for_shader(shader, 'TRIS', {"pos": tris_co})
         shader.uniform_float("color", props.tris_col)
         TRIS.draw(shader)
 
-    if props.custom_count:
+    if settings.custom_count:
         CUSTOM = batch_for_shader(shader, 'TRIS', {"pos": custom_co}, indices=custom_faces_indices)
         shader.uniform_float("color", props.custom_col)
         CUSTOM.draw(shader)
 
-    if props.non_manifold_check:
+    if settings.non_manifold_check:
         EDGES_NON = batch_for_shader(shader, 'LINES', {"pos": e_non_co})
         shader.uniform_float("color", props.non_manifold_color)
         EDGES_NON.draw(shader)
 
-    if props.e_pole:
+    if settings.e_pole:
         E_POLE = batch_for_shader(shader, 'POINTS', {"pos": e_pole_co})
         shader.uniform_float("color", props.e_pole_col) 
         E_POLE.draw(shader)
 
-    if props.n_pole:
+    if settings.n_pole:
         N_POLE = batch_for_shader(shader, 'POINTS', {"pos": n_pole_co}) 
         shader.uniform_float("color", props.n_pole_col) 
         N_POLE.draw(shader)
 
-    if props.f_pole:
+    if settings.f_pole:
         F_POLE = batch_for_shader(shader, 'POINTS', {"pos": f_pole_co})
         shader.uniform_float("color", props.f_pole_col) 
         F_POLE.draw(shader)
 
-    if props.v_bound:
+    if settings.v_bound:
         V_BOUND = batch_for_shader(shader, 'POINTS', {"pos": v_bound_co})
         shader.uniform_float("color", props.bound_col) 
         V_BOUND.draw(shader)
 
-    if props.v_alone:
+    if settings.v_alone:
         V_ALONE = batch_for_shader(shader, 'POINTS', {"pos": v_alone_co})
         shader.uniform_float("color", props.v_alone_color)
         V_ALONE.draw(shader)
@@ -104,10 +107,10 @@ class PS_GT_check(Gizmo):
     def draw(self, context):
         check_draw(self, context)
 
-    def test_select(self, context, location):
+    """ def test_select(self, context, location):
         if context.area.type == 'VIEW_3D':
             context.area.tag_redraw()
-        return -1
+        return -1 """
 
 
 
@@ -127,9 +130,10 @@ class PS_GGT_check_group(GizmoGroup):
     def setup(self, context):
         self.mesh = self.gizmos.new(PS_GT_check.bl_idname)
         self.mesh.use_draw_modal = True
+        self.mesh.hide_select = True
 
     def refresh(self, context):
-        global ngone_co, ngons_indices, tris_co, custom_co, custom_faces_indices, e_non_co, e_pole_co, n_pole_co, f_pole_co, v_bound_co, v_alone_co
+        global ngone_co, ngons_indices, tris_co, custom_co, custom_faces_indices, e_non_co, e_pole_co, n_pole_co, f_pole_co, v_bound_co, v_alone_co, ngone_idx, e_non_idx, custom_faces_idx
 
         ngone_co = []
         ngons_indices = []
@@ -142,34 +146,35 @@ class PS_GGT_check_group(GizmoGroup):
         f_pole_co = []
         v_bound_co = []
         v_alone_co = []
-
+        ngone_idx = []
+        e_non_idx = []
+        custom_faces_idx = []
 
         objs = [obj for obj in context.selected_objects if obj.type == 'MESH' and len(obj.data.polygons) < 50000]
         if not objs:
             return
         depsgraph = context.evaluated_depsgraph_get()
 
-        props = context.preferences.addons[__package__].preferences
+        settings = context.scene.PS_scene_set
         for obj in objs:
-            bm = bmesh.new()
-            bm.from_mesh(obj.evaluated_get(depsgraph).data if props.use_mod_che and obj.modifiers else obj.data)
-            bm.verts.ensure_lookup_table()
-            bm.edges.ensure_lookup_table()
-            bm.faces.ensure_lookup_table()
-
-            
-
+            if context.mode == 'EDIT_MESH':
+                bm = bmesh.from_edit_mesh(obj.data)
+            else:
+                bm = bmesh.new()
+                bm.from_mesh(obj.evaluated_get(depsgraph).data if settings.use_mod_che and obj.modifiers else obj.data)
+                bm.verts.ensure_lookup_table()
+                bm.edges.ensure_lookup_table()
+                bm.faces.ensure_lookup_table()
 
             # --- N-Gone
-            if props.ngone:
-                ngone = []
+            if settings.ngone:
                 for n in bm.faces:
                     if len(n.verts)>4:
-                        ngone.append(n.index)
+                        ngone_idx.append(n.index)
                         
                 copy = bm.copy()
                 copy.faces.ensure_lookup_table()
-                edge_n = [e for i in ngone for e in copy.faces[i].edges]
+                edge_n = [e for i in ngone_idx for e in copy.faces[i].edges]
 
                 for e in copy.edges:
                     if not e in edge_n:
@@ -188,16 +193,15 @@ class PS_GGT_check_group(GizmoGroup):
 
             
             # --- Custom 
-            if props.custom_count:
-                custom_faces = []
+            if settings.custom_count:
                 for n in bm.faces:
-                    if len(n.verts) == props.custom_count_verts:
-                        custom_faces.append(n.index)
+                    if len(n.verts) == settings.custom_count_verts:
+                        custom_faces_idx.append(n.index)
                 
                         
                 copy = bm.copy()
                 copy.faces.ensure_lookup_table()
-                edge_n = [e for i in custom_faces for e in copy.faces[i].edges]
+                edge_n = [e for i in custom_faces_idx for e in copy.faces[i].edges]
 
                 for e in copy.edges:
                     if not e in edge_n:
@@ -216,36 +220,36 @@ class PS_GGT_check_group(GizmoGroup):
                 custom_faces_indices.extend(list(range(0, len(v_index)))[v_i:v_i+3] for v_i in range(0, len(v_index), 3))
 
 
-            if props.tris:
+            if settings.tris:
                 tris_co = [obj.matrix_world @ v.co for f in bm.faces if len(f.verts) == 3 for v in f.verts]
             
 
-            if props.non_manifold_check:
-                e_non_i = [e.index for e in bm.edges if not e.is_manifold]
-                e_non_co = [obj.matrix_world @ v.co for i in e_non_i for v in bm.edges[i].verts]
+            if settings.non_manifold_check:
+                e_non_idx = [e.index for e in bm.edges if not e.is_manifold]
+                e_non_co = [obj.matrix_world @ v.co for i in e_non_idx for v in bm.edges[i].verts]
             
             
-            if props.e_pole: 
+            if settings.e_pole: 
                 e_pole_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)==5]
             
             
-            if props.n_pole:
+            if settings.n_pole:
                 n_pole_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)==3]
             
             
-            if props.f_pole:
+            if settings.f_pole:
                 f_pole_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)>5]
             
             
-            if props.v_bound:
+            if settings.v_bound:
                 v_bound_co = [obj.matrix_world @ v.co for v in bm.verts if v.is_boundary or not v.is_manifold]
             
             
-            if props.v_alone:
+            if settings.v_alone:
                 v_alone_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)<1]
             
-            
-            bm.free()
+            if context.mode != 'EDIT_MESH':
+                bm.free()
 
         #print('refresh')
 

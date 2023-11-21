@@ -4,7 +4,7 @@ from bpy.types import Operator, Panel, Menu
 from .icons import preview_collections
 from .utils.utils import get_active_3d_view
 from bpy.props import EnumProperty
-
+from . import check
 
     
         
@@ -68,57 +68,91 @@ def get_polygons_count_ui(context, layout):
 
 
 
-def check_panel(self, context, layout):
+""" def check_panel(self, context, layout):
     sel_obj = context.selected_objects
     scale_check = [True for s in sel_obj if s.scale[0] != 1 or s.scale[1] != 1 or s.scale[2] != 1]
     if True in scale_check:
         row = layout.row(align=True)
         row.alert = True
-        row.label(text='', icon='ERROR')
+        row.label(text='', icon='ERROR') """
 
 
 def header_panel(self, context):
     props = context.preferences.addons[__package__].preferences
+    settings = context.scene.PS_scene_set
+    pcoll = preview_collections['main']
+    check_icon = pcoll['check_icon']
+
     if context.object:
         if context.object.type == 'MESH':
             if props.header:
                 layout = self.layout
-                row = layout.row(align=True) 
-                get_polygons_count_ui(context, row)
+                row = layout.row(align=True)
                 row.popover(panel='PS_PT_tool_kit', text='')
+                get_polygons_count_ui(context, row)
+                row.separator(factor=0.2)
+                row.prop(settings, 'PS_check', text='', icon_value=check_icon.icon_id)
+                if settings.PS_check:
+                    row.popover(panel='PS_PT_check', text='')
+                #check_panel(self, context, row)
+
 
 def viewHeader_L_panel(self, context):
     props = context.preferences.addons[__package__].preferences
-    if props.viewHeader_L:
-        layout = self.layout
-        row = layout.row(align=True)
-        if context.object:
-            if context.object.type == 'MESH':
+    settings = context.scene.PS_scene_set
+    pcoll = preview_collections['main']
+    check_icon = pcoll['check_icon']
+
+    if context.object:
+        if context.object.type == 'MESH':
+            if props.viewHeader_L:
+                layout = self.layout
+                row = layout.row(align=True)
+                row.popover(panel='PS_PT_tool_kit', text='')
                 get_polygons_count_ui(context, row)
-        row.popover(panel='PS_PT_tool_kit', text='')
-        check_panel(self, context, row)
+                row.separator(factor=0.2)
+                row.prop(settings, 'PS_check', text='', icon_value=check_icon.icon_id)
+                if settings.PS_check:
+                    row.popover(panel='PS_PT_check', text='')
+                #check_panel(self, context, row)
 
 def viewHeader_R_panel(self, context):
     props = context.preferences.addons[__package__].preferences
-    if props.viewHeader_R:
-        layout = self.layout
-        row = layout.row(align=True)
-        if context.object:
-            if context.object.type == 'MESH':
+    settings = context.scene.PS_scene_set
+    pcoll = preview_collections['main']
+    check_icon = pcoll['check_icon']
+
+    if context.object:
+        if context.object.type == 'MESH':
+            if props.viewHeader_R:
+                layout = self.layout
+                row = layout.row(align=True)
+                row.popover(panel='PS_PT_tool_kit', text='')
                 get_polygons_count_ui(context, row)
-        row.popover(panel='PS_PT_tool_kit', text='')
-        check_panel(self, context, row)
+                row.separator(factor=0.2)
+                row.prop(settings, 'PS_check', text='', icon_value=check_icon.icon_id)
+                if settings.PS_check:
+                    row.popover(panel='PS_PT_check', text='')
+                #check_panel(self, context, row)
 
 def tool_panel(self, context):
     props = context.preferences.addons[__package__].preferences
-    if props.toolHeader:
-        layout = self.layout
-        row = layout.row(align=True)
-        if context.object:
-            if context.object.type == 'MESH':
+    settings = context.scene.PS_scene_set
+    pcoll = preview_collections['main']
+    check_icon = pcoll['check_icon']
+
+    if context.object:
+        if context.object.type == 'MESH':
+            if props.toolHeader:
+                layout = self.layout
+                row = layout.row(align=True)
+                row.popover(panel='PS_PT_tool_kit', text='')
                 get_polygons_count_ui(context, row)
-        row.popover(panel='PS_PT_tool_kit', text='')
-        check_panel(self, context, row)
+                row.separator(factor=0.2)
+                row.prop(settings, 'PS_check', text='' , icon_value=check_icon.icon_id)
+                if settings.PS_check:
+                    row.popover(panel='PS_PT_check', text='')
+                #check_panel(self, context, row)
         
 
 
@@ -311,7 +345,7 @@ def display_panel(self, context, layout):
 
 
     # --- Mesh Check
-    if settings.PS_check: 
+    """ if settings.PS_check: 
         box = layout.box()
         box.prop(settings, 'PS_check', icon_value=check_icon.icon_id)
 
@@ -345,7 +379,7 @@ def display_panel(self, context, layout):
         row_P.prop(props, "use_mod_che")
             
     else:
-        layout.prop(settings, 'PS_check', icon_value=check_icon.icon_id)
+        layout.prop(settings, 'PS_check', icon_value=check_icon.icon_id) """
         
         
 
@@ -494,16 +528,73 @@ class PS_PT_tool_kit(Panel):
 
 
 
+class PS_PT_check(Panel):
+    bl_idname = 'PS_PT_check'
+    bl_label = 'Check Objects'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'WINDOW'
+    #bl_ui_units_x = 13
+
+    
+    def draw(self, context):
+        settings = context.scene.PS_scene_set
+        layout = self.layout
+        
+        row = layout.row()
+        col = row.column()
+        col.scale_y = 1.5
+        col.prop(settings, "v_alone",  toggle=True)
+        col.prop(settings, "v_bound", toggle=True)
+        col.prop(settings, "e_pole", toggle=True)
+        col.prop(settings, "n_pole", toggle=True)
+        col.prop(settings, "f_pole", toggle=True)
+
+        col = row.column()
+        col.scale_y = 1.5
+        col.prop(settings, "tris", toggle=True)
+        col.prop(settings, "ngone", toggle=True)
+        col.prop(settings, "non_manifold_check", toggle=True)
+        col.prop(settings, "custom_count", toggle=True)
 
 
+        if settings.custom_count:
+            layout.prop(settings, "custom_count_verts")
 
 
+        
+
+        if True in [settings.v_alone, settings.v_bound, settings.e_pole, settings.n_pole, settings.f_pole, settings.tris, settings.ngone, settings.non_manifold_check, settings.custom_count]:
+            box = layout.box()
+            if settings.v_alone:
+                box.label(text='Vertex Alone: ' + str(len(check.v_alone_co)))
+            
+            if settings.v_bound:
+                box.label(text='Vertex Boundary: ' + str(len(check.v_bound_co)))
+            
+            if settings.e_pole:
+                box.label(text='Vertex E-Pole: ' + str(len(check.e_pole_co)))
+            
+            if settings.n_pole:
+                box.label(text='Vertex N-Pole: ' + str(len(check.n_pole_co)))
+
+            if settings.f_pole:
+                box.label(text='More 5 Pole: ' + str(len(check.f_pole_co)))
+
+            if settings.tris:
+                box.label(text='Triangles: ' + str(len(check.tris_co)//3))
+
+            if settings.ngone:
+                box.label(text='N-Gone: ' + str(len(check.ngone_idx)))
+
+            if settings.non_manifold_check:
+                box.label(text='Non Manifold: ' + str(len(check.e_non_idx)))
+            
+            if settings.custom_count:
+                box.label(text='Custom: ' + str(len(check.custom_faces_idx)))
 
 
-
-
-
-
+        layout.prop(settings, "xray_for_check")
+        layout.prop(settings, "use_mod_che")
 
 
 
@@ -520,6 +611,7 @@ class PS_PT_tool_kit(Panel):
 
 classes = [
     PS_PT_tool_kit,
+    PS_PT_check,
 ]
 
 
