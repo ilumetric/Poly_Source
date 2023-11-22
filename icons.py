@@ -63,7 +63,9 @@ def register():
     pcoll.load("180", os.path.join(my_icons_dir, "180.png"), 'IMAGE')
     pcoll.load("bevelW", os.path.join(my_icons_dir, "bevelW.png"), 'IMAGE')
     pcoll.load("creaseW", os.path.join(my_icons_dir, "creaseW.png"), 'IMAGE')
-
+    pcoll.load("seam", os.path.join(my_icons_dir, "seam.png"), 'IMAGE')
+    pcoll.load("sharp", os.path.join(my_icons_dir, "sharp.png"), 'IMAGE')
+    
     preview_collections["main"] = pcoll
 
    

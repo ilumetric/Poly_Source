@@ -222,7 +222,8 @@ def transform_panel(self, context, pie):
     auto_s_icon = pcoll["180"]
     bevelW_icon = pcoll["bevelW"]
     creaseW_icon = pcoll["creaseW"]
-
+    seam_icon = pcoll["seam"]
+    sharp_icon = pcoll["sharp"]
 
     box = pie.box()
 
@@ -303,9 +304,9 @@ def transform_panel(self, context, pie):
     box = pie.box()
     box.label(text='Edge Data')
     row = box.row(align=True)
-    row.operator('ps.edge_data', text='Seam', icon_value=creaseW_icon.icon_id).mode = 'SEAM'
+    row.operator('ps.edge_data', text='Seam', icon_value=seam_icon.icon_id).mode = 'SEAM'
     row.separator(factor=0.2)
-    row.operator('ps.edge_data', text='Sharp', icon_value=bevelW_icon.icon_id).mode = 'SHARP'
+    row.operator('ps.edge_data', text='Sharp', icon_value=sharp_icon.icon_id).mode = 'SHARP'
     row = box.row(align=True)
     row.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
     row.separator(factor=0.2)
