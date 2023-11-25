@@ -109,8 +109,8 @@ class PS_preferences(AddonPreferences):
     unit_grid: FloatVectorProperty(name="Unit Grid Color", subtype='COLOR', default=(0.0, 0.48, 1.0, 0.1), size=4, min=0.0, max=1.0, description="Select a color for unit grid")
 
     # --- Draw Mesh
-    verts_size: IntProperty(name="Vertex", description="Verts Size", min=1, soft_max=12, default=5, subtype='FACTOR')
-    edge_width: FloatProperty(name="Edge", description="Edge Width", min=1.0, soft_max=5.0, default=2, subtype='FACTOR')
+    #verts_size: IntProperty(name="Vertex", description="Verts Size", min=1, soft_max=12, default=5, subtype='FACTOR')
+    #edge_width: FloatProperty(name="Edge", description="Edge Width", min=1.0, soft_max=5.0, default=2, subtype='FACTOR')
     
    
     VE_color: FloatVectorProperty(name="Vertex & Edge Color", subtype='COLOR', default=(0.0, 0.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Select a color for vertices & edges")

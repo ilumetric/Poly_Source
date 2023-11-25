@@ -33,10 +33,11 @@ def check_draw(self, context):
     props = context.preferences.addons[__package__].preferences
     settings = context.scene.PS_scene_set
     theme = context.preferences.themes['Default']
+    edge_width = theme.view_3d.edge_width
     vertex_size = theme.view_3d.vertex_size
 
     state.blend_set('ALPHA')
-    state.line_width_set(props.edge_width + 1)
+    state.line_width_set(edge_width + 1)
     state.point_size_set(vertex_size + 5)
     
     if not settings.xray_for_check:
