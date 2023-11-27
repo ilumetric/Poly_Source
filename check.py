@@ -8,9 +8,12 @@ from gpu import state
 
 UPDATE = False
 DIRT = False
-shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 
 
+if bpy.app.version >= (4, 0, 0):
+    shader = gpu.shader.from_builtin('UNIFORM_COLOR')
+else:
+    shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
 
 
 
@@ -35,6 +38,8 @@ def check_draw(self, context):
     theme = context.preferences.themes['Default']
     edge_width = theme.view_3d.edge_width
     vertex_size = theme.view_3d.vertex_size
+
+    
 
     state.blend_set('ALPHA')
     state.line_width_set(edge_width + 1)

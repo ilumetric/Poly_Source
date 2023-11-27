@@ -1009,6 +1009,138 @@ class PS_OT_edge_data(Operator): # --- Bevel & Crease
 
 
 
+class PS_OT_unreal_material(Operator):
+    bl_idname = "ps.unreal_material"
+    bl_label = "UE Material"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    # Panel properties
+    base_color_texture: bpy.props.BoolProperty(name="Base Color Texture", default=True)
+    rgb_mask_texture: bpy.props.BoolProperty(name="RGB Mask Texture", default=True)
+    normal_map_texture: bpy.props.BoolProperty(name="Normal Map Texture", default=True)
+    alpha_texture: bpy.props.BoolProperty(name="Alpha Texture", default=False)
+    #invert_normal_g: bpy.props.BoolProperty(name="Invert G Channel in Normal Map", default=True)
+
+    #base_color_texture_path: bpy.props.StringProperty(name="Base Color Texture Path", subtype='FILE_PATH')
+    #rgb_mask_texture_path: bpy.props.StringProperty(name="RGB Mask Texture Path", subtype='FILE_PATH')
+    #normal_map_texture_path: bpy.props.StringProperty(name="Normal Map Texture Path", subtype='FILE_PATH')
+    #alpha_texture_path: bpy.props.StringProperty(name="Alpha Texture Path", subtype='FILE_PATH')
+
+    def draw(self, context):
+        layout = self.layout
+
+        row = layout.row()
+        row.prop(self, "base_color_texture")
+        #row.prop(self, "base_color_texture_path")
+
+        row = layout.row()
+        row.prop(self, "rgb_mask_texture")
+        #row.prop(self, "rgb_mask_texture_path")
+
+        row = layout.row()
+        row.prop(self, "normal_map_texture")
+        #row.prop(self, "normal_map_texture_path")
+
+        row = layout.row()
+        row.prop(self, "alpha_texture")
+        #row.prop(self, "alpha_texture_path")
+
+
+
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        material = self.create_material()
+        self.apply_material_to_selected(material, context)
+        bpy.context.space_data.shading.color_type = 'TEXTURE'
+        return {'FINISHED'}
+
+    """ def load_texture(self, mat, file_path):
+        tex_node = mat.node_tree.nodes.new('ShaderNodeTexImage')
+        if file_path != '':
+            tex_node.image = bpy.data.images.load(file_path)
+        return tex_node """
+
+    def create_material(self):
+        mat = bpy.data.materials.new(name="PS_UE_Material")
+        mat.use_nodes = True
+        bsdf = mat.node_tree.nodes.get('Principled BSDF')
+        bsdf.location = (0, 500)
+
+        if self.base_color_texture:
+            tex_node = mat.node_tree.nodes.new('ShaderNodeTexImage')
+            tex_node.name = 'Base Color Texture'
+            tex_node.label = 'Base Color Texture'
+            tex_node.location = (-400, 400)
+            #tex_node = self.load_texture(mat, self.base_color_texture_path)
+            mat.node_tree.links.new(bsdf.inputs['Base Color'], tex_node.outputs['Color'])
+
+        if self.rgb_mask_texture:
+            tex_node = mat.node_tree.nodes.new('ShaderNodeTexImage')
+            tex_node.name = 'RGB Mask Texture'
+            tex_node.label = 'RGB Mask Texture'
+            tex_node.location = (-400, 200)
+            #tex_node.color_space = 'None-Color'
+            #tex_node = self.load_texture(mat, self.rgb_mask_texture_path)
+            separate_rgb_node = mat.node_tree.nodes.new('ShaderNodeSeparateColor')
+            separate_rgb_node.mode = 'RGB'
+            mat.node_tree.links.new(separate_rgb_node.inputs['Color'], tex_node.outputs['Color'])
+            mat.node_tree.links.new(bsdf.inputs['Roughness'], separate_rgb_node.outputs[0])
+            mat.node_tree.links.new(bsdf.inputs['Metallic'], separate_rgb_node.outputs[1])
+            #mat.node_tree.links.new(bsdf.inputs['Ambient Occlusion'], separate_rgb_node.outputs['B'])
+
+        if self.normal_map_texture:
+            tex_node = mat.node_tree.nodes.new('ShaderNodeTexImage')
+            tex_node.name = 'Normal Map Texture'
+            tex_node.label = 'Normal Map Texture'
+            tex_node.location = (-400, 0)
+            #tex_node.color_space = 'None-Color'
+            #tex_node = self.load_texture(mat, self.normal_map_texture_path)
+            
+            # Создание ноды Separate XYZ
+            separate_xyz_node = mat.node_tree.nodes.new('ShaderNodeSeparateXYZ')
+            mat.node_tree.links.new(separate_xyz_node.inputs['Vector'], tex_node.outputs['Color'])
+
+            # Создание ноды Invert для инвертирования канала Y
+            invert_node = mat.node_tree.nodes.new('ShaderNodeInvert')
+            mat.node_tree.links.new(invert_node.inputs['Color'], separate_xyz_node.outputs['Y'])
+
+            # Создание ноды Combine XYZ
+            combine_xyz_node = mat.node_tree.nodes.new('ShaderNodeCombineXYZ')
+            mat.node_tree.links.new(combine_xyz_node.inputs['X'], separate_xyz_node.outputs['X'])
+            mat.node_tree.links.new(combine_xyz_node.inputs['Y'], invert_node.outputs['Color'])
+            mat.node_tree.links.new(combine_xyz_node.inputs['Z'], separate_xyz_node.outputs['Z'])
+
+            # Создание ноды Normal Map
+            normal_map_node = mat.node_tree.nodes.new('ShaderNodeNormalMap')
+            normal_map_node.space = 'TANGENT'
+            mat.node_tree.links.new(normal_map_node.inputs['Color'], combine_xyz_node.outputs['Vector'])
+
+            # Соединение ноды Normal Map с Principled BSDF
+            mat.node_tree.links.new(bsdf.inputs['Normal'], normal_map_node.outputs['Normal'])
+
+
+        if self.alpha_texture:
+            tex_node = mat.node_tree.nodes.new('ShaderNodeTexImage')
+            tex_node.name = 'Alpha Texture'
+            tex_node.label = 'Alpha Texture'
+            tex_node.location = (-400, 200)
+            #tex_node = self.load_texture(mat, self.alpha_texture_path)
+            mat.node_tree.links.new(bsdf.inputs['Alpha'], tex_node.outputs['Color'])
+
+        return mat
+
+    def apply_material_to_selected(self, material, context):
+        for obj in context.selected_objects:
+            if obj.type == 'MESH':
+                if not obj.data.materials:
+                    obj.data.materials.append(material)
+                else:
+                    obj.data.materials[0] = material
+
+
 
 classes = [
     PS_OT_ngons_select,
@@ -1035,6 +1167,8 @@ classes = [
     PS_OT_solidify,
     PS_OT_normalfix,
     PS_OT_edge_data,
+
+    PS_OT_unreal_material,
 ]
 
 def register():

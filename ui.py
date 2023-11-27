@@ -494,7 +494,7 @@ def operators_panel(self, context, layout): # --- OPERATORS Panel
     
     #layout.operator('ps.add_material')
     layout.operator('ps.fill_from_points')
-
+    layout.operator('ps.unreal_material')
 
 
 

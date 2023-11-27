@@ -200,12 +200,17 @@ def box():
 
 
 
+if bpy.app.version >= (4, 0, 0):
+    shader = gpu.shader.from_builtin('UNIFORM_COLOR')
+else:
+    shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+
+
 def draw_grid(self, context):
     settings = context.scene.PS_scene_set
 
 
 
-    shader = gpu.shader.from_builtin('UNIFORM_COLOR')
     shader.bind()
 
     # Color
@@ -214,16 +219,17 @@ def draw_grid(self, context):
     box_color = props.box_props_grid
     unit_grid_color = props.unit_grid
 
+    theme = context.preferences.themes['Default']
+    edge_width = theme.view_3d.edge_width
+    vertex_size = theme.view_3d.vertex_size
 
-    lineWidth = 3.0
-    lineSmooth = True
     xray = False
 
 
     # --- Set
     state.blend_set('ALPHA')
-    state.line_width_set(lineWidth)
-    state.point_size_set(props.verts_size)
+    state.line_width_set(edge_width+2)
+    state.point_size_set(vertex_size)
 
     if xray == False:
         state.depth_mask_set(False)
