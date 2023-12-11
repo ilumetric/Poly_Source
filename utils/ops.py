@@ -3,7 +3,7 @@ import bmesh
 from bpy.types import Operator
 from bpy.props import EnumProperty, BoolProperty, FloatProperty, IntProperty
 from mathutils import Vector, Euler
-
+from .utils import get_active_3d_view
 
 
 
@@ -1008,7 +1008,7 @@ class PS_OT_edge_data(Operator): # --- Bevel & Crease
 
 
 
-
+# TODO
 class PS_OT_unreal_material(Operator):
     bl_idname = "ps.unreal_material"
     bl_label = "UE Material"
@@ -1142,6 +1142,153 @@ class PS_OT_unreal_material(Operator):
 
 
 
+# --- Bool Tool
+# part of the functionality of the standard addon in blender 'Bool Tool' is taken as a basis
+# TODO add the ability to work in Brush mode with multiple objects
+class PS_Boolean:
+    keep_bool_obj: BoolProperty(default=False)
+    brush_mode: BoolProperty(default=False)
+
+    def objects_prepare(self):
+        for ob in bpy.context.selected_objects:
+            if ob.type != "MESH":
+                ob.select_set(False)
+        bpy.ops.object.make_single_user(object=True, obdata=True)
+        bpy.ops.object.convert(target="MESH")
+
+    def mesh_selection(self, ob, select_action):
+        obj = bpy.context.active_object
+
+        bpy.context.view_layer.objects.active = ob
+        bpy.ops.object.mode_set(mode="EDIT")
+
+        bpy.ops.mesh.reveal()
+        bpy.ops.mesh.select_all(action=select_action)
+
+        bpy.ops.object.mode_set(mode="OBJECT")
+        bpy.context.view_layer.objects.active = obj
+
+    def boolean_operation(self):
+        obj = bpy.context.active_object
+        obj.select_set(False)
+        obs = bpy.context.selected_objects
+
+        self.mesh_selection(obj, "DESELECT")
+
+        for ob in obs:
+            self.mesh_selection(ob, "SELECT")
+            self.boolean_mod(obj, ob, self.mode)
+
+        obj.select_set(True)
+
+    def boolean_mod(self, obj, ob, mode, ob_delete=True):
+        md = obj.modifiers.new("PS Boolean", "BOOLEAN")
+        md.show_viewport = self.brush_mode
+        md.operation = mode
+        md.object = ob
+
+        if self.brush_mode is False:
+            context_override = {'object': obj}
+            with bpy.context.temp_override(**context_override):
+                bpy.ops.object.modifier_apply(modifier=md.name)
+
+            if self.keep_bool_obj is False: # ob_delete
+                bpy.data.objects.remove(ob)
+        else:
+            ob.display_type = 'BOUNDS'
+
+
+    def execute(self, context):
+        self.objects_prepare()
+        self.boolean_operation()
+        return {"FINISHED"}
+
+    def invoke(self, context, event):
+        if event.shift:
+            self.keep_bool_obj = True
+        else:
+            self.keep_bool_obj = False
+        if event.ctrl:
+            self.brush_mode = True
+        else:
+            self.brush_mode = False
+        if len(context.selected_objects) < 2:
+            self.report({"ERROR"}, "At least two objects must be selected")
+            return {"CANCELLED"}
+        return self.execute(context)
+
+
+class PS_OT_bool_difference(Operator, PS_Boolean):
+    bl_idname = "ps.bool_difference"
+    bl_label = "Bool Difference"
+    bl_description = ("Subtract selected objects from active object \n"
+                      "• Shift+LMB - Do not delete Bool Object \n"
+                      "• Ctrl+LMB - Brush mode")
+    bl_options = {"REGISTER", "UNDO"}
+    mode = "DIFFERENCE"
+
+
+class PS_OT_bool_union(Operator, PS_Boolean):
+    bl_idname = "ps.bool_union"
+    bl_label = "Bool Union"
+    bl_description = ("Combine selected objects \n"
+                      "• Shift+LMB - Do not delete Bool Object \n"
+                      "• Ctrl+LMB - Brush mode")
+    bl_options = {"REGISTER", "UNDO"}
+    mode = "UNION"
+
+
+class PS_OT_bool_intersect(Operator, PS_Boolean):
+    bl_idname = "ps.bool_intersect"
+    bl_label = "Bool Intersect"
+    bl_description = ("Keep only intersecting geometry \n"
+                      "• Shift+LMB - Do not delete Bool Object \n"
+                      "• Ctrl+LMB - Brush mode")
+    bl_options = {"REGISTER", "UNDO"}
+    mode = "INTERSECT"
+
+
+class PS_OT_bool_slice(Operator, PS_Boolean):
+    bl_idname = "ps.bool_slice"
+    bl_label = "Bool Slice"
+    bl_description = ("Slice active object along the selected objects \n"
+                      "• Shift+LMB - Do not delete Bool Object \n"
+                      "• Ctrl+LMB - Brush mode")
+                        
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        space_data = get_active_3d_view()
+        if space_data is not None:
+            is_local_view = bool(space_data.local_view)
+            self.objects_prepare()
+
+            ob1 = context.active_object
+            ob1.select_set(False)
+            self.mesh_selection(ob1, "DESELECT")
+
+            for ob2 in context.selected_objects:
+
+                self.mesh_selection(ob2, "SELECT")
+
+                ob1_copy = ob1.copy()
+                ob1_copy.data = ob1.data.copy()
+
+                for coll in ob1.users_collection:
+                    coll.objects.link(ob1_copy)
+
+                if is_local_view:
+                    ob1_copy.local_view_set(space_data, True)
+
+                self.boolean_mod(ob1, ob2, "DIFFERENCE", ob_delete=False)
+                self.boolean_mod(ob1_copy, ob2, "INTERSECT")
+                ob1_copy.select_set(True)
+
+            context.view_layer.objects.active = ob1_copy
+
+        return {"FINISHED"}
+
+
 classes = [
     PS_OT_ngons_select,
     PS_OT_tris_select,
@@ -1169,6 +1316,12 @@ classes = [
     PS_OT_edge_data,
 
     PS_OT_unreal_material,
+
+    PS_OT_bool_difference,
+    PS_OT_bool_union,
+    PS_OT_bool_intersect,
+    PS_OT_bool_slice,
+    
 ]
 
 def register():

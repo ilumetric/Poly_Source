@@ -67,6 +67,18 @@ def get_polygons_count_ui(context, layout):
             box.label(text='Vertex/Obj Excess', icon='ERROR')
 
 
+def bool_ui(context, layout):
+    pcoll = preview_collections['main']
+    bool_diff_icon = pcoll['bool_diff']
+    bool_union_icon = pcoll['bool_union']
+    bool_intersect_icon = pcoll['bool_intersect']
+    bool_slice_icon = pcoll['bool_slice']
+    row = layout.row(align=True)
+    row.operator('ps.bool_difference', text='', icon_value=bool_diff_icon.icon_id)
+    row.operator('ps.bool_union', text='', icon_value=bool_union_icon.icon_id)
+    row.operator('ps.bool_intersect', text='', icon_value=bool_intersect_icon.icon_id)
+    row.operator('ps.bool_slice', text='', icon_value=bool_slice_icon.icon_id)
+
 
 """ def check_panel(self, context, layout):
     sel_obj = context.selected_objects
@@ -97,6 +109,8 @@ def header_panel(self, context):
                     if settings.PS_check:
                         row.popover(panel='PS_PT_check', text='')
                     #check_panel(self, context, row)
+                    if props.bool_tool:
+                        bool_ui(context, layout)
 
 
 def viewHeader_L_panel(self, context):
@@ -117,6 +131,9 @@ def viewHeader_L_panel(self, context):
                 if settings.PS_check:
                     row.popover(panel='PS_PT_check', text='')
                 #check_panel(self, context, row)
+                if props.bool_tool:
+                    bool_ui(context, layout)
+
 
 def viewHeader_R_panel(self, context):
     props = context.preferences.addons[__package__].preferences
@@ -136,6 +153,9 @@ def viewHeader_R_panel(self, context):
                 if settings.PS_check:
                     row.popover(panel='PS_PT_check', text='')
                 #check_panel(self, context, row)
+                if props.bool_tool:
+                    bool_ui(context, layout)
+
 
 def tool_panel(self, context):
     props = context.preferences.addons[__package__].preferences
@@ -155,7 +175,8 @@ def tool_panel(self, context):
                 if settings.PS_check:
                     row.popover(panel='PS_PT_check', text='')
                 #check_panel(self, context, row)
-        
+                if props.bool_tool:
+                    bool_ui(context, layout)
 
 
 
@@ -224,14 +245,25 @@ def transform_panel(self, context, pie):
     creaseW_icon = pcoll["creaseW"]
     seam_icon = pcoll["seam"]
     sharp_icon = pcoll["sharp"]
-
+    bool_diff_icon = pcoll['bool_diff']
+    bool_union_icon = pcoll['bool_union']
+    bool_intersect_icon = pcoll['bool_intersect']
+    bool_slice_icon = pcoll['bool_slice']
+    
     box = pie.box()
+
+    row = box.row(align=True)
+    row.scale_x = 10
+    row.operator('ps.bool_difference', text='', icon_value=bool_diff_icon.icon_id)
+    row.operator('ps.bool_union', text='', icon_value=bool_union_icon.icon_id)
+    row.operator('ps.bool_intersect', text='', icon_value=bool_intersect_icon.icon_id)
+    row.operator('ps.bool_slice', text='', icon_value=bool_slice_icon.icon_id)
 
     if context.mode == 'OBJECT':
         box.label(text='Reset Transform')
         box.scale_x = 1.3
 
-        # --- Bool Tool
+        """ # --- Bool Tool
         if 'object_boolean_tools' in context.preferences.addons.keys():
             row = box.row(align=True)
             row.label(icon='AUTO')
@@ -243,7 +275,7 @@ def transform_panel(self, context, pie):
             row.operator('btool.boolean_diff', text='', icon='SELECT_SUBTRACT')
             row.operator('btool.boolean_union', text='', icon="SELECT_EXTEND")
             row.operator('btool.boolean_inters', text='', icon="SELECT_INTERSECT")
-            row.operator('btool.boolean_slice', text='', icon="SELECT_DIFFERENCE")
+            row.operator('btool.boolean_slice', text='', icon="SELECT_DIFFERENCE") """
 
 
 

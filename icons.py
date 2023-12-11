@@ -56,6 +56,12 @@ def register():
     #pcoll.load("resetrot_icon", os.path.join(my_icons_dir, "reset_rotation.png"), 'IMAGE')
     pcoll.load("fix_icon", os.path.join(my_icons_dir, "fix.png"), 'IMAGE')
 
+    # --- Boolean
+    pcoll.load("bool_diff", os.path.join(my_icons_dir, "bool_diff.png"), 'IMAGE')
+    pcoll.load("bool_union", os.path.join(my_icons_dir, "bool_union.png"), 'IMAGE')
+    pcoll.load("bool_intersect", os.path.join(my_icons_dir, "bool_intersect.png"), 'IMAGE')
+    pcoll.load("bool_slice", os.path.join(my_icons_dir, "bool_slice.png"), 'IMAGE')
+
     
     #old
     pcoll.load("tool", os.path.join(my_icons_dir, "tool.png"), 'IMAGE')

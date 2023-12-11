@@ -79,6 +79,7 @@ class PS_settings(PropertyGroup):
 
 
 
+
 # --- Addon preferences
 class PS_preferences(AddonPreferences):
     bl_idname = __package__
@@ -89,7 +90,7 @@ class PS_preferences(AddonPreferences):
     viewHeader_R: BoolProperty(name="Viewport Header Right", default=False)
     toolHeader: BoolProperty(name="Tool Header", default=False)
     add_objects: BoolProperty(name="Custom Objects in Add Menu", default=True)
-
+    bool_tool: BoolProperty(name="Bool Tool", description="Enable the display of basic Bool operators", default=True)
     
 
     #Polycount
@@ -161,6 +162,7 @@ class PS_preferences(AddonPreferences):
         col.prop(self, "toolHeader")
         col.prop(self, "add_objects")
 
+        col.prop(self, "bool_tool")
 
         box = layout.box()
 
