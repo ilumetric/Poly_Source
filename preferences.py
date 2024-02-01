@@ -10,11 +10,6 @@ from . import check
 # --- Scene Settings
 class PS_settings(PropertyGroup):
 
-    
-
-    
-
-
     # --- Polycount
     def polycount_widget(self, context):
         wm = context.window_manager
@@ -84,7 +79,6 @@ class PS_settings(PropertyGroup):
 class PS_preferences(AddonPreferences):
     bl_idname = __package__
     
-
     header: BoolProperty(name="Header", default=True)
     viewHeader_L: BoolProperty(name="Viewport Header Left", default=False)
     viewHeader_R: BoolProperty(name="Viewport Header Right", default=False)
@@ -92,31 +86,18 @@ class PS_preferences(AddonPreferences):
     add_objects: BoolProperty(name="Custom Objects in Add Menu", default=True)
     bool_tool: BoolProperty(name="Bool Tool", description="Enable the display of basic Bool operators", default=True)
     
-
-    #Polycount
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
     
     maxVerts: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=50000)
-    
     maxObjs: IntProperty(name="Maximum number of selected objects", description="If the active object has too many objects, this may affect performance during rendering.", min=1, soft_max=500, default=50)
 
-
-    
-
-
-    # --- Props Grid
     lines_props_grid: FloatVectorProperty(name="Lines Props Grid Color", subtype='COLOR', default=(0.1, 0.1, 0.1, 0.9), size=4, min=0.0, max=1.0, description="Select a color for lines props grid") # TODO description 
     box_props_grid: FloatVectorProperty(name="Box Color", subtype='COLOR', default=(1.0, 0.03, 0.17, 0.05), size=4, min=0.0, max=1.0, description="Select a color for Box")
     unit_grid: FloatVectorProperty(name="Unit Grid Color", subtype='COLOR', default=(0.0, 0.48, 1.0, 0.1), size=4, min=0.0, max=1.0, description="Select a color for unit grid")
 
-    # --- Draw Mesh
-    #verts_size: IntProperty(name="Vertex", description="Verts Size", min=1, soft_max=12, default=5, subtype='FACTOR')
-    #edge_width: FloatProperty(name="Edge", description="Edge Width", min=1.0, soft_max=5.0, default=2, subtype='FACTOR')
+    point_width: FloatProperty(name="Point Width", description="Edge Width", min=1.0, soft_max=30.0, default=15)
+    line_width: FloatProperty(name="Edge Width", description="Edge Width", min=1.0, soft_max=30.0, default=5)
     
-   
-    VE_color: FloatVectorProperty(name="Vertex & Edge Color", subtype='COLOR', default=(0.0, 0.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Select a color for vertices & edges")
-    F_color: FloatVectorProperty(name="Face Color", subtype='COLOR', default=(0.0, 0.33, 1.0), size=3, min=0.0, max=1.0, description="Select a color for faces")
-    select_color: FloatVectorProperty(name="Select Color", subtype='COLOR', default=(1.0, 1.0, 1.0), size=3, min=0.0, max=1.0, description="Select a color for elements")
     v_alone_color: FloatVectorProperty(name="Vertex Color", subtype='COLOR', default=(0.0, 1.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Vertexes that are not connected to the geometry")
     non_manifold_color: FloatVectorProperty(name="Non Manifold Color", subtype='COLOR', default=(1.0, 0.0, 0.0, 0.5), size=4, min=0.0, max=1.0, description="Non Manifold Edges")
     bound_col: FloatVectorProperty(name="Bound Color", subtype='COLOR', default=(0.5, 0.0, 1.0, 0.5), size=4, min=0.0, max=1.0, description="Vertexes that are located at the edge of the geometry")
@@ -148,12 +129,13 @@ class PS_preferences(AddonPreferences):
         market_icon = pcoll["market_icon"]
         gumroad_icon = pcoll["gumroad_icon"]
         artstation_icon = pcoll["artstation_icon"]
-        discord_icon = pcoll["discord_icon"]
 
 
         col = layout.column()
         col.prop(self, "maxVerts")
         col.prop(self, "maxObjs")
+        col.prop(self, "point_width")
+        col.prop(self, "line_width")
         col.separator()
         
         col.prop(self, "header")
@@ -166,18 +148,6 @@ class PS_preferences(AddonPreferences):
 
         box = layout.box()
 
-
-        box.separator()
-        box.label(text="Retopology Mode:")
-        
-        row = box.row()
-        row.prop(self, "VE_color")
-        row = box.row()
-        row.prop(self, "F_color")
-        row = box.row()
-        row.prop(self, "select_color")
-
-        
         box.separator()
         box.label(text="Mesh Check:")
 
