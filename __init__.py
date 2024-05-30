@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Poly Source',
-    "author": "Max Derksen, Oxicid",
-    'version': (4, 0, 9),
+    "author": "Max Derksen, ChatGPT, Oxicid",
+    'version': (4, 0, 10),
     'blender': (4, 0, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': '3D View',

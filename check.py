@@ -2,7 +2,7 @@ import bpy, gpu, bmesh
 from gpu_extras.batch import batch_for_shader
 from bpy.types import Operator, Gizmo, GizmoGroup
 from gpu import state
-
+import math
 
 
 
@@ -31,6 +31,7 @@ v_alone_co = []
 ngone_idx = []
 e_non_idx = []
 custom_faces_idx = []
+elongated_tris_co = []
 
 def check_draw(self, context):
     props = context.preferences.addons[__package__].preferences
@@ -96,6 +97,11 @@ def check_draw(self, context):
         shader.uniform_float("color", props.v_alone_color)
         V_ALONE.draw(shader)
 
+    if settings.elongated_tris:
+        TRIS = batch_for_shader(shader, 'TRIS', {"pos": elongated_tris_co})
+        shader.uniform_float("color", props.elongated_tris_col)
+        TRIS.draw(shader)
+
     state.depth_mask_set(True)
     state.depth_test_set('NONE')
     state.face_culling_set('NONE')
@@ -138,7 +144,7 @@ class PS_GGT_check_group(GizmoGroup):
         self.mesh.hide_select = True
 
     def refresh(self, context):
-        global ngone_co, ngons_indices, tris_co, custom_co, custom_faces_indices, e_non_co, e_pole_co, n_pole_co, f_pole_co, v_bound_co, v_alone_co, ngone_idx, e_non_idx, custom_faces_idx
+        global ngone_co, ngons_indices, tris_co, custom_co, custom_faces_indices, e_non_co, e_pole_co, n_pole_co, f_pole_co, v_bound_co, v_alone_co, ngone_idx, e_non_idx, custom_faces_idx, elongated_tris_co
 
         ngone_co = []
         ngons_indices = []
@@ -154,6 +160,9 @@ class PS_GGT_check_group(GizmoGroup):
         ngone_idx = []
         e_non_idx = []
         custom_faces_idx = []
+        elongated_tris_co = []
+
+        
 
         objs = [obj for obj in context.selected_objects if obj.type == 'MESH' and len(obj.data.polygons) < 50000]
         if not objs:
@@ -202,8 +211,7 @@ class PS_GGT_check_group(GizmoGroup):
                 for n in bm.faces:
                     if len(n.verts) == settings.custom_count_verts:
                         custom_faces_idx.append(n.index)
-                
-                        
+                 
                 copy = bm.copy()
                 copy.faces.ensure_lookup_table()
                 edge_n = [e for i in custom_faces_idx for e in copy.faces[i].edges]
@@ -224,39 +232,47 @@ class PS_GGT_check_group(GizmoGroup):
 
                 custom_faces_indices.extend(list(range(0, len(v_index)))[v_i:v_i+3] for v_i in range(0, len(v_index), 3))
 
-
-            if settings.tris:
-                tris_co = [obj.matrix_world @ v.co for f in bm.faces if len(f.verts) == 3 for v in f.verts]
-            
-
             if settings.non_manifold_check:
                 e_non_idx = [e.index for e in bm.edges if not e.is_manifold]
                 e_non_co = [obj.matrix_world @ v.co for i in e_non_idx for v in bm.edges[i].verts]
             
-            
             if settings.e_pole: 
                 e_pole_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)==5]
-            
             
             if settings.n_pole:
                 n_pole_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)==3]
             
-            
             if settings.f_pole:
                 f_pole_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)>5]
-            
             
             if settings.v_bound:
                 v_bound_co = [obj.matrix_world @ v.co for v in bm.verts if v.is_boundary or not v.is_manifold]
             
-            
             if settings.v_alone:
                 v_alone_co = [obj.matrix_world @ v.co for v in bm.verts if len(v.link_edges)<1]
             
+            if settings.elongated_tris or settings.tris:
+                #tris_co = [obj.matrix_world @ v.co for f in bm.faces if len(f.verts) == 3 for v in f.verts]
+                for f in bm.faces:
+                    if len(f.verts) == 3:
+                        verts = [obj.matrix_world @ v.co for v in f.verts]
+
+                        if settings.tris:
+                            tris_co.extend(verts)
+
+                        if settings.elongated_tris:
+                            a, b, c = (verts[0] - verts[1]).length, (verts[1] - verts[2]).length, (verts[2] - verts[0]).length
+                            longest_side = max(a, b, c)
+                            s = (a + b + c) / 2
+                            area = math.sqrt(s * (s - a) * (s - b) * (s - c))
+                            shortest_height = 2 * area / longest_side
+
+                            if longest_side / shortest_height > settings.elongated_aspect_ratio:
+                                elongated_tris_co.extend(verts)
+
             if context.mode != 'EDIT_MESH':
                 bm.free()
 
-        #print('refresh')
 
     def draw_prepare(self, context):
         global UPDATE

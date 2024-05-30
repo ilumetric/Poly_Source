@@ -57,6 +57,9 @@ class PS_settings(PropertyGroup):
     f_pole: BoolProperty(name="More 5 Pole", description="Vertexes that are connected to more than 5 edges", default=False, update=update_check)
     tris: BoolProperty(name="Tris", description="Polygons with three vertexes", default=False, update=update_check)
     ngone: BoolProperty(name="N-Gone", description="Polygons with more than 4 vertexes", default=True, update=update_check)
+    elongated_tris: BoolProperty(name="Elongated Tris", description=" ", default=True, update=update_check) # TODO description
+
+    elongated_aspect_ratio: FloatProperty(name="Elongated Aspect Ratio", description = " ", min=0.0, soft_max=100.0, default=45.0, subtype='FACTOR', update=update_check) # TODO description
     custom_count: BoolProperty(name="Custom", description="Custom number of vertexes in the polygon", default=False, update=update_check)
     custom_count_verts: IntProperty(name="Number of Vertices in the Polygon", description=" ", min=3, default=5, update=update_check)
     
@@ -106,6 +109,7 @@ class PS_preferences(AddonPreferences):
     f_pole_col: FloatVectorProperty(name="More 5 Pole Color", subtype='COLOR', default=(1.0, 0.0, 1.0, 0.5), size=4, min=0.0, max=1.0, description="Vertexes that are connected to more than 5 edges")
     tris_col: FloatVectorProperty(name="Tris Color", subtype='COLOR', default=(0.0, 0.5, 1.0, 0.5), size=4, min=0.0, max=1.0, description="Polygons with three vertexes")
     ngone_col: FloatVectorProperty(name="NGone Color", subtype='COLOR', default=(1.0, 0.1, 0.0, 0.5), size=4, min=0.0, max=1.0, description="Polygons with more than 4 vertexes")
+    elongated_tris_col: FloatVectorProperty(name="Elongated Tris Color", subtype='COLOR', default=(0.78, 0.0, 0.95, 0.9), size=4, min=0.0, max=1.0, description=" ")
     custom_col: FloatVectorProperty(name="Polygon Color For Custom Mode", subtype='COLOR', default=(0.95, 0.78, 0.0, 0.5), size=4, min=0.0, max=1.0, description=" ")
 
     tabs: EnumProperty(name="Tabs", items = [("GENERAL", "General", ""), ("KEYMAPS", "Keymaps", "")], default="GENERAL")
@@ -168,8 +172,10 @@ class PS_preferences(AddonPreferences):
         row.prop(self, "ngone_col")
 
         row = box.row()
+        row.prop(self, "elongated_tris_col")
         row.prop(self, "custom_col")
 
+        
 
         box.separator()
         box.label(text="Props Grid:")

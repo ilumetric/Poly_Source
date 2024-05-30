@@ -867,7 +867,8 @@ class PS_OT_triangulate(Operator): # --- Triangulate
             obj.modifiers[name].quad_method = 'BEAUTY'
             obj.modifiers[name].ngon_method = 'BEAUTY'
             obj.modifiers[name].min_vertices = 4
-            obj.modifiers[name].keep_custom_normals = False
+            if bpy.app.version < (4, 2, 0):
+                obj.modifiers[name].keep_custom_normals = False
 
         return {'FINISHED'} 
 
@@ -907,8 +908,6 @@ class PS_OT_normalfix(Operator): # --- Normal Fix
         name = "PS Weighted Normal"
        
         for obj in context.selected_objects:
-            obj.data.use_auto_smooth = True
-            obj.data.auto_smooth_angle = 3.14159
             if obj.modifiers.get(name) is None:
                 obj.modifiers.new(name, 'WEIGHTED_NORMAL')
                 obj.modifiers[name].show_expanded = False
@@ -1303,7 +1302,7 @@ classes = [
     PS_OT_reset_rotation_object,
     PS_OT_reset_scale_object,
     PS_OT_locvert,
-    PS_OT_autosmooth,
+    #PS_OT_autosmooth,
     PS_OT_transfer_transform,
     PS_OT_addcamera,
     PS_OT_add_material,

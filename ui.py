@@ -6,10 +6,6 @@ from .utils.utils import get_active_3d_view
 from bpy.props import EnumProperty
 from . import check
 
-    
-        
-        
-        
 
 
 def get_polygons_count_ui(context, layout):
@@ -78,15 +74,6 @@ def bool_ui(context, layout):
     row.operator('ps.bool_union', text='', icon_value=bool_union_icon.icon_id)
     row.operator('ps.bool_intersect', text='', icon_value=bool_intersect_icon.icon_id)
     row.operator('ps.bool_slice', text='', icon_value=bool_slice_icon.icon_id)
-
-
-""" def check_panel(self, context, layout):
-    sel_obj = context.selected_objects
-    scale_check = [True for s in sel_obj if s.scale[0] != 1 or s.scale[1] != 1 or s.scale[2] != 1]
-    if True in scale_check:
-        row = layout.row(align=True)
-        row.alert = True
-        row.label(text='', icon='ERROR') """
 
 
 def header_panel(self, context):
@@ -180,18 +167,6 @@ def tool_panel(self, context):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # --- ADD OBJECT
 # Layout
 def custom_objects(self, context):
@@ -212,22 +187,6 @@ def custom_objects(self, context):
 
     else:
         pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -262,22 +221,6 @@ def transform_panel(self, context, pie):
     if context.mode == 'OBJECT':
         box.label(text='Reset Transform')
         box.scale_x = 1.3
-
-        """ # --- Bool Tool
-        if 'object_boolean_tools' in context.preferences.addons.keys():
-            row = box.row(align=True)
-            row.label(icon='AUTO')
-            row.operator('object.booltool_auto_difference', text='', icon='SELECT_SUBTRACT')
-            row.operator('object.booltool_auto_union', text='', icon="SELECT_EXTEND")
-            row.operator('object.booltool_auto_intersect', text='', icon="SELECT_INTERSECT")
-            row.operator('object.booltool_auto_slice', text='', icon="SELECT_DIFFERENCE")
-            row.label(icon='BRUSH_DATA')
-            row.operator('btool.boolean_diff', text='', icon='SELECT_SUBTRACT')
-            row.operator('btool.boolean_union', text='', icon="SELECT_EXTEND")
-            row.operator('btool.boolean_inters', text='', icon="SELECT_INTERSECT")
-            row.operator('btool.boolean_slice', text='', icon="SELECT_DIFFERENCE") """
-
-
 
         row = box.row(align=True) 
         row.operator('ps.reset_location_object', text='', icon_value=x_icon.icon_id).axis = 'X'
@@ -321,17 +264,7 @@ def transform_panel(self, context, pie):
     row.separator(factor=0.2)
     row.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
     box.operator("ps.triangulate", text='Triangulate', icon='MOD_TRIANGULATE')
-
-    box = pie.box()
-    box.label(text='Normals')
-    row = box.row(align=True)
-    row.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
-    row.separator(factor=0.2)
-    row.operator('ps.autosmooth', text='', icon_value=auto_s_icon.icon_id)
-    row.prop(context.object.data, 'auto_smooth_angle', text=' ', icon='META_BALL')
-    row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
-
-    
+    box.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
 
     box = pie.box()
     box.label(text='Edge Data')
@@ -346,18 +279,16 @@ def transform_panel(self, context, pie):
 
 
 def display_panel(self, context, layout):
-    pcoll = preview_collections[ 'main' ]
-    calculate_icon = pcoll[ 'calculate_icon' ]
-    check_icon = pcoll[ 'check_icon' ]
-    box_icon = pcoll[ 'box_icon' ]
-    grid_icon = pcoll[ 'grid_icon' ]
-    draw_icon = pcoll[ 'draw_icon' ]
-
+    pcoll = preview_collections['main']
+    calculate_icon = pcoll['calculate_icon']
+    check_icon = pcoll['check_icon']
+    box_icon = pcoll['box_icon']
+    grid_icon = pcoll['grid_icon']
+    draw_icon = pcoll['draw_icon']
 
     props = context.preferences.addons[__package__].preferences
     settings = context.scene.PS_scene_set
 
-    
     space_data = get_active_3d_view()
 
     if space_data is not None:
@@ -374,70 +305,6 @@ def display_panel(self, context, layout):
             box.prop(theme, 'vertex_size')
         else:
             layout.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
-
-    
-
-
-
-    # --- Mesh Check
-    """ if settings.PS_check: 
-        box = layout.box()
-        box.prop(settings, 'PS_check', icon_value=check_icon.icon_id)
-
-        row = box.row()
-        col = row.column()
-        col.scale_y = 1.5
-        col.prop(props, "v_alone", toggle=True)
-        col.prop(props, "v_bound", toggle=True)
-        col.prop(props, "e_pole", toggle=True)
-        col.prop(props, "n_pole", toggle=True)
-        col.prop(props, "f_pole", toggle=True)
-
-        col = row.column()
-        col.scale_y = 1.5
-        col.prop(props, "tris", toggle=True)
-        col.prop(props, "ngone", toggle=True)
-        col.prop(props, "non_manifold_check", toggle=True)
-        
-
-        rowC = box.row(align=True)
-        rowC.prop(props, "custom_count")
-        sub_rowC = rowC.row()
-        sub_rowC.scale_x = 1.5
-        sub_rowC.active = props.custom_count
-        sub_rowC.prop(props, "custom_count_verts")
-
-        row_P = box.row()
-        row_P.scale_x = 1.0
-        row_P.prop(props, "xray_for_check")
-        row_P.scale_x = 1.1
-        row_P.prop(props, "use_mod_che")
-            
-    else:
-        layout.prop(settings, 'PS_check', icon_value=check_icon.icon_id) """
-        
-        
-
-        
-
-
-
-    """ # --- Polycount
-    if settings.PS_polycount:
-        box = layout.box()
-        box.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id)
-        
-        row = box.row(align=True)
-        row.prop(settings, "tris_count")
-        row.scale_x = 0.4
-        row.prop(props, "low_suffix", toggle=True)
-    else:
-        layout.prop(settings, "PS_polycount", icon_value=calculate_icon.icon_id) """
-    
-        
-
-
-
 
     # --- Envira Grid
     if settings.PS_envira_grid:
@@ -472,39 +339,10 @@ def display_panel(self, context, layout):
     else:
         layout.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
 
-        
-
-
-
     # --- Operators
     box = layout.box()
     box.prop(props, 'maxVerts')
     box.prop(props, 'maxObjs')
-
-
-def shade_panel(self, context, layout): # --- SHADE Panel
-    pcoll = preview_collections["main"]
-    fix_icon = pcoll["fix_icon"]
-    auto_s_icon = pcoll["180"]
-
-
-    row = layout.row()
-    if context.mode == 'OBJECT':
-        row.operator('object.shade_smooth', text='Smooth', icon = 'ANTIALIASED')
-        row.operator('object.shade_flat', text='Flat', icon = 'ALIASED')
-
-    elif context.mode == 'EDIT_MESH':
-        row.operator('mesh.faces_shade_smooth', text='Smooth', icon = 'ANTIALIASED')
-        row.operator('mesh.faces_shade_flat', text='Flat', icon = 'ALIASED')
-        
-
-    row = layout.row(align=True)
-    row.operator('ps.autosmooth', text='', icon_value=auto_s_icon.icon_id)
-    row.prop(context.object.data, 'auto_smooth_angle', text=' ', icon='META_BALL')
-    row.prop(context.object.data, 'use_auto_smooth', text='', icon='MOD_SMOOTH')
-    #sub = row.row()
-    
-    layout.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
 
 
 def operators_panel(self, context, layout): # --- OPERATORS Panel
@@ -524,10 +362,8 @@ def operators_panel(self, context, layout): # --- OPERATORS Panel
     layout.separator()
     layout.operator('ps.transfer_transform') # TODO перенести в другое место
     
-    #layout.operator('ps.add_material')
     layout.operator('ps.fill_from_points')
     layout.operator('ps.unreal_material')
-
 
 
 
@@ -560,9 +396,6 @@ class PS_PT_tool_kit(Panel):
 
 
 
-
-
-
 class PS_PT_check(Panel):
     bl_idname = 'PS_PT_check'
     bl_label = 'Check Objects'
@@ -589,8 +422,12 @@ class PS_PT_check(Panel):
         col.prop(settings, "tris", toggle=True)
         col.prop(settings, "ngone", toggle=True)
         col.prop(settings, "non_manifold_check", toggle=True)
+        col.prop(settings, "elongated_tris", toggle=True)
         col.prop(settings, "custom_count", toggle=True)
 
+     
+        if settings.elongated_tris:
+            layout.prop(settings, "elongated_aspect_ratio")
 
         if settings.custom_count:
             layout.prop(settings, "custom_count_verts")
@@ -624,23 +461,15 @@ class PS_PT_check(Panel):
             if settings.non_manifold_check:
                 box.label(text='Non Manifold: ' + str(len(check.e_non_idx)))
             
+            if settings.elongated_tris:
+                box.label(text='Elongated Tris: ' + str(len(check.elongated_tris_co)//3))
+
             if settings.custom_count:
                 box.label(text='Custom: ' + str(len(check.custom_faces_idx)))
 
 
         layout.prop(settings, "xray_for_check")
         layout.prop(settings, "use_mod_che")
-
-
-
-
-
-
-
-
-
-
-
 
 
 
