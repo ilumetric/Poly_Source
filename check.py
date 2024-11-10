@@ -3,7 +3,7 @@ from gpu_extras.batch import batch_for_shader
 from bpy.types import Operator, Gizmo, GizmoGroup
 from gpu import state
 import math
-
+from mathutils import Vector
 
 
 UPDATE = False
@@ -14,6 +14,70 @@ if bpy.app.version >= (4, 0, 0):
     shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 else:
     shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+
+
+
+def get_object_screen_size(obj, context):
+    # Получаем размер объекта на экране
+    camera = context.scene.camera
+    if not camera:
+        return 1.0  # Если камеры нет, возвращаем 1
+
+    # Получаем углы ограничивающего бокса в пространстве видового экрана
+    bbox_corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+    screen_coords = [camera.matrix_world.inverted() @ corner for corner in bbox_corners]
+    screen_coords = [corner for corner in screen_coords if corner.z > 0]  # Отбрасываем точки за камерой
+
+    if not screen_coords:
+        return 1.0  # Если объект за камерой, возвращаем 1
+
+    # Находим максимальное расстояние между точками на экране
+    max_distance = max([(a - b).length for a in screen_coords for b in screen_coords])
+    return max_distance
+
+def analyze_edges_adaptive(obj, bm, context, base_size, curvature_threshold):
+    edges_to_draw = []
+    
+    # Получаем размер объекта на экране
+    screen_size = get_object_screen_size(obj, context)
+    
+    # Получаем размер ограничивающего бокса объекта
+    bbox_size = max(obj.dimensions)
+
+    # Вычисляем адаптивный множитель на основе размера объекта и его видимого размера
+    size_factor = (bbox_size / base_size) * (1 / screen_size)
+
+    bm.normal_update()
+    
+    for edge in bm.edges:
+        # Получаем координаты вершин ребра в мировом пространстве
+        v1_world = obj.matrix_world @ edge.verts[0].co
+        v2_world = obj.matrix_world @ edge.verts[1].co
+        
+        # Рассчитываем длину ребра в мировом пространстве
+        edge_length_world = (v2_world - v1_world).length
+        
+        # Адаптивная длина ребра
+        adaptive_length = edge_length_world * size_factor
+        
+        # Рассчитываем кривизну
+        if len(edge.link_faces) == 2:
+            face1, face2 = edge.link_faces
+            angle = math.degrees(face1.normal.angle(face2.normal))
+            curvature = angle / adaptive_length
+        else:
+            curvature = 0
+        
+        # Проверяем, превышает ли кривизна пороговое значение
+        if curvature > curvature_threshold:
+            edges_to_draw.extend([v1_world, v2_world])
+        
+        # Также отмечаем рёбра, которые слишком длинные или короткие относительно базового размера
+        if adaptive_length > base_size * 2 or adaptive_length < base_size * 0.5:
+            edges_to_draw.extend([v1_world, v2_world])
+    
+    return edges_to_draw
+
 
 
 
@@ -32,6 +96,8 @@ ngone_idx = []
 e_non_idx = []
 custom_faces_idx = []
 elongated_tris_co = []
+edges_curvature = []
+
 
 def check_draw(self, context):
     props = context.preferences.addons[__package__].preferences
@@ -102,6 +168,13 @@ def check_draw(self, context):
         shader.uniform_float("color", props.elongated_tris_col)
         TRIS.draw(shader)
 
+    """ if settings.analyze_edges_curvature:
+        LINES = batch_for_shader(shader, 'LINES', {"pos": edges_curvature})
+        shader.uniform_float("color", props.elongated_tris_col)
+        LINES.draw(shader) """
+
+
+
     state.depth_mask_set(True)
     state.depth_test_set('NONE')
     state.face_culling_set('NONE')
@@ -161,7 +234,7 @@ class PS_GGT_check_group(GizmoGroup):
         e_non_idx = []
         custom_faces_idx = []
         elongated_tris_co = []
-
+        edges_curvature = []
         
 
         objs = [obj for obj in context.selected_objects if obj.type == 'MESH' and len(obj.data.polygons) < 50000]
@@ -269,6 +342,17 @@ class PS_GGT_check_group(GizmoGroup):
 
                             if longest_side / shortest_height > settings.elongated_aspect_ratio:
                                 elongated_tris_co.extend(verts)
+
+
+            """ # Анализ выделенных рёбер
+            if settings.analyze_edges_curvature:
+                edges_curvature.extend(analyze_edges_adaptive(
+                    obj,
+                    bm,
+                    context,
+                    settings.base_edge_size,
+                    settings.adaptive_curvature_threshold
+                )) """
 
             if context.mode != 'EDIT_MESH':
                 bm.free()

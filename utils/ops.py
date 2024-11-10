@@ -1288,6 +1288,105 @@ class PS_OT_bool_slice(Operator, PS_Boolean):
         return {"FINISHED"}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+import mathutils
+
+class PS_OT_Distribute_Objects(Operator):
+    bl_idname = "ps.distribute_objects"
+    bl_label = "Distribute Objects (TEST)"
+    bl_description = "Translate selected objects with spacing adjusted to their sizes"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    expose_factor: bpy.props.FloatProperty(
+        name="Expose Factor",
+        description="Object spacing factor (from 0 to 1)",
+        min=0.0,
+        max=1.0,
+        default=1.0,
+    )
+    
+    _objects_data = None  # Временное хранилище для данных объектов
+    
+    def execute(self, context):
+        if self._objects_data is None:
+            objects = context.selected_objects
+            if not objects:
+                self.report({'WARNING'}, "No objects selected")
+                return {'CANCELLED'}
+            
+            # Вычисляем ширины объектов и их начальные и конечные позиции
+            widths = []
+            objects_data = []
+            total_width = 0.0
+            padding = 0.1  # Отступ между объектами
+            
+            for obj in objects:
+                bbox = [obj.matrix_world @ mathutils.Vector(corner) for corner in obj.bound_box]
+                min_x = min([v.x for v in bbox])
+                max_x = max([v.x for v in bbox])
+                width = max_x - min_x
+                widths.append(width)
+                total_width += width + padding  # Добавляем отступы между объектами
+            
+            total_width -= padding  # Убираем отступ после последнего объекта
+            
+            # Начальная позиция для размещения объектов
+            current_x = -total_width / 2.0  # Центрируем объекты относительно исходной позиции
+            
+            for i, obj in enumerate(objects):
+                width = widths[i]
+                
+                initial_position = obj.location.copy()
+                
+                # Вычисляем конечную позицию
+                final_position = initial_position.copy()
+                final_position.x = current_x + width / 2.0
+                final_position.y = initial_position.y  # Оставляем Y без изменений
+                final_position.z = initial_position.z  # Оставляем Z без изменений
+                
+                # Сохраняем данные объекта
+                objects_data.append({
+                    'object': obj,
+                    'initial_position': initial_position,
+                    'final_position': final_position
+                })
+                
+                current_x += width + padding  # Переходим к следующей позиции
+            
+            self._objects_data = objects_data
+        
+        # Применяем раздвижение объектов на основе expose_factor
+        for data in self._objects_data:
+            obj = data['object']
+            initial_position = data['initial_position']
+            final_position = data['final_position']
+            obj.location = initial_position.lerp(final_position, self.expose_factor)
+        
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        self._objects_data = None  # Сбрасываем данные при каждом вызове
+        #wm = context.window_manager
+        return self.execute(context) #wm.invoke_props_popup(self, event)
+    
+    """ def draw(self, context):
+        layout = self.layout
+        layout.prop(self, "expose_factor", slider=True) """
+
+
+
+
 classes = [
     PS_OT_ngons_select,
     PS_OT_tris_select,
@@ -1320,6 +1419,8 @@ classes = [
     PS_OT_bool_union,
     PS_OT_bool_intersect,
     PS_OT_bool_slice,
+
+    PS_OT_Distribute_Objects,
     
 ]
 

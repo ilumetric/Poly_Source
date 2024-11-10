@@ -365,6 +365,8 @@ def operators_panel(self, context, layout): # --- OPERATORS Panel
     layout.operator('ps.fill_from_points')
     layout.operator('ps.unreal_material')
 
+    layout.operator('ps.distribute_objects')
+
 
 
 class PS_PT_tool_kit(Panel):
@@ -416,6 +418,7 @@ class PS_PT_check(Panel):
         col.prop(settings, "e_pole", toggle=True)
         col.prop(settings, "n_pole", toggle=True)
         col.prop(settings, "f_pole", toggle=True)
+        #col.prop(settings, "analyze_edges_curvature", toggle=True)
 
         col = row.column()
         col.scale_y = 1.5
@@ -432,7 +435,9 @@ class PS_PT_check(Panel):
         if settings.custom_count:
             layout.prop(settings, "custom_count_verts")
 
-
+        """ if settings.analyze_edges_curvature:
+            layout.prop(settings, "base_edge_size")
+            layout.prop(settings, "adaptive_curvature_threshold") """
         
 
         if True in [settings.v_alone, settings.v_bound, settings.e_pole, settings.n_pole, settings.f_pole, settings.tris, settings.ngone, settings.non_manifold_check, settings.custom_count]:

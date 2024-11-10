@@ -59,7 +59,7 @@ class PS_settings(PropertyGroup):
     ngone: BoolProperty(name="N-Gone", description="Polygons with more than 4 vertexes", default=True, update=update_check)
     elongated_tris: BoolProperty(name="Elongated Tris", description=" ", default=True, update=update_check) # TODO description
 
-    elongated_aspect_ratio: FloatProperty(name="Elongated Aspect Ratio", description = " ", min=0.0, soft_max=100.0, default=45.0, subtype='FACTOR', update=update_check) # TODO description
+    elongated_aspect_ratio: FloatProperty(name="Elongated Aspect Ratio", description = "Display of elongated triangles", min=0.0, soft_max=100.0, default=45.0, subtype='FACTOR', update=update_check)
     custom_count: BoolProperty(name="Custom", description="Custom number of vertexes in the polygon", default=False, update=update_check)
     custom_count_verts: IntProperty(name="Number of Vertices in the Polygon", description=" ", min=3, default=5, update=update_check)
     
@@ -76,6 +76,10 @@ class PS_settings(PropertyGroup):
                     )
 
 
+
+    #analyze_edges_curvature: BoolProperty(name="Edges Curvature", default=False)
+    base_edge_size: FloatProperty(name="Base Edge Size", default=0.1, min=0.001, max=1.0)
+    adaptive_curvature_threshold: FloatProperty(name="Adaptive Curvature Threshold", default=10.0, min=0.1, max=180.0)
 
 
 # --- Addon preferences
@@ -94,7 +98,7 @@ class PS_preferences(AddonPreferences):
     maxVerts: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=50000)
     maxObjs: IntProperty(name="Maximum number of selected objects", description="If the active object has too many objects, this may affect performance during rendering.", min=1, soft_max=500, default=50)
 
-    lines_props_grid: FloatVectorProperty(name="Lines Props Grid Color", subtype='COLOR', default=(0.1, 0.1, 0.1, 0.9), size=4, min=0.0, max=1.0, description="Select a color for lines props grid") # TODO description 
+    lines_props_grid: FloatVectorProperty(name="Lines Props Grid Color", subtype='COLOR', default=(0.1, 0.1, 0.1, 0.9), size=4, min=0.0, max=1.0, description="Select a color for lines props grid")
     box_props_grid: FloatVectorProperty(name="Box Color", subtype='COLOR', default=(1.0, 0.03, 0.17, 0.05), size=4, min=0.0, max=1.0, description="Select a color for Box")
     unit_grid: FloatVectorProperty(name="Unit Grid Color", subtype='COLOR', default=(0.0, 0.48, 1.0, 0.1), size=4, min=0.0, max=1.0, description="Select a color for unit grid")
 

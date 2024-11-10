@@ -1,0 +1,12 @@
+schema_version = "1.0.0"
+id = "Poly_Source"
+name = "Poly Source"
+version = "5.0.0"
+tagline = "Modeling toolkit"
+maintainer = "Community"
+type = "add-on"
+tags = ["3D View"]
+blender_version_min = "4.2.0"
+license = ["SPDX:GPL-2.0-or-later"]
+website = "https://github.com/ilumetric/Poly_Source"
+copyright = ["Max Derksen"]
