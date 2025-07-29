@@ -5,12 +5,48 @@ from .icons import preview_collections
 import rna_keymap_ui
 from .utils.utils import get_hotkey_entry_item
 from . import check
+from math import radians
 
 
-# --- Scene Settings
+
 class PS_settings(PropertyGroup):
 
-    # --- Polycount
+    # rotation increment presets
+    def set_increment_angles(self, context):
+        if self.increment_angles == '5':
+            context.scene.tool_settings.snap_angle_increment_3d = radians(5)
+        elif self.increment_angles == '10':
+            context.scene.tool_settings.snap_angle_increment_3d = radians(10)
+        elif self.increment_angles == '15':
+            context.scene.tool_settings.snap_angle_increment_3d = radians(15)
+        elif self.increment_angles == '30':
+            context.scene.tool_settings.snap_angle_increment_3d = radians(30)
+        elif self.increment_angles == '45':
+            context.scene.tool_settings.snap_angle_increment_3d = radians(45)
+        elif self.increment_angles == '60':
+            context.scene.tool_settings.snap_angle_increment_3d = radians(60)
+        elif self.increment_angles == '90':
+            context.scene.tool_settings.snap_angle_increment_3d = radians(90)
+
+    increment_angles: EnumProperty(
+        name='Increment Angles',
+        description='Selection of angle for snapping',
+        items=[
+            ('5', '5°', ''),
+            ('10', '10°', ''),
+            ('15', '15°', ''),
+            ('30', '30°', ''),
+            ('45', '45°', ''),
+            ('60', '60°', ''),
+            ('90', '90°', ''),
+        ],
+        default='45',
+        update=set_increment_angles,
+    )
+
+
+
+
     def polycount_widget(self, context):
         wm = context.window_manager
         if self.PS_polycount:
@@ -19,10 +55,10 @@ class PS_settings(PropertyGroup):
             wm.gizmo_group_type_unlink_delayed('PS_GGT_polycount_group')
 
     PS_polycount: BoolProperty(name="Poly Count", default=False, update=polycount_widget)
-    tris_count: IntProperty(name="Tris Count", min=1, soft_max=5000, default=2500) # , subtype='FACTOR'
+    tris_count: IntProperty(name="Tris Count", min=1, soft_max=5000, default=2500)
  
 
-    # --- Envira Grid
+
     def grid_widget(self, context):
         wm = context.window_manager
         if self.PS_envira_grid:
@@ -69,29 +105,27 @@ class PS_settings(PropertyGroup):
                     description = '',
                     items = [
                         ('TRANSFORM', 'Transform', '', 'EMPTY_ARROWS', 0),
-                        ('OPS', 'Operators', '', 'NODETREE', 1),
-                        ('DISPLAY', 'Display', '', 'RESTRICT_VIEW_OFF', 2),
+                        ('DISPLAY', 'Display', '', 'RESTRICT_VIEW_OFF', 1),
                         ],
                     default = 'TRANSFORM',
                     )
 
 
-
-    #analyze_edges_curvature: BoolProperty(name="Edges Curvature", default=False)
     base_edge_size: FloatProperty(name="Base Edge Size", default=0.1, min=0.001, max=1.0)
     adaptive_curvature_threshold: FloatProperty(name="Adaptive Curvature Threshold", default=10.0, min=0.1, max=180.0)
 
 
-# --- Addon preferences
 class PS_preferences(AddonPreferences):
     bl_idname = __package__
     
-    header: BoolProperty(name="Header", default=True)
-    viewHeader_L: BoolProperty(name="Viewport Header Left", default=False)
-    viewHeader_R: BoolProperty(name="Viewport Header Right", default=False)
-    toolHeader: BoolProperty(name="Tool Header", default=False)
-    add_objects: BoolProperty(name="Custom Objects in Add Menu", default=True)
-    bool_tool: BoolProperty(name="Bool Tool", description="Enable the display of basic Bool operators", default=True)
+    # функции апдейта
+    def update_select_wireframe(self, context):
+        if self.b_wire_for_selected == False:
+            context.scene.show_wire_for_selected = False
+
+
+
+
     
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
     
@@ -116,27 +150,56 @@ class PS_preferences(AddonPreferences):
     elongated_tris_col: FloatVectorProperty(name="Elongated Tris Color", subtype='COLOR', default=(0.78, 0.0, 0.95, 0.9), size=4, min=0.0, max=1.0, description=" ")
     custom_col: FloatVectorProperty(name="Polygon Color For Custom Mode", subtype='COLOR', default=(0.95, 0.78, 0.0, 0.5), size=4, min=0.0, max=1.0, description=" ")
 
-    tabs: EnumProperty(name="Tabs", items = [("GENERAL", "General", ""), ("KEYMAPS", "Keymaps", "")], default="GENERAL")
+
+    # опции для включения и отключения функционала
+    b_color_radomizer: BoolProperty(name="Color Randomizer", description="Function to randomize the color by adding a prefix to the object name. Works with 3D View > Shading Popover > Color > Random", default=True)
+    b_bool_tool: BoolProperty(name="Bool Tool", description="Enable the display of basic Bool operators", default=True)
+    b_add_objects: BoolProperty(name="Custom Objects in Add Menu", default=False)
+    b_wire_for_selected: BoolProperty(name="Wireframe for Selected", description="3D View > Overlays Popover", default=False, update=update_select_wireframe)
+    b_presets_increment_angles: BoolProperty(name="Presets Increment Angles", description="3D View > Snapping Popover", default=True)
+    b_camera_sync: BoolProperty(name="Camera Sync", description="3D View Header", default=False)
+
+
+    b_count_header: BoolProperty(name="Polycount: Header", default=True)
+    b_count_view_header_l: BoolProperty(name="Polycount: Viewport Header Left", default=False)
+    b_count_view_header_r: BoolProperty(name="Polycount: Viewport Header Right", default=False)
+    b_count_tool_header: BoolProperty(name="Polycount: Tool Header", default=False)
     
+
+
+    tabs: EnumProperty(name="Tabs", items = [("GENERAL", "General", ""), ("KEYMAPS", "Keymaps", "")], default="GENERAL")
 
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        row.prop(self, "tabs", expand=True)
-        box = layout.box()
+        row.prop(self, 'tabs', expand=True)
 
-        if self.tabs == "GENERAL":
-            self.draw_general(box)
+        if self.tabs == 'GENERAL':
+            self.draw_general(layout)
 
-        elif self.tabs == "KEYMAPS":
-            self.draw_keymaps(context, box)
-
+        elif self.tabs == 'KEYMAPS':
+            self.draw_keymaps(context, layout)
 
     def draw_general(self, layout):
-        pcoll = preview_collections["main"]
-        market_icon = pcoll["market_icon"]
-        gumroad_icon = pcoll["gumroad_icon"]
-        artstation_icon = pcoll["artstation_icon"]
+        pcoll = preview_collections['main']
+        market_icon = pcoll['market_icon']
+        gumroad_icon = pcoll['gumroad_icon']
+        artstation_icon = pcoll['artstation_icon']
+
+        box = layout.box()
+        box.label(text='Tools')
+        box.prop(self, 'b_color_radomizer')
+        box.prop(self, 'b_bool_tool')
+        box.prop(self, 'b_add_objects')
+        box.prop(self, 'b_wire_for_selected')
+        box.prop(self, 'b_presets_increment_angles')
+        box.prop(self, 'b_camera_sync')
+        box.separator()
+        box.prop(self, 'b_count_header')
+        box.prop(self, 'b_count_view_header_l')
+        box.prop(self, 'b_count_view_header_r')
+        box.prop(self, 'b_count_tool_header')
+        
 
 
         col = layout.column()
@@ -146,18 +209,14 @@ class PS_preferences(AddonPreferences):
         col.prop(self, "line_width")
         col.separator()
         
-        col.prop(self, "header")
-        col.prop(self, "viewHeader_L")
-        col.prop(self, "viewHeader_R")
-        col.prop(self, "toolHeader")
-        col.prop(self, "add_objects")
+        
 
-        col.prop(self, "bool_tool")
+        
 
         box = layout.box()
 
         box.separator()
-        box.label(text="Mesh Check:")
+        box.label(text="Mesh Check")
 
         row = box.row()
         row.prop(self, "v_alone_color")
@@ -190,34 +249,21 @@ class PS_preferences(AddonPreferences):
         row.prop(self, "unit_grid")
 
 
-        col = layout.column()
-        col.label(text="Links")
-        col = layout.column(align=True)
-        row = col.row(align=True)
-        row.operator("wm.url_open", text="Blender Market", icon_value=market_icon.icon_id).url = "https://blendermarket.com/creators/derksen"
-        row.separator(factor=0.3)
-        row.operator("wm.url_open", text="Gumroad", icon_value=gumroad_icon.icon_id).url = "https://derksen.gumroad.com"
-        row.separator(factor=0.3)
-        row.operator("wm.url_open", text="Artstation", icon_value=artstation_icon.icon_id).url = "https://www.artstation.com/derksen"
+       
+        layout.label(text='Links')
+        row = layout.row()
+        row.operator('wm.url_open', text='Blender Market', icon_value=market_icon.icon_id).url = "https://blendermarket.com/creators/derksen"
+        row.operator('wm.url_open', text='Gumroad', icon_value=gumroad_icon.icon_id).url = "https://derksen.gumroad.com"
+        row.operator('wm.url_open', text='Artstation', icon_value=artstation_icon.icon_id).url = "https://www.artstation.com/derksen"
 
 
     def draw_keymaps(self, context, layout):
         col = layout.column()
-        col.label(text="Keymap")
-        
-        """ keymap = context.window_manager.keyconfigs.user.keymaps['3D View']
-        keymap_items = keymap.keymap_items
-        km = keymap.active()
-        layout.template_event_from_keymap_item(keymap_items["ps.tool_kit_panel"]) """
-
+        col.label(text='Keymap')
 
         wm = context.window_manager
         kc = wm.keyconfigs.user
         km = kc.keymaps['3D View']
-
-
-
-
 
         kmi = get_hotkey_entry_item(km, 'wm.call_panel', 'PS_PT_tool_kit', 'none')
         if kmi:
@@ -261,11 +307,32 @@ class PS_preferences(AddonPreferences):
         else:
             col.label(text='No hotkey entry found')
 
+        kmi = get_hotkey_entry_item(km, 'ps.set_color', 'none', 'none')
+        if kmi:
+            col.context_pointer_set('keymap', km)
+            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
+        else:
+            col.label(text='No hotkey entry found')
+        
+        kmi = get_hotkey_entry_item(km, 'ps.del_prefix', 'none', 'none')
+        if kmi:
+            col.context_pointer_set('keymap', km)
+            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
+        else:
+            col.label(text='No hotkey entry found')
+        
+        kmi = get_hotkey_entry_item(km, 'ps.lock_camera_transforms', 'none', 'none')
+        if kmi:
+            col.context_pointer_set('keymap', km)
+            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
+        else:
+            col.label(text='No hotkey entry found')
+
 
         col.label(text="*some hotkeys may not work because of the use of other addons")
 
 
-addon_keymaps = []  
+addon_keymaps = []
 
 
 classes = [
@@ -277,11 +344,8 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-
     bpy.types.Scene.PS_scene_set = bpy.props.PointerProperty(type=PS_settings)
 
-
-    
     wm = bpy.context.window_manager
     addon_keyconfig = wm.keyconfigs.addon
 
@@ -289,33 +353,49 @@ def register():
     if not kc:
         return
 
-    
-
     km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
-
 
     kmi = km.keymap_items.new('wm.call_panel', type='SPACE', value='PRESS')
     kmi.properties.name = 'PS_PT_tool_kit'
     addon_keymaps.append((km, kmi))
 
     # Pie
-    kmi = km.keymap_items.new('ps.ngons_select', type = 'ONE', value = 'PRESS', ctrl=False, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.select_polygons', type='ONE', value='PRESS', ctrl=False, alt=True, shift=False, oskey=False)
+    kmi.properties.polygon_type = 'NGONS'
+    kmi.active = False
     addon_keymaps.append((km, kmi))
 
-    kmi = km.keymap_items.new('ps.quads_select', type = 'TWO', value = 'PRESS', ctrl=False, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.select_polygons', type='TWO', value='PRESS', ctrl=False, alt=True, shift=False, oskey=False)
+    kmi.properties.polygon_type = 'QUADS'
+    kmi.active = False
     addon_keymaps.append((km, kmi))
 
-    kmi = km.keymap_items.new('ps.tris_select', type = 'THREE', value = 'PRESS', ctrl=False, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.select_polygons', type='THREE', value='PRESS', ctrl=False, alt=True, shift=False, oskey=False)
+    kmi.properties.polygon_type = 'TRIS'
+    kmi.active = False
     addon_keymaps.append((km, kmi))
     
-    kmi = km.keymap_items.new('ps.clear_dots', type = 'C', value = 'PRESS', ctrl=True, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.clear_dots', type='C', value='PRESS', ctrl=True, alt=True, shift=False, oskey=False)
+    kmi.active = False
     addon_keymaps.append((km, kmi))
 
-    kmi = km.keymap_items.new('ps.remove_vertex_non_manifold', type = 'N', value = 'PRESS', ctrl=True, alt=True, shift=False, oskey=False)
+    kmi = km.keymap_items.new('ps.remove_vertex_non_manifold', type='N', value='PRESS', ctrl=True, alt=True, shift=False, oskey=False)
+    kmi.active = False
     addon_keymaps.append((km, kmi))
+
+    kmi = km.keymap_items.new('ps.set_color', type='C', value='PRESS', ctrl=True, alt=True, shift=True)
+    kmi.active = False
+    addon_keymaps.append((km, kmi))
+    kmi = km.keymap_items.new('ps.del_prefix', type='X', value='PRESS', ctrl=True, alt=True, shift=True)
+    kmi.active = False
+    addon_keymaps.append((km, kmi))
+
+    kmi = km.keymap_items.new('ps.lock_camera_transforms', type='L', value='PRESS', ctrl=True, alt=True, shift=True)
+    kmi.active = False
+    addon_keymaps.append((km, kmi))
+
     del addon_keyconfig
 
-    
 
 def unregister():
     for cls in classes:
@@ -323,10 +403,6 @@ def unregister():
 
     del bpy.types.Scene.PS_scene_set
 
-    
-    
-
-    # --- Remove Keymap
     for km, kmi in addon_keymaps:
         km.keymap_items.remove(kmi)
     addon_keymaps.clear()

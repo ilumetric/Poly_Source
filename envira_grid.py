@@ -1,4 +1,7 @@
-import bpy, gpu, bmesh, mathutils
+import bpy
+import gpu
+import bmesh
+import mathutils
 from gpu_extras.batch import batch_for_shader
 from bpy.types import Operator, GizmoGroup, Gizmo
 from math import sin, cos, pi
@@ -10,7 +13,7 @@ from gpu.types import (
 from mathutils import Matrix, Vector
 from gpu import state
 
- 
+
 
 def generate_grid():
     settings = bpy.context.scene.PS_scene_set
@@ -281,11 +284,6 @@ class PS_GT_draw_grid(Gizmo):
         self.use_draw_modal = False
 
 
-    """ def test_select(self, context, location):
-        if context.area.type == 'VIEW_3D':
-            context.area.tag_redraw()
-        return -1 """
-
 
 
 class PS_GGT_draw_grid_group(GizmoGroup):
@@ -296,12 +294,6 @@ class PS_GGT_draw_grid_group(GizmoGroup):
     bl_region_type = 'WINDOW'
     bl_options = {'3D','SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL'  'PERSISTENT', 
  
-
-    """ @classmethod
-    def poll(cls, context):
-        settings = context.scene.PS_scene_set
-        return settings.PS_envira_grid """
-        
 
     def setup(self, context):
         mesh = self.gizmos.new(PS_GT_draw_grid.bl_idname)
@@ -321,5 +313,5 @@ def register():
 
    
 def unregister():
-    for cls in classes:
+    for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

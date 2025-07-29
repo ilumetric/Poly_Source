@@ -129,36 +129,28 @@ def polycount(self, context):
         blf.draw(font_id_name, name)
 
 
-
 class PS_GT_polycount(Gizmo):
     bl_idname = 'PS_GT_polycount'
 
     def draw(self, context):
         polycount(self, context)
 
-    """ def test_select(self, context, location):
-        if context.area.type == 'VIEW_3D':
-            context.area.tag_redraw()
-        return -1 """
-
-
 
 class PS_GGT_polycount_group(GizmoGroup):
-    
     bl_idname = 'PS_GGT_polycount_group'
     bl_label = 'Poly Count'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'WINDOW'
     bl_options = {'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL' 'PERSISTENT', 
- 
+
 
     @classmethod
     def poll(cls, context):
         if context.active_object != None:
             settings = context.scene.PS_scene_set
             return settings.PS_polycount
-        
-  
+
+
     def setup(self, context):
         mesh = self.gizmos.new('PS_GT_polycount')
         mesh.use_draw_modal = True
@@ -180,20 +172,6 @@ class PS_GGT_polycount_group(GizmoGroup):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 classes = [
     PS_GT_polycount,
     PS_GGT_polycount_group,
@@ -204,7 +182,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-   
+
 def unregister():
-    for cls in classes:
+    for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

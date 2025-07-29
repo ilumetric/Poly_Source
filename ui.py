@@ -50,14 +50,14 @@ def get_polygons_count_ui(context, layout):
                             else:
                                 _ngon += 1
             
-            layout.operator('ps.ngons_select', text=str(_ngon), icon_value=ngon_icon.icon_id)    
-            layout.operator('ps.quads_select', text=str(_quad), icon_value=quad_icon.icon_id)
-            layout.operator('ps.tris_select', text=str(_tris), icon_value=tris_icon.icon_id)
+            layout.operator('ps.select_polygons', text=str(_ngon), icon_value=ngon_icon.icon_id).polygon_type = 'NGONS'    
+            layout.operator('ps.select_polygons', text=str(_quad), icon_value=quad_icon.icon_id).polygon_type = 'QUADS'
+            layout.operator('ps.select_polygons', text=str(_tris), icon_value=tris_icon.icon_id).polygon_type = 'TRIS'
 
         else:
-            layout.operator('ps.ngons_select', text='', icon_value=ngon_icon.icon_id)    
-            layout.operator('ps.quads_select', text='', icon_value= quad_icon.icon_id)
-            layout.operator('ps.tris_select', text='', icon_value=tris_icon.icon_id)
+            layout.operator('ps.select_polygons', text='', icon_value=ngon_icon.icon_id).polygon_type = 'NGONS'    
+            layout.operator('ps.select_polygons', text='', icon_value=quad_icon.icon_id).polygon_type = 'QUADS'
+            layout.operator('ps.select_polygons', text='', icon_value=tris_icon.icon_id).polygon_type = 'TRIS'
 
             box = layout.box()   
             box.label(text='Vertex/Obj Excess', icon='ERROR')
@@ -86,7 +86,7 @@ def header_panel(self, context):
     if context.region.alignment == 'TOP':
         if context.object:
             if context.object.type == 'MESH':
-                if props.header:
+                if props.b_count_header:
                     layout = self.layout
                     row = layout.row(align=True)
                     row.popover(panel='PS_PT_tool_kit', text='')
@@ -96,7 +96,7 @@ def header_panel(self, context):
                     if settings.PS_check:
                         row.popover(panel='PS_PT_check', text='')
                     #check_panel(self, context, row)
-                    if props.bool_tool:
+                    if props.b_bool_tool:
                         bool_ui(context, layout)
 
 
@@ -108,7 +108,7 @@ def viewHeader_L_panel(self, context):
 
     if context.object:
         if context.object.type == 'MESH':
-            if props.viewHeader_L:
+            if props.b_count_view_header_l:
                 layout = self.layout
                 row = layout.row(align=True)
                 row.popover(panel='PS_PT_tool_kit', text='')
@@ -118,7 +118,7 @@ def viewHeader_L_panel(self, context):
                 if settings.PS_check:
                     row.popover(panel='PS_PT_check', text='')
                 #check_panel(self, context, row)
-                if props.bool_tool:
+                if props.b_bool_tool:
                     bool_ui(context, layout)
 
 
@@ -130,7 +130,7 @@ def viewHeader_R_panel(self, context):
 
     if context.object:
         if context.object.type == 'MESH':
-            if props.viewHeader_R:
+            if props.b_count_view_header_r:
                 layout = self.layout
                 row = layout.row(align=True)
                 row.popover(panel='PS_PT_tool_kit', text='')
@@ -140,7 +140,7 @@ def viewHeader_R_panel(self, context):
                 if settings.PS_check:
                     row.popover(panel='PS_PT_check', text='')
                 #check_panel(self, context, row)
-                if props.bool_tool:
+                if props.b_bool_tool:
                     bool_ui(context, layout)
 
 
@@ -152,7 +152,7 @@ def tool_panel(self, context):
 
     if context.object:
         if context.object.type == 'MESH':
-            if props.toolHeader:
+            if props.b_count_tool_header:
                 layout = self.layout
                 row = layout.row(align=True)
                 row.popover(panel='PS_PT_tool_kit', text='')
@@ -162,7 +162,7 @@ def tool_panel(self, context):
                 if settings.PS_check:
                     row.popover(panel='PS_PT_check', text='')
                 #check_panel(self, context, row)
-                if props.bool_tool:
+                if props.b_bool_tool:
                     bool_ui(context, layout)
 
 
@@ -172,7 +172,7 @@ def tool_panel(self, context):
 def custom_objects(self, context):
     props = context.preferences.addons[__package__].preferences
 
-    if props.add_objects:
+    if props.b_add_objects:
         pcoll = preview_collections["main"]
         cylinder_icon = pcoll["cylinder"]
         tube_icon = pcoll["tube"]
@@ -184,7 +184,6 @@ def custom_objects(self, context):
         layout.operator("ps.create_cube", text="Cube", icon_value=cube_icon.icon_id)
         layout.operator("ps.create_cylinder", text="Cylinder", icon_value=cylinder_icon.icon_id)
         layout.operator("ps.create_tube", text="Tube", icon_value=tube_icon.icon_id)
-
     else:
         pass
 
@@ -197,85 +196,41 @@ def transform_panel(self, context, pie):
     y_icon = pcoll["y_icon"]
     z_icon = pcoll["z_icon"]
     reset_all = pcoll["reset_icon"]
-    bevelSub = pcoll["bevelSub"]
-    fix_icon = pcoll["fix_icon"]
-    auto_s_icon = pcoll["180"]
-    bevelW_icon = pcoll["bevelW"]
-    creaseW_icon = pcoll["creaseW"]
-    seam_icon = pcoll["seam"]
-    sharp_icon = pcoll["sharp"]
-    bool_diff_icon = pcoll['bool_diff']
-    bool_union_icon = pcoll['bool_union']
-    bool_intersect_icon = pcoll['bool_intersect']
-    bool_slice_icon = pcoll['bool_slice']
-    
-    box = pie.box()
 
-    row = box.row(align=True)
-    row.scale_x = 10
-    row.operator('ps.bool_difference', text='', icon_value=bool_diff_icon.icon_id)
-    row.operator('ps.bool_union', text='', icon_value=bool_union_icon.icon_id)
-    row.operator('ps.bool_intersect', text='', icon_value=bool_intersect_icon.icon_id)
-    row.operator('ps.bool_slice', text='', icon_value=bool_slice_icon.icon_id)
-
+    box = pie
     if context.mode == 'OBJECT':
         box.label(text='Reset Transform')
         box.scale_x = 1.3
 
-        row = box.row(align=True) 
+        row = box.row() 
         row.operator('ps.reset_location_object', text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator('ps.reset_location_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator('ps.reset_location_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.separator(factor=0.2)
         row.operator('ps.reset_location_object', text='Location').axis = 'ALL'
         
-        row = box.row(align=True)
+        row = box.row()
         row.operator('ps.reset_rotation_object', text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator('ps.reset_rotation_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator('ps.reset_rotation_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.separator(factor=0.2)
         row.operator('ps.reset_rotation_object', text='Rotation').axis = 'ALL'
         
-        row = box.row(align=True)
+        row = box.row()
         row.operator('ps.reset_scale_object', text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator('ps.reset_scale_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator('ps.reset_scale_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.separator(factor=0.2)
         row.operator('ps.reset_scale_object', text='Scale').axis = 'ALL'
                  
         box.operator("ps.reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL_T'
-
 
     elif context.mode == 'EDIT_MESH':
         box.label(text='Reset Transform')
         box.scale_x = 1.3
 
-        row = box.row(align=True)
+        row = box.row()
         row.operator("ps.locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
         row.operator("ps.locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
         row.operator("ps.locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.separator(factor=0.2)
         row.operator("ps.locvert", text='Location').axis = 'ALL'
-
-    box = pie.box()
-    box.label(text='Modifiers')
-    row = box.row(align=True)
-    row.operator('ps.submod', text='Crease Bevel', icon_value=bevelSub.icon_id)
-    row.separator(factor=0.2)
-    row.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
-    box.operator("ps.triangulate", text='Triangulate', icon='MOD_TRIANGULATE')
-    box.operator('ps.normalfix', text='Fix', icon_value=fix_icon.icon_id)
-
-    box = pie.box()
-    box.label(text='Edge Data')
-    row = box.row(align=True)
-    row.operator('ps.edge_data', text='Seam', icon_value=seam_icon.icon_id).mode = 'SEAM'
-    row.separator(factor=0.2)
-    row.operator('ps.edge_data', text='Sharp', icon_value=sharp_icon.icon_id).mode = 'SHARP'
-    row = box.row(align=True)
-    row.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
-    row.separator(factor=0.2)
-    row.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
 
 
 def display_panel(self, context, layout):
@@ -345,27 +300,6 @@ def display_panel(self, context, layout):
     box.prop(props, 'maxObjs')
 
 
-def operators_panel(self, context, layout): # --- OPERATORS Panel
-    if context.mode == 'EDIT_MESH':
-        layout.operator('mesh.edges_select_sharp', icon = 'LINCURVE')
-        layout.operator('mesh.select_nth', icon = 'TEXTURE_DATA')
-
-    layout.operator("ps.clear_dots", icon='SHADERFX')
-    layout.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
-    layout.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
-    layout.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
-    
-    layout.operator("ps.del_long_faces")
-    layout.operator('ps.clear_materials')
-    layout.operator('ps.clear_data')
-    layout.operator("outliner.orphans_purge", text="Purge")
-    layout.separator()
-    layout.operator('ps.transfer_transform') # TODO перенести в другое место
-    
-    layout.operator('ps.fill_from_points')
-    layout.operator('ps.unreal_material')
-
-    layout.operator('ps.distribute_objects')
 
 
 
@@ -390,12 +324,8 @@ class PS_PT_tool_kit(Panel):
         if settings.panel_groops == 'TRANSFORM':
             transform_panel(self, context, col)
 
-        elif settings.panel_groops == 'OPS':
-            operators_panel(self, context, col)
-
         elif settings.panel_groops == 'DISPLAY':
             display_panel(self, context, col)
-
 
 
 class PS_PT_check(Panel):
@@ -478,9 +408,116 @@ class PS_PT_check(Panel):
 
 
 
+
+
+
+
+
+
+
+
+
+class PS_MT_modifiers(Menu):
+    bl_label = 'Modifiers'
+    bl_idname = 'PS_MT_modifiers'
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        bevelSub = pcoll["bevelSub"]
+        fix_icon = pcoll["fix_icon"]
+
+        layout = self.layout
+        layout.operator('ps.tris_weighted_normal', text='Tris & Weighted Normal', icon_value=fix_icon.icon_id)
+        layout.operator('ps.triangulate', text='Triangulate', icon='MOD_TRIANGULATE')
+        layout.operator('ps.normalfix', text='Normal Fix', icon_value=fix_icon.icon_id)
+        layout.operator('ps.add_subsurf_and_bevel', text='Crease Bevel', icon_value=bevelSub.icon_id)
+        layout.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
+
+
+
+class PS_MT_test(Menu):
+    bl_label = 'TEST'
+    bl_idname = 'PS_MT_test'
+
+    def draw(self, context):
+        layout = self.layout
+
+        if context.mode == 'EDIT_MESH':
+            layout.operator("ps.clear_dots", icon='SHADERFX')
+            layout.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
+            layout.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
+            layout.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
+            layout.operator("ps.del_long_faces")
+            layout.operator("outliner.orphans_purge", text="Purge")
+            layout.operator('ps.fill_from_points')
+
+        if context.mode == 'OBJECT':
+            layout.operator('ps.transfer_transform')
+            layout.operator('ps.clear_materials')
+            layout.operator('ps.clear_data')
+            layout.operator('ps.unreal_material')
+            layout.operator('ps.distribute_objects')
+        
+
+class PS_MT_main(Menu):
+    bl_label = 'Poly Source'
+    bl_idname = 'PS_MT_main'
+    bl_options = {'SEARCH_ON_KEY_PRESS'}
+
+    def draw(self, context):
+        pcoll = preview_collections["main"]
+        seam_icon = pcoll["seam"]
+        sharp_icon = pcoll["sharp"]
+        bevelW_icon = pcoll["bevelW"]
+        creaseW_icon = pcoll["creaseW"]
+
+        layout = self.layout
+
+        layout.menu('PS_MT_modifiers')
+        layout.menu('PS_MT_test')
+
+        if context.mode == 'EDIT_MESH':
+            layout.separator()
+            layout.operator('ps.edge_data', text='Seam', icon_value=seam_icon.icon_id).mode = 'SEAM'
+            layout.operator('ps.edge_data', text='Sharp', icon_value=sharp_icon.icon_id).mode = 'SHARP'
+            layout.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
+            layout.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
+            layout.separator()
+            layout.operator('mesh.edges_select_sharp', icon='LINCURVE')
+            layout.operator('mesh.select_nth', icon='TEXTURE_DATA')
+            layout.operator('mesh.loop_multi_select', text='Edge Loop', icon='MATSPHERE').ring = False
+            layout.operator('mesh.loop_multi_select', text='Edge Ring', icon='SNAP_EDGE').ring = True
+            layout.operator('mesh.region_to_loop', text='Boundary Loop', icon='MESH_GRID')
+
+
+
+def rmb_menu(self, context):
+    if context.mode in ['OBJECT', 'EDIT_MESH']:
+        self.layout.menu('PS_MT_main')
+
+
+
+
+
+def preset_increment_angle(self, context):
+    props = context.preferences.addons[__package__].preferences
+    if props.b_presets_increment_angles:
+        self.layout.prop(context.scene.PS_scene_set, 'increment_angles', expand=True)
+
+
+def outliner_header_button(self, context):
+    layout = self.layout
+    layout.operator('ps.random_name', text='', icon='QUESTION')
+
+
 classes = [
     PS_PT_tool_kit,
     PS_PT_check,
+
+
+    PS_MT_modifiers,
+    PS_MT_test,
+    PS_MT_main,
 ]
 
 
@@ -495,12 +532,31 @@ def register():
     bpy.types.VIEW3D_MT_mesh_add.append(custom_objects)
 
 
+    bpy.types.VIEW3D_MT_editor_menus.append(rmb_menu)
+    bpy.types.VIEW3D_MT_object_context_menu.prepend(rmb_menu)
+    bpy.types.VIEW3D_MT_edit_mesh_context_menu.prepend(rmb_menu)
+
+    # Add button to outliner header
+    bpy.types.OUTLINER_HT_header.append(outliner_header_button)
+
+    bpy.types.VIEW3D_PT_snapping.append(preset_increment_angle)
+
 def unregister():
-    for cls in classes:
+    for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
     bpy.types.TOPBAR_HT_upper_bar.remove(header_panel)
     bpy.types.VIEW3D_MT_editor_menus.remove(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.remove(viewHeader_R_panel)
     bpy.types.VIEW3D_HT_tool_header.remove(tool_panel)
-    bpy.types.VIEW3D_MT_mesh_add.append(custom_objects)
+    bpy.types.VIEW3D_MT_mesh_add.remove(custom_objects)
+
+
+    bpy.types.VIEW3D_MT_editor_menus.remove(rmb_menu)
+    bpy.types.VIEW3D_MT_object_context_menu.remove(rmb_menu)
+    bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(rmb_menu)
+
+    # Remove button from outliner header
+    bpy.types.OUTLINER_HT_header.remove(outliner_header_button)
+
+    bpy.types.VIEW3D_PT_snapping.remove(preset_increment_angle)

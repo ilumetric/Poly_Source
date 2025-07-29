@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Pack Blender Addon",
+        "type": "shell",
+        "command": "python build_zip.py",
+        "group": "build",
+        "problemMatcher": []
+      }
+    ]
+  }
+  
