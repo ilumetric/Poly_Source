@@ -4,7 +4,7 @@ from bpy.types import Operator
 
 
 class PS_OT_LockCameraTransforms(Operator):
-    bl_idname = 'ps.lock_camera_transforms'
+    bl_idname = 'object.ps_lock_camera_transforms'
     bl_label = 'Lock Camera Transforms'
     bl_description = 'Lock the location, rotation, and scale of the selected camera'
     bl_options = {'REGISTER', 'UNDO'}
@@ -29,7 +29,7 @@ class PS_OT_LockCameraTransforms(Operator):
 
 
 def button_in_header(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     if props.b_camera_sync:
         active_object = context.object
         layout = self.layout
@@ -47,7 +47,7 @@ def button_in_header(self, context):
             any_locked = any(active_object.lock_location) or any(active_object.lock_rotation) or any(active_object.lock_scale)
         else:
             any_locked = False
-        row.operator("ps.lock_camera_transforms", text="",  icon='LOCKED' if any_locked else 'UNLOCKED')
+        row.operator("object.ps_lock_camera_transforms", text="",  icon='LOCKED' if any_locked else 'UNLOCKED')
 
 
 

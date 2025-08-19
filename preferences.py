@@ -56,28 +56,21 @@ class PS_settings(PropertyGroup):
 
     PS_polycount: BoolProperty(name="Poly Count", default=False, update=polycount_widget)
     tris_count: IntProperty(name="Tris Count", min=1, soft_max=5000, default=2500)
- 
 
 
-    def grid_widget(self, context):
-        wm = context.window_manager
-        if self.PS_envira_grid:
-            wm.gizmo_group_type_ensure('PS_GGT_draw_grid_group')
-        else:
-            wm.gizmo_group_type_unlink_delayed('PS_GGT_draw_grid_group')
-
-    PS_envira_grid: BoolProperty(name="Props Grid", default=False, update=grid_widget)
-
-    one_unit: EnumProperty(name="One Unit", items = [("CM", "cm", ""), ("M", "m", "")], default="M",  description="One Unit")
-    one2one: BoolProperty(name="1x1", default=True)
-    unit_x: FloatProperty(name="X", description = " ", min=1.0, soft_max=5.0, default=1.0, subtype='FACTOR')
-    unit_y: FloatProperty(name="Y", description = " ", min=1.0, soft_max=5.0, default=1.0, subtype='FACTOR')
-    float_z: FloatProperty(name="Z Position", description = " ", default=0.0)
-    padding: FloatProperty(name="Padding(cm)", description = " ", min=0.0, soft_max=20, default=10, subtype='FACTOR')
-    draw_unit_grid: BoolProperty(name="Grid", default=False)
-    one_unit_length: FloatProperty(name="One Unit Lenght(m)", description = " ", default=1.0, min=0.01)
+    # grid
+    draw_grid: BoolProperty(name="Grid", default=False)
     box: BoolProperty(name="Box", default=False)
-    box_height: FloatProperty(name="Box Height", description = " ", min=0.0, soft_max=2.0, default=1.0, subtype='FACTOR')
+    grid_xray: BoolProperty(name="X-Ray", default=False)
+    one2one: BoolProperty(name="1x1", default=True)
+    unit_x: FloatProperty(name="X", description = " ", min=1, soft_max=1000.0, default=100.0)
+    unit_y: FloatProperty(name="Y", description = " ", min=1, soft_max=1000.0, default=100.0)
+    offset_z: FloatProperty(name="Z Offset", description = "cm", default=0.0)
+    padding: FloatProperty(name="Padding", description = "cm", min=0.0, soft_min=5.0, soft_max=20, default=10)
+    height: FloatProperty(name="Height", description = "cm", min=0.0, soft_min=10.0, soft_max=200.0, default=180.0)
+    draw_sub_grid: BoolProperty(name="Sub Grid", default=True)
+    grid_cell_size: FloatProperty(name="Cell Size", description="cm", min=1.0, soft_max=200.0, default=100.0)
+    grid_align_center: BoolProperty(name="Align Center", default=True)
 
 
     def update_check(self, context):
@@ -98,10 +91,10 @@ class PS_settings(PropertyGroup):
     elongated_aspect_ratio: FloatProperty(name="Elongated Aspect Ratio", description = "Display of elongated triangles", min=0.0, soft_max=100.0, default=45.0, subtype='FACTOR', update=update_check)
     custom_count: BoolProperty(name="Custom", description="Custom number of vertexes in the polygon", default=False, update=update_check)
     custom_count_verts: IntProperty(name="Number of Vertices in the Polygon", description=" ", min=3, default=5, update=update_check)
-    
+
 
     panel_groops: EnumProperty(
-                    name='Groops', 
+                    name='Groops',
                     description = '',
                     items = [
                         ('TRANSFORM', 'Transform', '', 'EMPTY_ARROWS', 0),
@@ -116,8 +109,8 @@ class PS_settings(PropertyGroup):
 
 
 class PS_preferences(AddonPreferences):
-    bl_idname = __package__
-    
+    bl_idname = 'Poly_Source'
+
     # функции апдейта
     def update_select_wireframe(self, context):
         if self.b_wire_for_selected == False:
@@ -126,19 +119,18 @@ class PS_preferences(AddonPreferences):
 
 
 
-    
+
     low_suffix: BoolProperty(name="_Low ", description="To use to count only the objects in the collections of the _LOW suffix", default=False)
-    
+
     maxVerts: IntProperty(name="Maximum Vertices In Active Object", description="If the active object has too many vertexes, this may affect performance during rendering.", min=3, soft_max=200000, default=50000)
     maxObjs: IntProperty(name="Maximum number of selected objects", description="If the active object has too many objects, this may affect performance during rendering.", min=1, soft_max=500, default=50)
 
-    lines_props_grid: FloatVectorProperty(name="Lines Props Grid Color", subtype='COLOR', default=(0.1, 0.1, 0.1, 0.9), size=4, min=0.0, max=1.0, description="Select a color for lines props grid")
-    box_props_grid: FloatVectorProperty(name="Box Color", subtype='COLOR', default=(1.0, 0.03, 0.17, 0.05), size=4, min=0.0, max=1.0, description="Select a color for Box")
-    unit_grid: FloatVectorProperty(name="Unit Grid Color", subtype='COLOR', default=(0.0, 0.48, 1.0, 0.1), size=4, min=0.0, max=1.0, description="Select a color for unit grid")
+    color_grid: FloatVectorProperty(name="Grid Color", subtype='COLOR', default=(0.1, 0.1, 0.1, 0.9), size=4, min=0.0, max=1.0, description="Select a color for grid")
+    color_box: FloatVectorProperty(name="Box Color", subtype='COLOR', default=(1.0, 0.03, 0.17, 0.1), size=4, min=0.0, max=1.0, description="Select a color for box")
 
     point_width: FloatProperty(name="Point Width", description="Edge Width", min=1.0, soft_max=30.0, default=15)
     line_width: FloatProperty(name="Edge Width", description="Edge Width", min=1.0, soft_max=30.0, default=5)
-    
+
     v_alone_color: FloatVectorProperty(name="Vertex Color", subtype='COLOR', default=(0.0, 1.0, 0.0, 1.0), size=4, min=0.0, max=1.0, description="Vertexes that are not connected to the geometry")
     non_manifold_color: FloatVectorProperty(name="Non Manifold Color", subtype='COLOR', default=(1.0, 0.0, 0.0, 0.5), size=4, min=0.0, max=1.0, description="Non Manifold Edges")
     bound_col: FloatVectorProperty(name="Bound Color", subtype='COLOR', default=(0.5, 0.0, 1.0, 0.5), size=4, min=0.0, max=1.0, description="Vertexes that are located at the edge of the geometry")
@@ -163,8 +155,8 @@ class PS_preferences(AddonPreferences):
     b_count_header: BoolProperty(name="Polycount: Header", default=True)
     b_count_view_header_l: BoolProperty(name="Polycount: Viewport Header Left", default=False)
     b_count_view_header_r: BoolProperty(name="Polycount: Viewport Header Right", default=False)
-    b_count_tool_header: BoolProperty(name="Polycount: Tool Header", default=False)
-    
+    b_count_tool_header: BoolProperty(name="Polycount: Tool Header (may conflict with other addons)", default=False)
+
 
 
     tabs: EnumProperty(name="Tabs", items = [("GENERAL", "General", ""), ("KEYMAPS", "Keymaps", "")], default="GENERAL")
@@ -199,7 +191,7 @@ class PS_preferences(AddonPreferences):
         box.prop(self, 'b_count_view_header_l')
         box.prop(self, 'b_count_view_header_r')
         box.prop(self, 'b_count_tool_header')
-        
+
 
 
         col = layout.column()
@@ -208,10 +200,10 @@ class PS_preferences(AddonPreferences):
         col.prop(self, "point_width")
         col.prop(self, "line_width")
         col.separator()
-        
-        
 
-        
+
+
+
 
         box = layout.box()
 
@@ -238,18 +230,16 @@ class PS_preferences(AddonPreferences):
         row.prop(self, "elongated_tris_col")
         row.prop(self, "custom_col")
 
-        
+
 
         box.separator()
-        box.label(text="Props Grid:")
+        box.label(text="Unit Grid:")
         row = box.row()
-        row.prop(self, "lines_props_grid")
-        row.prop(self, "box_props_grid")
-        row = box.row()
-        row.prop(self, "unit_grid")
+        row.prop(self, "color_grid")
+        row.prop(self, "color_box")
 
 
-       
+
         layout.label(text='Links')
         row = layout.row()
         row.operator('wm.url_open', text='Blender Market', icon_value=market_icon.icon_id).url = "https://blendermarket.com/creators/derksen"
@@ -272,63 +262,6 @@ class PS_preferences(AddonPreferences):
         else:
             col.label(text='No hotkey entry found')
 
-        kmi = get_hotkey_entry_item(km, 'ps.ngons_select', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-
-        kmi = get_hotkey_entry_item(km, 'ps.quads_select', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-
-        kmi = get_hotkey_entry_item(km, 'ps.tris_select', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-
-        kmi = get_hotkey_entry_item(km, 'ps.clear_dots', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-
-        kmi = get_hotkey_entry_item(km, 'ps.remove_vertex_non_manifold', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-
-        kmi = get_hotkey_entry_item(km, 'ps.set_color', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-        
-        kmi = get_hotkey_entry_item(km, 'ps.del_prefix', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-        
-        kmi = get_hotkey_entry_item(km, 'ps.lock_camera_transforms', 'none', 'none')
-        if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
-        else:
-            col.label(text='No hotkey entry found')
-
-
         col.label(text="*some hotkeys may not work because of the use of other addons")
 
 
@@ -344,7 +277,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.PS_scene_set = bpy.props.PointerProperty(type=PS_settings)
+    bpy.types.Scene.poly_source = bpy.props.PointerProperty(type=PS_settings)
 
     wm = bpy.context.window_manager
     addon_keyconfig = wm.keyconfigs.addon
@@ -359,49 +292,14 @@ def register():
     kmi.properties.name = 'PS_PT_tool_kit'
     addon_keymaps.append((km, kmi))
 
-    # Pie
-    kmi = km.keymap_items.new('ps.select_polygons', type='ONE', value='PRESS', ctrl=False, alt=True, shift=False, oskey=False)
-    kmi.properties.polygon_type = 'NGONS'
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
 
-    kmi = km.keymap_items.new('ps.select_polygons', type='TWO', value='PRESS', ctrl=False, alt=True, shift=False, oskey=False)
-    kmi.properties.polygon_type = 'QUADS'
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
-
-    kmi = km.keymap_items.new('ps.select_polygons', type='THREE', value='PRESS', ctrl=False, alt=True, shift=False, oskey=False)
-    kmi.properties.polygon_type = 'TRIS'
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
-    
-    kmi = km.keymap_items.new('ps.clear_dots', type='C', value='PRESS', ctrl=True, alt=True, shift=False, oskey=False)
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
-
-    kmi = km.keymap_items.new('ps.remove_vertex_non_manifold', type='N', value='PRESS', ctrl=True, alt=True, shift=False, oskey=False)
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
-
-    kmi = km.keymap_items.new('ps.set_color', type='C', value='PRESS', ctrl=True, alt=True, shift=True)
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
-    kmi = km.keymap_items.new('ps.del_prefix', type='X', value='PRESS', ctrl=True, alt=True, shift=True)
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
-
-    kmi = km.keymap_items.new('ps.lock_camera_transforms', type='L', value='PRESS', ctrl=True, alt=True, shift=True)
-    kmi.active = False
-    addon_keymaps.append((km, kmi))
-
-    del addon_keyconfig
 
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.PS_scene_set
+    del bpy.types.Scene.poly_source
 
     for km, kmi in addon_keymaps:
         km.keymap_items.remove(kmi)

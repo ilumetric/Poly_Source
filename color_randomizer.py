@@ -33,7 +33,7 @@ def del_prefix(self, context, obj):
 
 
 class PS_OT_set_color(Operator):
-    bl_idname = 'ps.set_color'
+    bl_idname = 'object.ps_set_color'
     bl_label = 'Object Color'
     bl_description = 'Relative Plus One'
     bl_options = {'REGISTER', 'UNDO'}
@@ -56,7 +56,7 @@ class PS_OT_set_color(Operator):
 
 
 class PS_OT_del_prefix(Operator):
-    bl_idname = 'ps.del_prefix'
+    bl_idname = 'object.ps_del_prefix'
     bl_label = 'Delete Prefixes'
     bl_description = 'Delete Prefix in Object'
     bl_options = {'REGISTER', 'UNDO'}
@@ -76,14 +76,14 @@ class PS_OT_del_prefix(Operator):
 
 
 def button_in_header(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     if props.b_color_radomizer:
         layout = self.layout
         row = layout.row(align = True)
         row.scale_x = 1.3
-        row.operator('ps.set_color', text='',  icon='COLOR')
+        row.operator('object.ps_set_color', text='',  icon='COLOR')
         row.scale_x = 1.0
-        row.operator('ps.del_prefix', text='',  icon='X') 
+        row.operator('object.ps_del_prefix', text='',  icon='X')
 
 
 class PS_color_store(PropertyGroup):

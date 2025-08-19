@@ -5,7 +5,7 @@ from bpy.props import BoolProperty, IntProperty
 
 
 class PS_OT_cylinder_optimizer(Operator):
-    bl_idname = "ps.cylinder_optimizer"
+    bl_idname = "mesh.ps_cylinder_optimizer"
     bl_label = "Cylinder Optimizer"
     bl_description="Select one longitudinal edge from the cylinder. (Works only with cylinders that have the correct geometry)" # TODO
     bl_options = {'REGISTER', 'UNDO'}
@@ -14,7 +14,7 @@ class PS_OT_cylinder_optimizer(Operator):
     skip: IntProperty(name="Deselected", min=1, default=1)
     nth: IntProperty(name="Selected", min=1, default=1)
     offset: IntProperty(name="Offset", default=0)
-    
+
     dissolve: BoolProperty(name="Dissolve Edges", default=True)
     use_verts: BoolProperty(name="Dissolve Vertices", default=True)
     use_face_split: BoolProperty(name="Face Split", default=False)

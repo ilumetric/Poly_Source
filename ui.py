@@ -1,15 +1,15 @@
 import bpy
 import bmesh
-from bpy.types import Operator, Panel, Menu
+from bpy.types import Panel, Menu
 from .icons import preview_collections
 from .utils.utils import get_active_3d_view
-from bpy.props import EnumProperty
+
 from . import check
 
 
 
 def get_polygons_count_ui(context, layout):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     pcoll = preview_collections['main']
     ngon_icon = pcoll['ngon_icon']
     quad_icon = pcoll['quad_icon']
@@ -49,17 +49,17 @@ def get_polygons_count_ui(context, layout):
                                 _quad += 1
                             else:
                                 _ngon += 1
-            
-            layout.operator('ps.select_polygons', text=str(_ngon), icon_value=ngon_icon.icon_id).polygon_type = 'NGONS'    
-            layout.operator('ps.select_polygons', text=str(_quad), icon_value=quad_icon.icon_id).polygon_type = 'QUADS'
-            layout.operator('ps.select_polygons', text=str(_tris), icon_value=tris_icon.icon_id).polygon_type = 'TRIS'
+
+            layout.operator('mesh.ps_select_polygons', text=str(_ngon), icon_value=ngon_icon.icon_id).polygon_type = 'NGONS'
+            layout.operator('mesh.ps_select_polygons', text=str(_quad), icon_value=quad_icon.icon_id).polygon_type = 'QUADS'
+            layout.operator('mesh.ps_select_polygons', text=str(_tris), icon_value=tris_icon.icon_id).polygon_type = 'TRIS'
 
         else:
-            layout.operator('ps.select_polygons', text='', icon_value=ngon_icon.icon_id).polygon_type = 'NGONS'    
-            layout.operator('ps.select_polygons', text='', icon_value=quad_icon.icon_id).polygon_type = 'QUADS'
-            layout.operator('ps.select_polygons', text='', icon_value=tris_icon.icon_id).polygon_type = 'TRIS'
+            layout.operator('mesh.ps_select_polygons', text='', icon_value=ngon_icon.icon_id).polygon_type = 'NGONS'
+            layout.operator('mesh.ps_select_polygons', text='', icon_value=quad_icon.icon_id).polygon_type = 'QUADS'
+            layout.operator('mesh.ps_select_polygons', text='', icon_value=tris_icon.icon_id).polygon_type = 'TRIS'
 
-            box = layout.box()   
+            box = layout.box()
             box.label(text='Vertex/Obj Excess', icon='ERROR')
 
 
@@ -70,19 +70,19 @@ def bool_ui(context, layout):
     bool_intersect_icon = pcoll['bool_intersect']
     bool_slice_icon = pcoll['bool_slice']
     row = layout.row(align=True)
-    row.operator('ps.bool_difference', text='', icon_value=bool_diff_icon.icon_id)
-    row.operator('ps.bool_union', text='', icon_value=bool_union_icon.icon_id)
-    row.operator('ps.bool_intersect', text='', icon_value=bool_intersect_icon.icon_id)
-    row.operator('ps.bool_slice', text='', icon_value=bool_slice_icon.icon_id)
+    row.operator('object.ps_bool_difference', text='', icon_value=bool_diff_icon.icon_id)
+    row.operator('object.ps_bool_union', text='', icon_value=bool_union_icon.icon_id)
+    row.operator('object.ps_bool_intersect', text='', icon_value=bool_intersect_icon.icon_id)
+    row.operator('object.ps_bool_slice', text='', icon_value=bool_slice_icon.icon_id)
 
 
 def header_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
-    settings = context.scene.PS_scene_set
+    props = context.preferences.addons['Poly_Source'].preferences
+    settings = context.scene.poly_source
     pcoll = preview_collections['main']
     check_icon = pcoll['check_icon']
 
-    
+
     if context.region.alignment == 'TOP':
         if context.object:
             if context.object.type == 'MESH':
@@ -101,8 +101,8 @@ def header_panel(self, context):
 
 
 def viewHeader_L_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
-    settings = context.scene.PS_scene_set
+    props = context.preferences.addons['Poly_Source'].preferences
+    settings = context.scene.poly_source
     pcoll = preview_collections['main']
     check_icon = pcoll['check_icon']
 
@@ -123,8 +123,8 @@ def viewHeader_L_panel(self, context):
 
 
 def viewHeader_R_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
-    settings = context.scene.PS_scene_set
+    props = context.preferences.addons['Poly_Source'].preferences
+    settings = context.scene.poly_source
     pcoll = preview_collections['main']
     check_icon = pcoll['check_icon']
 
@@ -144,13 +144,39 @@ def viewHeader_R_panel(self, context):
                     bool_ui(context, layout)
 
 
-def tool_panel(self, context):
-    props = context.preferences.addons[__package__].preferences
-    settings = context.scene.PS_scene_set
-    pcoll = preview_collections['main']
-    check_icon = pcoll['check_icon']
+# def tool_panel(self, context):
+#     props = context.preferences.addons['Poly_Source'].preferences
+#     settings = context.scene.poly_source
+#     pcoll = preview_collections['main']
+#     check_icon = pcoll['check_icon']
 
+#     if context.object:
+#         if context.object.type == 'MESH':
+#             if props.b_count_tool_header:
+#                 layout = self.layout
+#                 row = layout.row(align=True)
+#                 row.popover(panel='PS_PT_tool_kit', text='')
+#                 get_polygons_count_ui(context, row)
+#                 row.separator(factor=0.2)
+#                 row.prop(settings, 'PS_check', text='' , icon_value=check_icon.icon_id)
+#                 if settings.PS_check:
+#                     row.popover(panel='PS_PT_check', text='')
+#                 #check_panel(self, context, row)
+#                 if props.b_bool_tool:
+#                     bool_ui(context, layout)
+
+
+def tool_panel(self, context):
+    layout = self.layout
+
+    self.draw_tool_settings(context)
+
+    layout.separator_spacer()
     if context.object:
+        props = context.preferences.addons['Poly_Source'].preferences
+        settings = context.scene.poly_source
+        pcoll = preview_collections['main']
+        check_icon = pcoll['check_icon']
         if context.object.type == 'MESH':
             if props.b_count_tool_header:
                 layout = self.layout
@@ -161,16 +187,16 @@ def tool_panel(self, context):
                 row.prop(settings, 'PS_check', text='' , icon_value=check_icon.icon_id)
                 if settings.PS_check:
                     row.popover(panel='PS_PT_check', text='')
-                #check_panel(self, context, row)
                 if props.b_bool_tool:
                     bool_ui(context, layout)
+    layout.separator_spacer()
 
-
+    self.draw_mode_settings(context)
 
 # --- ADD OBJECT
 # Layout
 def custom_objects(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
 
     if props.b_add_objects:
         pcoll = preview_collections["main"]
@@ -181,9 +207,9 @@ def custom_objects(self, context):
         layout = self.layout
         layout.separator()
         layout.label(text='Poly Source')
-        layout.operator("ps.create_cube", text="Cube", icon_value=cube_icon.icon_id)
-        layout.operator("ps.create_cylinder", text="Cylinder", icon_value=cylinder_icon.icon_id)
-        layout.operator("ps.create_tube", text="Tube", icon_value=tube_icon.icon_id)
+        layout.operator("object.ps_create_cube", text="Cube", icon_value=cube_icon.icon_id)
+        layout.operator("object.ps_create_cylinder", text="Cylinder", icon_value=cylinder_icon.icon_id)
+        layout.operator("object.ps_create_tube", text="Tube", icon_value=tube_icon.icon_id)
     else:
         pass
 
@@ -202,47 +228,40 @@ def transform_panel(self, context, pie):
         box.label(text='Reset Transform')
         box.scale_x = 1.3
 
-        row = box.row() 
-        row.operator('ps.reset_location_object', text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator('ps.reset_location_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator('ps.reset_location_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator('ps.reset_location_object', text='Location').axis = 'ALL'
-        
         row = box.row()
-        row.operator('ps.reset_rotation_object', text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator('ps.reset_rotation_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator('ps.reset_rotation_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator('ps.reset_rotation_object', text='Rotation').axis = 'ALL'
-        
+        row.operator('object.ps_reset_location_object', text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator('object.ps_reset_location_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator('object.ps_reset_location_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
+        row.operator('object.ps_reset_location_object', text='Location').axis = 'ALL'
+
         row = box.row()
-        row.operator('ps.reset_scale_object', text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator('ps.reset_scale_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator('ps.reset_scale_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator('ps.reset_scale_object', text='Scale').axis = 'ALL'
-                 
-        box.operator("ps.reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL_T'
+        row.operator('object.ps_reset_rotation_object', text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator('object.ps_reset_rotation_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator('object.ps_reset_rotation_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
+        row.operator('object.ps_reset_rotation_object', text='Rotation').axis = 'ALL'
+
+        row = box.row()
+        row.operator('object.ps_reset_scale_object', text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator('object.ps_reset_scale_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator('object.ps_reset_scale_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
+        row.operator('object.ps_reset_scale_object', text='Scale').axis = 'ALL'
+
+        box.operator("object.ps_reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL_T'
 
     elif context.mode == 'EDIT_MESH':
         box.label(text='Reset Transform')
         box.scale_x = 1.3
 
         row = box.row()
-        row.operator("ps.locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator("ps.locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator("ps.locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator("ps.locvert", text='Location').axis = 'ALL'
+        row.operator("mesh.ps_locvert", text='', icon_value=x_icon.icon_id).axis = 'X'
+        row.operator("mesh.ps_locvert", text='', icon_value=y_icon.icon_id).axis = 'Y'
+        row.operator("mesh.ps_locvert", text='', icon_value=z_icon.icon_id).axis = 'Z'
+        row.operator("mesh.ps_locvert", text='Location').axis = 'ALL'
 
 
 def display_panel(self, context, layout):
     pcoll = preview_collections['main']
-    calculate_icon = pcoll['calculate_icon']
-    check_icon = pcoll['check_icon']
-    box_icon = pcoll['box_icon']
-    grid_icon = pcoll['grid_icon']
     draw_icon = pcoll['draw_icon']
-
-    props = context.preferences.addons[__package__].preferences
-    settings = context.scene.PS_scene_set
 
     space_data = get_active_3d_view()
 
@@ -261,46 +280,48 @@ def display_panel(self, context, layout):
         else:
             layout.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
 
-    # --- Envira Grid
-    if settings.PS_envira_grid:
-        box = layout.box()
-        row = box.row()
-        row.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
-        row.prop(settings, 'box', icon_value=box_icon.icon_id)
-    
-        row = box.row()
-        row.prop(settings, 'one_unit', expand=True)
-        row.prop(settings, 'one2one', toggle=True)
-        
-        row_all = box.row()
-        if settings.one2one:
-            row_all.prop(settings, 'unit_x')
+    # unit grid UI перенесён в отдельную панель PS_PT_UnitGrid
 
-        else:
-            row = row_all.row(align=True)
+
+class PS_PT_UnitGrid(Panel):
+    bl_label = 'Unit Grid'
+    bl_idname = 'PS_PT_UnitGrid'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'PS'
+
+    def draw_header(self, context):
+        self.layout.prop(context.scene.poly_source, "draw_grid", text="")
+
+    def draw(self, context):
+        settings = context.scene.poly_source
+        if settings.draw_grid:
+            layout = self.layout
+            pcoll = preview_collections['main']
+            box_icon = pcoll['box_icon']
+            row = layout.row()
+            row.prop(settings, 'box', text="Draw Box", toggle=True, icon_value=box_icon.icon_id)
+            row.prop(settings, 'grid_xray', toggle=True)
+            row.prop(settings, 'one2one', toggle=True)
+
+            row = layout.row(align=True)
             row.prop(settings, 'unit_x')
-            row.prop(settings, 'unit_y')
+            if settings.one2one is False:
+                row.prop(settings, 'unit_y')
+            if settings.box:
+                row.prop(settings, 'height')
 
-        box.prop(settings, 'float_z')
-        box.prop(settings, 'padding')
+            row = layout.row()
+            row.prop(settings, 'padding')
+            row.prop(settings, 'offset_z')
 
-        if settings.box:
-            box.prop(settings, 'box_height')
-
-        box.prop(settings, 'draw_unit_grid')
-        if settings.draw_unit_grid:
-            box.prop(settings, 'one_unit_length')
-    
-    else:
-        layout.prop(settings, 'PS_envira_grid', icon_value=grid_icon.icon_id)
-
-    # --- Operators
-    box = layout.box()
-    box.prop(props, 'maxVerts')
-    box.prop(props, 'maxObjs')
-
-
-
+            if settings.draw_sub_grid:
+                row = layout.row(align=True)
+                row.prop(settings, 'draw_sub_grid', text="", icon='MESH_GRID')
+                row.prop(settings, 'grid_cell_size')
+                row.prop(settings, 'grid_align_center', text="", icon='SNAP_FACE_CENTER')
+            else:
+                layout.prop(settings, 'draw_sub_grid')
 
 
 class PS_PT_tool_kit(Panel):
@@ -310,9 +331,9 @@ class PS_PT_tool_kit(Panel):
     bl_region_type = 'WINDOW'
     bl_ui_units_x = 13
 
-    
+
     def draw(self, context):
-        settings = context.scene.PS_scene_set
+        settings = context.scene.poly_source
         layout = self.layout
         row = layout.row(align=False)
         right = row.column(align=False)
@@ -335,11 +356,11 @@ class PS_PT_check(Panel):
     bl_region_type = 'WINDOW'
     #bl_ui_units_x = 13
 
-    
+
     def draw(self, context):
-        settings = context.scene.PS_scene_set
+        settings = context.scene.poly_source
         layout = self.layout
-        
+
         row = layout.row()
         col = row.column()
         col.scale_y = 1.5
@@ -358,7 +379,7 @@ class PS_PT_check(Panel):
         col.prop(settings, "elongated_tris", toggle=True)
         col.prop(settings, "custom_count", toggle=True)
 
-     
+
         if settings.elongated_tris:
             layout.prop(settings, "elongated_aspect_ratio")
 
@@ -368,19 +389,19 @@ class PS_PT_check(Panel):
         """ if settings.analyze_edges_curvature:
             layout.prop(settings, "base_edge_size")
             layout.prop(settings, "adaptive_curvature_threshold") """
-        
+
 
         if True in [settings.v_alone, settings.v_bound, settings.e_pole, settings.n_pole, settings.f_pole, settings.tris, settings.ngone, settings.non_manifold_check, settings.custom_count]:
             box = layout.box()
             if settings.v_alone:
                 box.label(text='Vertex Alone: ' + str(len(check.v_alone_co)))
-            
+
             if settings.v_bound:
                 box.label(text='Vertex Boundary: ' + str(len(check.v_bound_co)))
-            
+
             if settings.e_pole:
                 box.label(text='Vertex E-Pole: ' + str(len(check.e_pole_co)))
-            
+
             if settings.n_pole:
                 box.label(text='Vertex N-Pole: ' + str(len(check.n_pole_co)))
 
@@ -395,7 +416,7 @@ class PS_PT_check(Panel):
 
             if settings.non_manifold_check:
                 box.label(text='Non Manifold: ' + str(len(check.e_non_idx)))
-            
+
             if settings.elongated_tris:
                 box.label(text='Elongated Tris: ' + str(len(check.elongated_tris_co)//3))
 
@@ -405,16 +426,6 @@ class PS_PT_check(Panel):
 
         layout.prop(settings, "xray_for_check")
         layout.prop(settings, "use_mod_che")
-
-
-
-
-
-
-
-
-
-
 
 
 class PS_MT_modifiers(Menu):
@@ -427,12 +438,10 @@ class PS_MT_modifiers(Menu):
         fix_icon = pcoll["fix_icon"]
 
         layout = self.layout
-        layout.operator('ps.tris_weighted_normal', text='Tris & Weighted Normal', icon_value=fix_icon.icon_id)
-        layout.operator('ps.triangulate', text='Triangulate', icon='MOD_TRIANGULATE')
-        layout.operator('ps.normalfix', text='Normal Fix', icon_value=fix_icon.icon_id)
-        layout.operator('ps.add_subsurf_and_bevel', text='Crease Bevel', icon_value=bevelSub.icon_id)
-        layout.operator('ps.solidify', text='Solidify', icon='MOD_SOLIDIFY')
-
+        layout.operator('object.ps_tris_weighted_normal', text='Tris & Weighted Normal', icon_value=fix_icon.icon_id)
+        layout.operator('object.ps_triangulate', text='Triangulate', icon='MOD_TRIANGULATE')
+        layout.operator('object.ps_add_subsurf_and_bevel', text='Crease Bevel', icon_value=bevelSub.icon_id)
+        layout.operator('object.ps_solidify', text='Solidify', icon='MOD_SOLIDIFY')
 
 
 class PS_MT_test(Menu):
@@ -443,21 +452,21 @@ class PS_MT_test(Menu):
         layout = self.layout
 
         if context.mode == 'EDIT_MESH':
-            layout.operator("ps.clear_dots", icon='SHADERFX')
-            layout.operator("ps.remove_vertex_non_manifold", icon='SHADERFX')
-            layout.operator("ps.cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
-            layout.operator("ps.cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
-            layout.operator("ps.del_long_faces")
+            layout.operator("mesh.ps_clear_dots", icon='SHADERFX')
+            layout.operator("mesh.ps_remove_vertex_non_manifold", icon='SHADERFX')
+            layout.operator("mesh.ps_cylinder_optimizer", icon='MESH_CYLINDER').rounding = False
+            layout.operator("mesh.ps_cylinder_optimizer", text='Rounding Up', icon='MESH_CYLINDER').rounding = True
+            layout.operator("mesh.ps_del_long_faces")
             layout.operator("outliner.orphans_purge", text="Purge")
-            layout.operator('ps.fill_from_points')
+            layout.operator('mesh.ps_fill_from_points')
 
         if context.mode == 'OBJECT':
-            layout.operator('ps.transfer_transform')
-            layout.operator('ps.clear_materials')
-            layout.operator('ps.clear_data')
-            layout.operator('ps.unreal_material')
-            layout.operator('ps.distribute_objects')
-        
+            layout.operator('object.ps_transfer_transform')
+            layout.operator('object.ps_clear_materials')
+            layout.operator('object.ps_clear_data')
+            layout.operator('object.ps_unreal_material')
+            layout.operator('object.ps_distribute_objects')
+
 
 class PS_MT_main(Menu):
     bl_label = 'Poly Source'
@@ -478,10 +487,36 @@ class PS_MT_main(Menu):
 
         if context.mode == 'EDIT_MESH':
             layout.separator()
-            layout.operator('ps.edge_data', text='Seam', icon_value=seam_icon.icon_id).mode = 'SEAM'
-            layout.operator('ps.edge_data', text='Sharp', icon_value=sharp_icon.icon_id).mode = 'SHARP'
-            layout.operator('ps.edge_data', text='Bevel', icon_value=bevelW_icon.icon_id).mode = 'BEVEL'
-            layout.operator('ps.edge_data', text='Crease', icon_value=creaseW_icon.icon_id).mode = 'CREASE'
+            op = layout.operator('mesh.ps_set_edge_data', text='Seam / Sharp', icon_value=seam_icon.icon_id)
+            op.do_seam = True
+            op.do_sharp = True
+            op.do_bevel = False
+            op.do_crease = False
+
+            op = layout.operator('mesh.ps_set_edge_data', text='Seam', icon_value=seam_icon.icon_id)
+            op.do_seam = True
+            op.do_sharp = False
+            op.do_bevel = False
+            op.do_crease = False
+
+            op = layout.operator('mesh.ps_set_edge_data', text='Sharp', icon_value=sharp_icon.icon_id)
+            op.do_sharp = True
+            op.do_seam = False
+            op.do_bevel = False
+            op.do_crease = False
+
+            op = layout.operator('mesh.ps_set_edge_data', text='Bevel', icon_value=bevelW_icon.icon_id)
+            op.do_bevel = True
+            op.do_seam = False
+            op.do_sharp = False
+            op.do_crease = False
+
+            op = layout.operator('mesh.ps_set_edge_data', text='Crease', icon_value=creaseW_icon.icon_id)
+            op.do_crease = True
+            op.do_seam = False
+            op.do_sharp = False
+            op.do_bevel = False
+
             layout.separator()
             layout.operator('mesh.edges_select_sharp', icon='LINCURVE')
             layout.operator('mesh.select_nth', icon='TEXTURE_DATA')
@@ -490,31 +525,26 @@ class PS_MT_main(Menu):
             layout.operator('mesh.region_to_loop', text='Boundary Loop', icon='MESH_GRID')
 
 
-
 def rmb_menu(self, context):
     if context.mode in ['OBJECT', 'EDIT_MESH']:
         self.layout.menu('PS_MT_main')
 
 
-
-
-
 def preset_increment_angle(self, context):
-    props = context.preferences.addons[__package__].preferences
+    props = context.preferences.addons['Poly_Source'].preferences
     if props.b_presets_increment_angles:
-        self.layout.prop(context.scene.PS_scene_set, 'increment_angles', expand=True)
+        self.layout.prop(context.scene.poly_source, 'increment_angles', expand=True)
 
 
 def outliner_header_button(self, context):
     layout = self.layout
-    layout.operator('ps.random_name', text='', icon='QUESTION')
+    layout.operator('object.ps_random_name', text='', icon='QUESTION')
 
 
 classes = [
     PS_PT_tool_kit,
     PS_PT_check,
-
-
+    PS_PT_UnitGrid,
     PS_MT_modifiers,
     PS_MT_test,
     PS_MT_main,
@@ -525,10 +555,14 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+
+    bpy.types.VIEW3D_HT_tool_header.draw = tool_panel
+
+
     bpy.types.TOPBAR_HT_upper_bar.append(header_panel)
     bpy.types.VIEW3D_MT_editor_menus.append(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.append(viewHeader_R_panel)
-    bpy.types.VIEW3D_HT_tool_header.append(tool_panel)
+    #bpy.types.VIEW3D_HT_tool_header.append(tool_panel)
     bpy.types.VIEW3D_MT_mesh_add.append(custom_objects)
 
 
@@ -548,7 +582,7 @@ def unregister():
     bpy.types.TOPBAR_HT_upper_bar.remove(header_panel)
     bpy.types.VIEW3D_MT_editor_menus.remove(viewHeader_L_panel)
     bpy.types.VIEW3D_HT_header.remove(viewHeader_R_panel)
-    bpy.types.VIEW3D_HT_tool_header.remove(tool_panel)
+    #bpy.types.VIEW3D_HT_tool_header.remove(tool_panel)
     bpy.types.VIEW3D_MT_mesh_add.remove(custom_objects)
 
 

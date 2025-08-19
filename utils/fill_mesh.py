@@ -13,7 +13,7 @@
 # NOTE: This script is expecting to work with flat, reasonably clean geometry.
 # For example, it is expected to be used when generating collision on the
 # ceiling and walls of an architectural visualization project, but is not
-# expected to perform well with round or n-gon geometry. Using 
+# expected to perform well with round or n-gon geometry. Using
 # create_closed_objects=True and matchup_degenerates=True, in particular, does
 # not work well with objects that have openings inside.
 #
@@ -617,7 +617,7 @@ def dupe_name_sequence(base_name, skiplist=None):
 
 
 class PS_OT_fill_mesh(Operator):
-    bl_idname = 'ps.fill_mesh'
+    bl_idname = 'mesh.ps_fill_mesh'
     bl_label = 'Fill Mesh'
     bl_description = ''
 
@@ -637,7 +637,7 @@ class PS_OT_fill_mesh(Operator):
         bm_new.from_mesh(me, face_normals=True, use_shape_key=False)
         verts = [v for v in bm_new.verts if v.select]
         convex_hull = bmesh.ops.convex_hull(bm_new, input=verts, use_existing_faces=True)
-        
+
         bm_new.verts.ensure_lookup_table()
         bm_new.edges.ensure_lookup_table()
         bm_new.faces.ensure_lookup_table()
@@ -656,7 +656,7 @@ class PS_OT_fill_mesh(Operator):
         # --- New
         #bm = bmesh.new()
 
-        print(vI)        
+        print(vI)
         bmesh.update_edit_mesh(me)
         return {'FINISHED'}
 

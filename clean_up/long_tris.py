@@ -7,7 +7,7 @@ from math import degrees, atan2, pi
 
 
 class PS_OT_del_long_faces(Operator):
-    bl_idname = "ps.del_long_faces"
+    bl_idname = "mesh.ps_del_long_faces"
     bl_label = "Delete Long Faces"
     #bl_description="To Remove A Single Vertex"
     bl_options = {'REGISTER', 'UNDO'}
@@ -17,17 +17,17 @@ class PS_OT_del_long_faces(Operator):
     use_face_split: BoolProperty(name='Use Face Split', default=False)
     use_boundary_tear: BoolProperty(name='Use Boundary Tear', default=False)
     selected: BoolProperty(name='Selected Faces', default=False)
-    logics: EnumProperty( 
+    logics: EnumProperty(
         name = 'Logics',
         items = [
             ("GREATER_THAN", "Greater Than", ""),
             ("NOT_EQUAL_TO", "Not Equal To", ""),
-            ("EQUAL_TO", "Equal To", ""), 
+            ("EQUAL_TO", "Equal To", ""),
             ("LESS_THAN", "Less Than", ""),
-            ], 
+            ],
         default="GREATER_THAN",
         )
-    
+
 
 
     @classmethod
@@ -47,28 +47,28 @@ class PS_OT_del_long_faces(Operator):
             bm.verts.ensure_lookup_table()
 
             vDots = []
-            
 
-            # project into XY plane, 
+
+            # project into XY plane,
             up = Vector((0, 0, 1))
 
-            
+
             def edge_angle(e1, e2, face_normal):
                 b = set(e1.verts).intersection(e2.verts).pop()
                 a = e1.other_vert(b).co - b.co
                 c = e2.other_vert(b).co - b.co
-                a.negate()    
+                a.negate()
                 axis = a.cross(c).normalized()
                 if axis.length < 1e-5:
                     return pi # inline vert
-                
+
                 if axis.dot(face_normal) < 0:
                     axis.negate()
-                M = axis.rotation_difference(up).to_matrix().to_4x4()  
+                M = axis.rotation_difference(up).to_matrix().to_4x4()
 
                 a = (M @ a).xy.normalized()
                 c = (M @ c).xy.normalized()
-                
+
                 return pi - atan2(a.cross(c), a.dot(c))
 
 
@@ -82,7 +82,7 @@ class PS_OT_del_long_faces(Operator):
                 edges = f.edges[:]
                 #print("Face", f.index, "Edges:", [e.index for e in edges])
                 edges.append(f.edges[0])
-                
+
                 for e1, e2 in zip(edges, edges[1:]):
 
                     angle = edge_angle(e1, e2, f.normal)
@@ -108,18 +108,18 @@ class PS_OT_del_long_faces(Operator):
                         if degrees(angle) != self.angle:
                             vDots.append(v)
                             vCount += 1
-                    
+
                     elif self.logics == 'EQUAL_TO':
                         if degrees(angle) == self.angle:
                             vDots.append(v)
                             vCount += 1
-                    
+
                     elif self.logics == 'LESS_THAN':
                         if degrees(angle) < self.angle:
                             vDots.append(v)
                             vCount += 1
 
-                            
+
                     #print("Edge Corner", e1.index, e2.index, "Angle:", degrees(angle))
 
             # --- Delete Duplicate Vector
@@ -134,7 +134,7 @@ class PS_OT_del_long_faces(Operator):
 
             if len(vDots) > 0:
                 #print(vDots)
-                bmesh.ops.dissolve_verts(bm, verts=vDots, use_face_split=self.use_face_split, use_boundary_tear=self.use_boundary_tear) 
+                bmesh.ops.dissolve_verts(bm, verts=vDots, use_face_split=self.use_face_split, use_boundary_tear=self.use_boundary_tear)
                 #bmesh.ops.delete(mesh, geom=vDots, context='VERTS')
                 bmesh.update_edit_mesh(me)
                 """ bm.to_mesh(me)

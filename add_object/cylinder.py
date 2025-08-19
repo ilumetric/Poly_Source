@@ -10,19 +10,19 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 
 ####################################################################################################### CILINDER
 class PS_OT_create_cylinder(Operator, AddObjectHelper): #FIXME
-    bl_idname = 'ps.create_cylinder'
+    bl_idname = 'object.ps_create_cylinder'
     bl_label = 'Create Cylinder'
     bl_options = {"REGISTER", "UNDO"}
- 
+
 
     count: IntProperty(name = "Edges", description = "Edges count", default = 8, min = 3)
     radius: FloatProperty(name = "Radius", default = 1)
-    
+
     h: FloatProperty(name = "Height", description = "Height", default = 1.0)
-    
+
     used_eSize: BoolProperty(name="Use The Edge Size", default=False)
     eSize: FloatProperty(name = "Edge Length Min", description = "Set the minimum edge length", default = 0.5)
-    
+
 
 
     def create_verts(self, context):
@@ -34,25 +34,25 @@ class PS_OT_create_cylinder(Operator, AddObjectHelper): #FIXME
         if self.used_eSize:
             length = self.eSize * self.count
             radius_ = length / (2 * math.pi)
-        else:   
+        else:
             radius_ = self.radius
 
 
-        
+
         for i in range(self.count):
             grad = (360 * i / self.count) * math.pi / 180
             ring1.append([radius_ * math.cos(grad), radius_ * math.sin(grad), 0])
             ring2.append([radius_ * math.cos(grad), radius_ * math.sin(grad), self.h])
-            
+
             if i == 0:
                 faces.append([i - 1 + self.count, i - 1 + 2 * self.count, i + self.count, i])
-            
+
             else:
                 faces.append([i - 1, i - 1 + self.count, i + self.count, i])
 
         verts.extend(ring2)
         verts.extend(ring1)
-        
+
 
         return verts, faces
 
@@ -61,16 +61,16 @@ class PS_OT_create_cylinder(Operator, AddObjectHelper): #FIXME
 
         verts, faces = self.create_verts(context)
 
-  
+
         me = bpy.data.meshes.new("Cylinder")
         me.from_pydata(verts, [], faces)
-        
+
 
         # useful for development when the mesh may be invalid.
         # mesh.validate(verbose=True)
         object_data_add(context, me, operator=self)
-        
-        
+
+
         return {'FINISHED'}
 
 
@@ -86,8 +86,8 @@ class PS_OT_create_cylinder(Operator, AddObjectHelper): #FIXME
         layout.prop(self, "radius")
 
         layout.separator()
-        layout.prop(self, "h")  
-        
+        layout.prop(self, "h")
+
         layout.separator()
         layout.prop(self, "align")
         layout.prop(self, "location")
@@ -97,15 +97,15 @@ class PS_OT_create_cylinder(Operator, AddObjectHelper): #FIXME
 
 ####################################################################################################### TUBE
 class PS_OT_create_tube(Operator, AddObjectHelper): #FIXME
-    bl_idname = 'ps.create_tube'
+    bl_idname = 'object.ps_create_tube'
     bl_label = 'Create Tube'
     bl_options = {"REGISTER", "UNDO"}
- 
+
     count: IntProperty(name = "Edges", description = "Edges count", default = 8, min = 3)
     r1: FloatProperty(name = "O-Radius", description = "Outer radius", default = 1)
     r2: FloatProperty(name = "I-Radius", description = "Inner radius", default = 0.5)
     h: FloatProperty(name = "Height", description = "Height", default = 1.0)
-    
+
     used_eSize: BoolProperty(name="Use The Edge Size", default=False)
     eSize: FloatProperty(name = "Edge Length Min", description = "Set the minimum edge length", default = 0.5)
 
@@ -120,10 +120,10 @@ class PS_OT_create_tube(Operator, AddObjectHelper): #FIXME
         if self.used_eSize:
             length = self.eSize * self.count
             radius_ = length / (2 * math.pi)
-        else:   
+        else:
             radius_ = self.r1
 
-    
+
         if self.r2 > radius_: #FIXME add none
             iner_radius_ = radius_
         elif self.r2 <= 0.0: # add cup
@@ -149,7 +149,6 @@ class PS_OT_create_tube(Operator, AddObjectHelper): #FIXME
                 faces.append([i - 1 + self.count, i - 1 + 3 * self.count, i + 3 * self.count, i + self.count])
                 faces.append([i - 1, i - 1 + self.count, i + self.count, i])
                 faces.append([i - 1 + 2 * self.count, i + 2 * self.count, i + 3 * self.count, i - 1 + 3 * self.count])
- 
 
 
 
@@ -159,7 +158,8 @@ class PS_OT_create_tube(Operator, AddObjectHelper): #FIXME
 
 
 
- 
+
+
         verts.extend(ring1)
         verts.extend(ring2)
         verts.extend(ring3)
@@ -201,8 +201,8 @@ class PS_OT_create_tube(Operator, AddObjectHelper): #FIXME
 
 
         layout.separator()
-        layout.prop(self, "h")  
-        
+        layout.prop(self, "h")
+
         layout.separator()
         layout.prop(self, "align")
         layout.prop(self, "location")
@@ -222,4 +222,4 @@ def register():
 
 def unregister():
     for cls in classes:
-        bpy.utils.unregister_class(cls) 
+        bpy.utils.unregister_class(cls)

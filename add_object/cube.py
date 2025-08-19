@@ -48,10 +48,10 @@ def add_box(width, height, depth):
 
 
 class PS_OT_create_cube(Operator, AddObjectHelper):
-    bl_idname = 'ps.create_cube'
+    bl_idname = 'object.ps_create_cube'
     bl_label = 'Create Cube'
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
- 
+
     subdivide: IntProperty(
         name="Subdivide",
         description="Subdivide Box",
@@ -146,14 +146,14 @@ class PS_OT_create_cube(Operator, AddObjectHelper):
         layout = self.layout
 
         layout.prop(self, "subdivide")
-      
+
 
         layout.separator()
         layout.prop(self, "width", text='X - Width')
         layout.prop(self, "depth", text='Y - Width')
         layout.prop(self, "height", text='Z - Width')
-    
-    
+
+
         layout.separator()
         layout.prop(self, "align")
         layout.prop(self, "location")
@@ -172,4 +172,4 @@ def register():
 
 def unregister():
     for cls in classes:
-        bpy.utils.unregister_class(cls) 
+        bpy.utils.unregister_class(cls)

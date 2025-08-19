@@ -16,11 +16,11 @@ def polycount(self, context):
             "handler": None,
         }
 
-        props = context.preferences.addons[__package__].preferences
-        settings = context.scene.PS_scene_set
+        props = context.preferences.addons['Poly_Source'].preferences
+        settings = context.scene.poly_source
 
- 
-    
+
+
 
         font_id_name = font_info["font_id"]
 
@@ -30,7 +30,7 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14)
         blf.color(font_id_name, 0.58, 0.72, 0.0, 1.0)
-        
+
         blf.enable(font_id_name, blf.SHADOW)
         blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
         blf.draw(font_id_name, name)
@@ -49,28 +49,28 @@ def polycount(self, context):
                 if name.endswith("_low") or name.endswith("_Low") or name.endswith("_LOW"):
                     for obj in collection.objects:
                         if obj.type == 'MESH':
-                            if obj.mode != 'EDIT': 
+                            if obj.mode != 'EDIT':
                                 tris += sum( [len(f.vertices) - 2 for f in obj.data.polygons] )
 
-                            elif obj.mode == 'EDIT':  
+                            elif obj.mode == 'EDIT':
                                 bm = bmesh.from_edit_mesh(obj.data)
                                 tris += sum( [len(f.verts) - 2 for f in bm.faces] )
                             else:
                                 pass
-            
+
         if tris > 0:
             coef = settings.tris_count / tris
         else:
             coef = 1
 
-        
-        
+
+
         if coef < 1:
-            col = (1.0, 0.1, 0.0) 
+            col = (1.0, 0.1, 0.0)
         elif 1.2 > coef > 1:
-            col = (1.0, 0.5, 0.0) 
+            col = (1.0, 0.5, 0.0)
         else:
-            col = (0.9, 0.9, 0.9) 
+            col = (0.9, 0.9, 0.9)
 
 
         offset = len(str(settings.tris_count)) * 6
@@ -80,11 +80,11 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14)
         blf.color(font_id_name, col[0], col[1], col[2], 1.0)
-        
+
         blf.enable(font_id_name, blf.SHADOW)
         blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
         blf.draw(font_id_name, name)
-        
+
 
 
 
@@ -92,18 +92,18 @@ def polycount(self, context):
         # ACTIVE
         tris = 0
         sel_obj = context.objects_in_mode_unique_data
-        for obj in sel_obj: 
+        for obj in sel_obj:
             if obj.type == 'MESH':
-                if obj.mode != 'EDIT': 
+                if obj.mode != 'EDIT':
                     tris += sum( [len(f.vertices) - 2 for f in obj.data.polygons] )
 
-                elif obj.mode == 'EDIT':  
+                elif obj.mode == 'EDIT':
                     bm = bmesh.from_edit_mesh(obj.data)
                     tris += sum( [len(f.verts) - 2 for f in bm.faces] )
                 else:
                     pass
 
-    
+
 
         width = 10
         height = 30
@@ -111,7 +111,7 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14)
         blf.color(font_id_name, 0.58, 0.72, 0.0, 1.0)
-        
+
         blf.enable(font_id_name, blf.SHADOW)
         blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
         blf.draw(font_id_name, name)
@@ -123,7 +123,7 @@ def polycount(self, context):
         blf.position(font_id_name, width, height, 0)
         blf.size(font_id_name, 14)
         blf.color(font_id_name, 0.9, 0.9, 0.9, 1.0)
-        
+
         blf.enable(font_id_name, blf.SHADOW)
         blf.shadow(font_id_name, 3, 0.0, 0.0, 0.0, 1.0)
         blf.draw(font_id_name, name)
@@ -141,25 +141,25 @@ class PS_GGT_polycount_group(GizmoGroup):
     bl_label = 'Poly Count'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'WINDOW'
-    bl_options = {'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL' 'PERSISTENT', 
+    bl_options = {'SHOW_MODAL_ALL'} #'DEPTH_3D' , 'TOOL_INIT', 'SELECT', , 'SCALE' , 'SHOW_MODAL_ALL' 'PERSISTENT',
 
 
     @classmethod
     def poll(cls, context):
         if context.active_object != None:
-            settings = context.scene.PS_scene_set
+            settings = context.scene.poly_source
             return settings.PS_polycount
 
 
     def setup(self, context):
         mesh = self.gizmos.new('PS_GT_polycount')
         mesh.use_draw_modal = True
-        self.mesh = mesh 
+        self.mesh = mesh
 
 
     def draw_prepare(self, context):
-        settings = context.scene.PS_scene_set
-        #props = context.preferences.addons[__package__].preferences
+        settings = context.scene.poly_source
+        #props = context.preferences.addons['Poly_Source'].preferences
         mesh = self.mesh
         if settings.PS_polycount:
             mesh.hide = False

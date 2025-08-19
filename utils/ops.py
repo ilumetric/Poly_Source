@@ -10,7 +10,7 @@ import string
 
 # получение полигонов по количеству сторон
 class PS_OT_select_polygons(Operator):
-    bl_idname = 'ps.select_polygons'
+    bl_idname = 'mesh.ps_select_polygons'
     bl_label = 'Select Polygons'
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = 'Select polygons by number of sides'
@@ -46,7 +46,7 @@ class PS_OT_select_polygons(Operator):
 
 
 class PS_OT_random_name(Operator): # установка случайного имени
-    bl_idname = 'ps.random_name'
+    bl_idname = 'object.ps_random_name'
     bl_label = 'Set Random Name'
     bl_description = 'Sets a random name of 11 letterse'
     bl_options = {'REGISTER', 'UNDO'}
@@ -72,7 +72,7 @@ class PS_OT_random_name(Operator): # установка случайного и�
 
 
 class PS_OT_clear_dots(Operator):
-    bl_idname = "ps.clear_dots"
+    bl_idname = "mesh.ps_clear_dots"
     bl_label = "Clear Dots"
     bl_description="To Remove A Single Vertex"
 
@@ -103,7 +103,7 @@ class PS_OT_clear_dots(Operator):
 
 
 class PS_OT_remove_vertex_non_manifold(Operator):
-    bl_idname = "ps.remove_vertex_non_manifold"
+    bl_idname = "mesh.ps_remove_vertex_non_manifold"
     bl_label = "Remove Non Manifold Vertex"
     bl_description="Remove Vertexes That Are Not Connected To Polygons"
 
@@ -134,7 +134,7 @@ class PS_OT_remove_vertex_non_manifold(Operator):
 
 
 class PS_OT_clear_materials(Operator):
-    bl_idname = 'ps.clear_materials'
+    bl_idname = 'object.ps_clear_materials'
     bl_label = 'Clear Materials'
     bl_description = 'To Remove All Materials From The Object'
     bl_optios = {'REGISTER', 'UNDO'}
@@ -159,7 +159,7 @@ class PS_OT_clear_materials(Operator):
 
 
 class PS_OT_clear_data(Operator):
-    bl_idname = 'ps.clear_data'
+    bl_idname = 'object.ps_clear_data'
     bl_label = 'Clear Data'
     bl_description = 'To Remove All Data From The Object'
 
@@ -236,7 +236,7 @@ class PS_OT_clear_data(Operator):
 
 # --- RESET
 class PS_OT_reset_location_object(Operator):
-    bl_idname = "ps.reset_location_object"
+    bl_idname = "object.ps_reset_location_object"
     bl_label = "Reset Location"
     """ bl_description = ("Reset All Transform\n"
                     "Location, Rotation, Scale") """
@@ -304,7 +304,7 @@ class PS_OT_reset_location_object(Operator):
 
 
 class PS_OT_reset_rotation_object(Operator):
-    bl_idname = 'ps.reset_rotation_object'
+    bl_idname = 'object.ps_reset_rotation_object'
     bl_label = 'Reset Rotation'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -354,7 +354,7 @@ class PS_OT_reset_rotation_object(Operator):
 
 
 class PS_OT_reset_scale_object(Operator):
-    bl_idname = 'ps.reset_scale_object'
+    bl_idname = 'object.ps_reset_scale_object'
     bl_label = 'Reset Scale'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -389,7 +389,7 @@ class PS_OT_reset_scale_object(Operator):
 
 
 class PS_OT_locvert(Operator):
-    bl_idname = 'ps.locvert'
+    bl_idname = 'mesh.ps_locvert'
     bl_label = 'Reset Vertex Location'
     bl_options = {'REGISTER', 'UNDO'} #, 'DEPENDS_ON_CURSOR'
 
@@ -548,7 +548,7 @@ class PS_OT_locvert(Operator):
 
 
 class PS_OT_transfer_transform(Operator): # --- Transfer Transform Data
-    bl_idname = 'ps.transfer_transform'
+    bl_idname = 'object.ps_transfer_transform'
     bl_label = 'Transfer Transform Data'
     bl_description = 'Transfer transformation data (location/rotation/scale) from the active object to the selected object.'
     bl_options = {'REGISTER', 'UNDO'}
@@ -592,7 +592,7 @@ class PS_OT_transfer_transform(Operator): # --- Transfer Transform Data
 
 
 class PS_OT_addcamera(Operator): # FIXME
-    bl_idname = "ps.addcamera"
+    bl_idname = "object.ps_addcamera"
     bl_label = "Add Camera"
     bl_description = ("Add Camera \n"
                      "and align to view")
@@ -607,7 +607,7 @@ class PS_OT_addcamera(Operator): # FIXME
 
 
 class PS_OT_add_material(Operator): # --- Add Material
-    bl_idname = 'ps.add_material'
+    bl_idname = 'object.ps_add_material'
     bl_label = 'Add Material'
     bl_description = 'Auto Smooth Angle 180'
     bl_options = {'REGISTER', 'UNDO'}
@@ -638,7 +638,7 @@ class PS_OT_add_material(Operator): # --- Add Material
 
 
 class PS_OT_fill_from_points(Operator):
-    bl_idname = 'ps.fill_from_points'
+    bl_idname = 'mesh.ps_fill_from_points'
     bl_label = 'Fill From Points'
     bl_options = {'REGISTER', 'UNDO'} #, 'DEPENDS_ON_CURSOR'
 
@@ -770,7 +770,7 @@ from math import radians
 
 
 class PS_OT_add_subsurf_and_bevel(Operator):
-    bl_idname = "ps.add_subsurf_and_bevel"
+    bl_idname = "object.ps_add_subsurf_and_bevel"
     bl_label = "Add Subdivision And Bevel"
     bl_description = ' '
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
@@ -925,64 +925,8 @@ class PS_OT_add_subsurf_and_bevel(Operator):
 
 
 
-class PS_OT_add_mirror_mod(Operator): # --- Modifieres Mirror
-
-    bl_idname = "ps.add_mirror_mod"
-    bl_label = "Mirror Modifier"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    axis: EnumProperty(
-        name='Axis',
-        items=[
-            ('X', 'X Axis', '', '', 0),
-            ('Y', 'Y Axis', '', '', 1),
-            ('Z', 'Z Axis', '', '', 2)],
-            default='X',
-            )
-
-    uv_offset: BoolProperty(name="UV Offset", description = "Shift the UV to +1 to avoid overlaps.", default=True)
-    show_on_cage: BoolProperty(name="On Cage", description = "Adjust edit cage to modifier result.", default=False)
-
-    mirror_x: BoolProperty(name="Mirror X", description = "Mirror the U(X) texture coordinate around the flip offset point.", default=False)
-    mirror_y: BoolProperty(name="Mirror Y", description = "Mirror the V(Y) texture coordinate around the flip offset point.", default=False)
-
-
-    def execute(self, context):
-        name = "PS Mirror"
-
-        for obj in context.selected_objects:
-
-            if obj.modifiers.get(name) is None:
-                obj.modifiers.new(name, 'MIRROR')
-                obj.modifiers[name].show_expanded = False
-                obj.modifiers[name].use_axis[0] = False
-
-            obj.modifiers[name].show_on_cage = self.show_on_cage
-
-            if self.axis == 'X':
-                obj.modifiers[name].use_axis[0] = True
-                #obj.modifiers[name].use_bisect_axis[0] = True
-
-            elif self.axis == 'Y':
-                obj.modifiers[name].use_axis[1] = True
-                #obj.modifiers[name].use_bisect_axis[1] = True
-
-            elif self.axis == 'Z':
-                obj.modifiers[name].use_axis[2] = True
-                #obj.modifiers[name].use_bisect_axis[2] = True
-
-            if self.uv_offset:
-                obj.modifiers[name].offset_u = 1.0
-
-            obj.modifiers[name].use_mirror_u = self.mirror_x
-            obj.modifiers[name].use_mirror_v = self.mirror_y
-
-        return {'FINISHED'}
-
-
-
 class PS_OT_triangulate(Operator):
-    bl_idname = "ps.triangulate"
+    bl_idname = "object.ps_triangulate"
     bl_label = "Triangulate"
     bl_description = "Triangulate Modifier"
     bl_options = {'REGISTER', 'UNDO'}
@@ -1004,8 +948,8 @@ class PS_OT_triangulate(Operator):
         return {'FINISHED'}
 
 
-class PS_OT_tris_weighted_normal(Operator):
-    bl_idname = "ps.tris_weighted_normal"
+class TrisWeightedNormal(Operator):
+    bl_idname = 'object.ps_tris_weighted_normal'
     bl_label = "Tris & Weighted Normal"
     bl_description = "Triangulate mesh and fix normals"
     bl_options = {'REGISTER', 'UNDO'}
@@ -1069,7 +1013,6 @@ class PS_OT_tris_weighted_normal(Operator):
             obj.modifiers[n_mod].keep_sharp = self.keep_sharp
             obj.modifiers[n_mod].use_face_influence = self.use_face_influence
 
-
             # triangulate
             if obj.modifiers.get(tri_mod) is None:
                 obj.modifiers.new(tri_mod, 'TRIANGULATE')
@@ -1083,122 +1026,137 @@ class PS_OT_tris_weighted_normal(Operator):
         return {'FINISHED'}
 
 
-class PS_OT_solidify(Operator): # --- Solidify
-    bl_idname = "ps.solidify"
+class Solidify(Operator):
+    bl_idname = 'object.ps_solidify'
     bl_label = "Solidify"
-    bl_description = ("Solidify Modifier")
+    bl_description = "Solidify Modifier"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         name = "PS Solidify"
-
         for obj in context.selected_objects:
             if obj.modifiers.get(name) is None:
                 obj.modifiers.new(name, 'SOLIDIFY')
                 obj.modifiers[name].show_expanded = False
-
             obj.modifiers[name].solidify_mode = 'NON_MANIFOLD'
             obj.modifiers[name].nonmanifold_boundary_mode = 'FLAT'
             obj.modifiers[name].offset = 1
             obj.modifiers[name].nonmanifold_thickness_mode = 'EVEN'
-
         return {'FINISHED'}
 
 
-
-
-
-
-
-class PS_OT_edge_data(Operator): # --- Bevel & Crease
-    bl_idname = "ps.edge_data"
-    bl_label = 'Mark'
+class SetEdgeData(Operator):
+    bl_idname = 'mesh.ps_set_edge_data'
+    bl_label = "Set Edge Data"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_description = "Toggle edge data (Bevel/Cease/Seam/Sharp) for selected edges using booleans: if any selected edge has any chosen data -> clear all, else -> set all."
 
-
-    mode: EnumProperty(
-        name='Mode',
-        items=[
-            ('BEVEL', 'Bevel Weight', '', '', 0),
-            ('CREASE', 'Crease Weight', '', '', 1),
-            ('SEAM', 'Seam', '', '', 2),
-            ('SHARP', 'Sharp', '', '', 3),
-            ],
-            default='BEVEL',
-            )
-
+    do_bevel: BoolProperty(name='Bevel', default=False)
+    do_crease: BoolProperty(name='Crease', default=False)
+    do_seam: BoolProperty(name='Seam', default=False)
+    do_sharp: BoolProperty(name='Sharp', default=False)
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         return context.mode == 'EDIT_MESH'
 
+    @classmethod
+    def description(cls, context, properties):
+        desc = "Toggle edge data"
+        if properties.do_bevel:
+            desc += " Bevel"
+        if properties.do_crease:
+            desc += " Crease"
+        elif properties.do_seam:
+            desc += " Seam"
+        if properties.do_sharp:
+            desc += " Sharp"
+        desc += " for selected edges using booleans: if any selected edge has any chosen data -> clear all, else -> set all."
+        return desc
 
     def execute(self, context):
-        for obj in context.objects_in_mode_unique_data:
+        # проверяем, есть ли активные флаги; если нет — ничего не делаем
+        if not any([self.do_bevel, self.do_crease, self.do_seam, self.do_sharp]):
+            return {'CANCELLED'}
+
+        uniques = list(context.objects_in_mode_unique_data)
+
+        # первый проход: проверяем, присутствуют ли выбранные данные у каких-либо выделенных ребер
+        any_has = False
+        for obj in uniques:
+            bm = bmesh.from_edit_mesh(obj.data)
+            bevel_layer = bm.edges.layers.float.get('bevel_weight_edge') if self.do_bevel else None
+            crease_layer = bm.edges.layers.float.get('crease_edge') if self.do_crease else None
+
+            for edge in bm.edges:
+                if not edge.select:
+                    continue
+                if self.do_bevel and bevel_layer and (edge[bevel_layer] > 0.0):
+                    any_has = True
+                    break
+                if self.do_crease and crease_layer and (edge[crease_layer] > 0.0):
+                    any_has = True
+                    break
+                if self.do_seam and edge.seam:
+                    any_has = True
+                    break
+                if self.do_sharp and (edge.smooth is False):
+                    any_has = True
+                    break
+            if any_has:
+                break
+
+        # второй проход: если что-то есть — выключаем, если пусто — включаем
+        for obj in uniques:
             bm = bmesh.from_edit_mesh(obj.data)
 
-            if self.mode == 'BEVEL':
-                if 'bevel_weight_edge' not in obj.data.attributes:
-                    bevel_edge = bm.edges.layers.float.new('bevel_weight_edge')
-                else:
-                    bevel_edge = bm.edges.layers.float.get('bevel_weight_edge')
+            if any_has:
+                # выключаем отмеченные опции
+                bevel_layer = bm.edges.layers.float.get('bevel_weight_edge') if self.do_bevel else None
+                crease_layer = bm.edges.layers.float.get('crease_edge') if self.do_crease else None
 
-                for edge in bm.edges:
-                    if edge.select:
-                        if edge[bevel_edge] > 0.0:
-                            for e in bm.edges:
-                                if e.select:
-                                    e[bevel_edge] = 0.0
-                            break
-                        else:
-                            edge[bevel_edge] = 1.0
+                for e in bm.edges:
+                    if not e.select:
+                        continue
+                    if self.do_bevel and bevel_layer:
+                        e[bevel_layer] = 0.0
+                    if self.do_crease and crease_layer:
+                        e[crease_layer] = 0.0
+                    if self.do_seam:
+                        e.seam = False
+                    if self.do_sharp:
+                        e.smooth = True
+            else:
+                # включаем отмеченные опции
+                bevel_layer = None
+                crease_layer = None
+                if self.do_bevel:
+                    bevel_layer = bm.edges.layers.float.get('bevel_weight_edge')
+                    if bevel_layer is None:
+                        bevel_layer = bm.edges.layers.float.new('bevel_weight_edge')
+                if self.do_crease:
+                    crease_layer = bm.edges.layers.float.get('crease_edge')
+                    if crease_layer is None:
+                        crease_layer = bm.edges.layers.float.new('crease_edge')
 
-            elif self.mode == 'CREASE':
-                if 'crease_edge' not in obj.data.attributes:
-                    crease_edge = bm.edges.layers.float.new('crease_edge')
-                else:
-                    crease_edge = bm.edges.layers.float.get('crease_edge')
-
-                for edge in bm.edges:
-                    if edge.select:
-                        if edge[crease_edge] > 0.0:
-                            for e in bm.edges:
-                                if e.select:
-                                    e[crease_edge] = 0.0
-                            break
-                        else:
-                            edge[crease_edge] = 1.0
-
-            elif self.mode == 'SEAM':
-                for edge in bm.edges:
-                    if edge.select:
-                        if edge.seam:
-                            for e in bm.edges:
-                                if e.select:
-                                    e.seam = False
-                            break
-                        else:
-                            edge.seam = True
-
-            elif self.mode == 'SHARP':
-                for edge in bm.edges:
-                    if edge.select:
-                        if edge.smooth:
-                            for e in bm.edges:
-                                if e.select:
-                                    e.smooth = False
-                            break
-                        else:
-                            edge.smooth = True
+                for e in bm.edges:
+                    if not e.select:
+                        continue
+                    if self.do_bevel:
+                        e[bevel_layer] = 1.0
+                    if self.do_crease:
+                        e[crease_layer] = 1.0
+                    if self.do_seam:
+                        e.seam = True
+                    if self.do_sharp:
+                        e.smooth = False
 
             bmesh.update_edit_mesh(obj.data)
         return {'FINISHED'}
 
 
-
-# TODO
-class PS_OT_unreal_material(bpy.types.Operator):
-    bl_idname = "ps.unreal_material"
+class UnrealMaterial(Operator):
+    bl_idname = 'object.ps_unreal_material'
     bl_label = "UE Material"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -1248,6 +1206,10 @@ class PS_OT_unreal_material(bpy.types.Operator):
         default=False,
         description="If enabled, re-build nodes in the active material instead of creating a new one"
     )
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'OBJECT'
 
     def draw(self, context):
         layout = self.layout
@@ -1528,7 +1490,7 @@ class PS_Boolean:
 
 
 class PS_OT_bool_difference(Operator, PS_Boolean):
-    bl_idname = "ps.bool_difference"
+    bl_idname = "object.ps_bool_difference"
     bl_label = "Bool Difference"
     bl_description = ("Subtract selected objects from active object \n"
                       "• Shift+LMB - Do not delete Bool Object \n"
@@ -1538,7 +1500,7 @@ class PS_OT_bool_difference(Operator, PS_Boolean):
 
 
 class PS_OT_bool_union(Operator, PS_Boolean):
-    bl_idname = "ps.bool_union"
+    bl_idname = "object.ps_bool_union"
     bl_label = "Bool Union"
     bl_description = ("Combine selected objects \n"
                       "• Shift+LMB - Do not delete Bool Object \n"
@@ -1548,7 +1510,7 @@ class PS_OT_bool_union(Operator, PS_Boolean):
 
 
 class PS_OT_bool_intersect(Operator, PS_Boolean):
-    bl_idname = "ps.bool_intersect"
+    bl_idname = "object.ps_bool_intersect"
     bl_label = "Bool Intersect"
     bl_description = ("Keep only intersecting geometry \n"
                       "• Shift+LMB - Do not delete Bool Object \n"
@@ -1558,7 +1520,7 @@ class PS_OT_bool_intersect(Operator, PS_Boolean):
 
 
 class PS_OT_bool_slice(Operator, PS_Boolean):
-    bl_idname = "ps.bool_slice"
+    bl_idname = "object.ps_bool_slice"
     bl_label = "Bool Slice"
     bl_description = ("Slice active object along the selected objects \n"
                       "• Shift+LMB - Do not delete Bool Object \n"
@@ -1613,7 +1575,7 @@ class PS_OT_bool_slice(Operator, PS_Boolean):
 import mathutils
 
 class PS_OT_Distribute_Objects(Operator):
-    bl_idname = "ps.distribute_objects"
+    bl_idname = "object.ps_distribute_objects"
     bl_label = "Distribute Objects (TEST)"
     bl_description = "Translate selected objects with spacing adjusted to their sizes"
     bl_options = {'REGISTER', 'UNDO'}
@@ -1715,13 +1677,12 @@ classes = [
     PS_OT_add_material,
     PS_OT_fill_from_points,
     PS_OT_add_subsurf_and_bevel,
-    PS_OT_add_mirror_mod,
     PS_OT_triangulate,
-    PS_OT_tris_weighted_normal,
-    PS_OT_solidify,
-    PS_OT_edge_data,
+    TrisWeightedNormal,
+    Solidify,
+    SetEdgeData,
 
-    PS_OT_unreal_material,
+    UnrealMaterial,
 
     PS_OT_bool_difference,
     PS_OT_bool_union,
