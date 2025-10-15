@@ -164,9 +164,9 @@ def check_draw(self, context):
         V_ALONE.draw(shader)
 
     if settings.elongated_tris:
-        TRIS = batch_for_shader(shader, 'TRIS', {"pos": elongated_tris_co})
+        LINES = batch_for_shader(shader, 'LINES', {"pos": elongated_tris_co})
         shader.uniform_float("color", props.elongated_tris_col)
-        TRIS.draw(shader)
+        LINES.draw(shader)
 
     """ if settings.analyze_edges_curvature:
         LINES = batch_for_shader(shader, 'LINES', {"pos": edges_curvature})
@@ -341,7 +341,8 @@ class PS_GGT_check_group(GizmoGroup):
                             shortest_height = 2 * area / longest_side
 
                             if longest_side / shortest_height > settings.elongated_aspect_ratio:
-                                elongated_tris_co.extend(verts)
+                                # добавляем пары вершин для трёх рёбер треугольника
+                                elongated_tris_co.extend([verts[0], verts[1], verts[1], verts[2], verts[2], verts[0]])
 
 
             """ # Анализ выделенных рёбер
