@@ -1,5 +1,6 @@
 import bpy
 from bpy.types import Operator
+from .utils.utils import get_addon_prefs
 
 
 
@@ -29,8 +30,8 @@ class PS_OT_LockCameraTransforms(Operator):
 
 
 def button_in_header(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
-    if props.b_camera_sync:
+    props = get_addon_prefs()
+    if props and getattr(props, 'b_camera_sync', False):
         active_object = context.object
         layout = self.layout
         row = layout.row(align = True)

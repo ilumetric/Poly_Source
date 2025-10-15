@@ -2,6 +2,7 @@ import bpy
 import blf
 import bmesh
 from bpy.types import Gizmo, GizmoGroup
+from .utils.utils import get_addon_prefs
 
 
 
@@ -16,7 +17,9 @@ def polycount(self, context):
             "handler": None,
         }
 
-        props = context.preferences.addons['Poly_Source'].preferences
+        props = get_addon_prefs()
+        if not props:
+            return
         settings = context.scene.poly_source
 
 
@@ -36,7 +39,7 @@ def polycount(self, context):
         blf.draw(font_id_name, name)
 
 
-        if props.low_suffix == False:
+        if props.low_suffix is False:
             viewlayer = context.view_layer
             collection = context.scene.statistics(viewlayer).split(" | ")[4]
             string = collection[5:].replace(',', '')

@@ -4,6 +4,7 @@ import math
 from gpu_extras.batch import batch_for_shader
 from bpy.types import GizmoGroup, Gizmo
 from gpu import state
+from .utils.utils import get_addon_prefs
 
 
 
@@ -182,7 +183,9 @@ else:
 
 
 def draw_grid(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
     settings = context.scene.poly_source
 
     shader.bind()

@@ -2,6 +2,7 @@ import bpy, gpu, bmesh
 from gpu_extras.batch import batch_for_shader
 from bpy.types import Operator, Gizmo, GizmoGroup
 from gpu import state
+from .utils.utils import get_addon_prefs
 import math
 from mathutils import Vector
 
@@ -100,7 +101,9 @@ edges_curvature = []
 
 
 def check_draw(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
     settings = context.scene.poly_source
     theme = context.preferences.themes['Default']
     vertex_size = theme.view_3d.vertex_size

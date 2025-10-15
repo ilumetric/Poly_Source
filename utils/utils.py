@@ -7,6 +7,14 @@ def speed_test(function):
     print(f"Время выполнения: {execution_time} секунд")
 
 
+def get_addon_prefs():
+    # безопасно возвращает preferences аддона или None
+    try:
+        return bpy.context.preferences.addons['Poly_Source'].preferences
+    except Exception:
+        return None
+
+
 def get_active_3d_view():
     for area in bpy.context.screen.areas:
         if area.type == 'VIEW_3D':

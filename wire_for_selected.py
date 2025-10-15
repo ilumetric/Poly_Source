@@ -1,5 +1,6 @@
 import bpy
 from bpy.app.handlers import persistent
+from .utils.utils import get_addon_prefs
 
 # допустимые типы объектов для показа wire
 ALLOWED_TYPES = {'MESH', 'CURVE', 'SURFACE', 'META', 'FONT'}
@@ -11,17 +12,17 @@ _prev_selected_by_scene = {}
 _timer_running = False
 
 
-def _get_addon_prefs():
-    """возвращает настройки аддона или None"""
-    try:
-        return bpy.context.preferences.addons['Poly_Source'].preferences
-    except Exception:
-        return None
+# def _get_addon_prefs():
+#     """возвращает настройки аддона или None"""
+#     try:
+#         return bpy.context.preferences.addons['Poly_Source'].preferences
+#     except Exception:
+#         return None
 
 
 def _is_global_feature_enabled():
     """проверяет, включен ли функционал в настройках аддона"""
-    prefs = _get_addon_prefs()
+    prefs = get_addon_prefs()
     return bool(prefs and getattr(prefs, 'b_wire_for_selected', False))
 
 
@@ -124,7 +125,7 @@ def on_wire_setting_changed(self, context):
 
 def overlay(self, context):
     """добавляет настройку в панель оверлея"""
-    props = _get_addon_prefs()
+    props = get_addon_prefs()
     if props and getattr(props, 'b_wire_for_selected', False):
         self.layout.prop(context.scene, "show_wire_for_selected", text="Display Wireframe for Selected")
 

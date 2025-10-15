@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator, PropertyGroup
 from bpy.props import IntProperty, PointerProperty
+from .utils.utils import get_addon_prefs
 
 
 def set_name(self, context, obj):
@@ -76,8 +77,8 @@ class PS_OT_del_prefix(Operator):
 
 
 def button_in_header(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
-    if props.b_color_radomizer:
+    props = get_addon_prefs()
+    if props and getattr(props, 'b_color_radomizer', False):
         layout = self.layout
         row = layout.row(align = True)
         row.scale_x = 1.3

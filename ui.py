@@ -2,14 +2,16 @@ import bpy
 import bmesh
 from bpy.types import Panel, Menu
 from .icons import preview_collections
-from .utils.utils import get_active_3d_view
+from .utils.utils import get_active_3d_view, get_addon_prefs
 
 from . import check
 
 
 
 def get_polygons_count_ui(context, layout):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
     pcoll = preview_collections['main']
     ngon_icon = pcoll['ngon_icon']
     quad_icon = pcoll['quad_icon']
@@ -77,7 +79,9 @@ def bool_ui(context, layout):
 
 
 def header_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
     settings = context.scene.poly_source
     pcoll = preview_collections['main']
     check_icon = pcoll['check_icon']
@@ -101,7 +105,9 @@ def header_panel(self, context):
 
 
 def viewHeader_L_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
     settings = context.scene.poly_source
     pcoll = preview_collections['main']
     check_icon = pcoll['check_icon']
@@ -123,7 +129,9 @@ def viewHeader_L_panel(self, context):
 
 
 def viewHeader_R_panel(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
     settings = context.scene.poly_source
     pcoll = preview_collections['main']
     check_icon = pcoll['check_icon']
@@ -173,7 +181,9 @@ def tool_panel(self, context):
 
     layout.separator_spacer()
     if context.object:
-        props = context.preferences.addons['Poly_Source'].preferences
+        props = get_addon_prefs()
+        if not props:
+            return
         settings = context.scene.poly_source
         pcoll = preview_collections['main']
         check_icon = pcoll['check_icon']
@@ -196,7 +206,9 @@ def tool_panel(self, context):
 # --- ADD OBJECT
 # Layout
 def custom_objects(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
 
     if props.b_add_objects:
         pcoll = preview_collections["main"]
@@ -531,7 +543,9 @@ def rmb_menu(self, context):
 
 
 def preset_increment_angle(self, context):
-    props = context.preferences.addons['Poly_Source'].preferences
+    props = get_addon_prefs()
+    if not props:
+        return
     if props.b_presets_increment_angles:
         self.layout.prop(context.scene.poly_source, 'increment_angles', expand=True)
 
