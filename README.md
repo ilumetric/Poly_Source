@@ -1,8 +1,10 @@
 ## Poly Source — Blender Add-on
 
-A compact toolkit for modeling workflows in Blender: quick polycount feedback, boolean helpers, transform utilities, mesh cleanup, modifiers presets, UE-texture material setup, custom add objects, unit grid overlay, and more.
+A compact toolkit for game-ready 3D modeling workflows in Blender: polycount feedback, boolean helpers, transform utilities, mesh cleanup, modifier presets, UE-texture material setup, topology diagnostics, unit grid overlay, and more.
 
-Supports Blender 4.2+ (see `__init__.py`). Location: `3D View` (headers, context menus, and popovers).
+**Version:** 5.0.5 · **Author:** Max Derksen · **Blender:** 4.2+ · **License:** GPL-3.0-or-later
+
+Location: `3D View` (headers, context menus, sidebar panels, and popovers).
 
 ---
 
@@ -11,11 +13,11 @@ Supports Blender 4.2+ (see `__init__.py`). Location: `3D View` (headers, context
   - [Viewport and UI](#viewport-and-ui)
   - [Selection and Mesh Tools](#selection-and-mesh-tools)
   - [Transform Utilities](#transform-utilities)
+  - [Transform+ Panel](#transform-panel)
   - [Materials and Shading](#materials-and-shading)
   - [Modifiers Presets](#modifiers-presets)
   - [Booleans](#booleans)
   - [Object Utilities](#object-utilities)
-  - [Add Object (Tool Kit)](#add-object-tool-kit)
   - [Cleanup](#cleanup)
 - [Installation](#installation)
 - [How to Use](#how-to-use)
@@ -28,136 +30,137 @@ Supports Blender 4.2+ (see `__init__.py`). Location: `3D View` (headers, context
 ### Features
 
 #### Viewport and UI
-- Polycount overlay and header counters with click-to-select by topology type (N-gons, Quads, Tris).
-- Tool Kit popover for quick access to tools and counters.
-- Check Objects panel to analyze common topology issues (non-manifold, poles, elongated tris, custom counts, etc.).
-- Unit Grid overlay: draw configurable unit grid/box with padding, sub-grid, alignment, and colors.
-- Optional header buttons: boolean tools, camera view/lock, and quick actions in Outliner header.
-- RMB (context) menu integration under “Poly Source”.
+- **Polycount header counters** with click-to-select by topology type (N-gons, Quads, Tris). Configurable placement: Top Bar, Viewport Header Left/Right, Tool Header.
+- **Polycount overlay** — viewport widget showing scene triangle count vs. target budget with color-coded feedback (green / orange / red). Supports `_LOW` collection suffix filtering.
+- **Tool Kit popover** for quick access to transform reset and display settings.
+- **Check Objects panel** — real-time topology diagnostics: non-manifold edges, isolated vertices, boundary vertices, E-poles (5 edges), N-poles (3 edges), extraordinary poles (>5 edges), tris, N-gons, elongated triangles, and custom vertex count.
+- **Unit Grid overlay** — configurable grid/box drawn in the viewport with padding, sub-grid, cell size, alignment, height, X-Ray mode, and custom colors. Settings in the sidebar `PS` tab.
+- **Color Randomizer** — header buttons to add/remove incremental color prefix (`CR#_`) to object names for viewport random-color shading.
+- **Boolean tool buttons** in the 3D Viewport header (Difference, Union, Intersect, Slice).
+- **Camera Sync controls** — camera view toggle, lock camera to view, and lock camera transforms from the header.
+- **RMB context menu** integration under "Poly Source" (Object Mode and Edit Mode).
+- **Outliner header button** — quick "Set Random Name" for selected objects.
+- **Snapping angle presets** — quick-access buttons (5°–90°) in the Snapping popover (3D View and Image Editor).
+- **Wireframe for Selected** — automatically display wireframe overlay only on selected objects (toggle in Viewport Overlays).
 
 #### Selection and Mesh Tools
-- Select Polygons by number of sides:
-  - Select Polygons → pick NGONS, QUADS, or TRIS.
-- Clear single-vertex islands (dots):
-  - Clear Dots.
-- Remove non-manifold vertices not connected to faces:
-  - Remove Non Manifold Vertex.
-- Reset vertex location in Edit Mode to object/world/3D cursor, per-axis or all:
-  - Reset Vertex Location.
-- Fill From Points (experimental generation from points/edges):
-  - Fill From Points.
-- Set Edge Data toggle for selected edges (smart on/off):
-  - Set Edge Data (Seam, Sharp, Bevel Weight, Crease).
-- Cylinder Optimizer (Edit Mode), with rounding option:
-  - Cylinder Optimizer.
+- **Select Polygons** by number of sides — pick N-gons, Quads, or Tris and switch to Edit Mode.
+- **Clear Dots** — delete single-vertex islands (vertices with no connected edges).
+- **Remove Non Manifold Vertex** — delete vertices not connected to any face.
+- **Reset Vertex Location** (Edit Mode) — move selected vertices to object origin, world origin, or 3D cursor, per-axis or all, with individual/grouped mode.
+- **Fill From Points** — connect selected vertices into a mesh using a minimum spanning tree algorithm.
+- **Fill Mesh** — generate faces from selected vertices by computing a convex hull.
+- **Set Edge Data** — smart toggle for Seam, Sharp, Bevel Weight, and Crease on selected edges. Supports combined modes (e.g. Seam + Sharp).
+- **Cylinder Optimizer** (Edit Mode) — reduce cylinder polygon count by dissolving selected edge loops with configurable skip/nth/offset pattern. Includes a "Rounding Up" mode to shape loops into perfect circles.
 
 #### Transform Utilities
-- Reset transforms for selected objects (Location, Rotation, Scale) per-axis or all; optionally relative to 3D Cursor:
-  - Reset Location
-  - Reset Rotation
-  - Reset Scale
-  - Special “Reset All” option for location+rotation+scale.
-- Transfer transformation from active to selected (choose which: Loc/Rot/Scale):
-  - Transfer Transform Data.
-- Distribute objects horizontally with spacing derived from object bounds (EXPERIMENTAL):
-  - Distribute Objects (TEST) — property: Expose Factor.
+- **Reset transforms** for selected objects (Location, Rotation, Scale) per-axis or all; optionally relative to the 3D Cursor.
+- **Reset All** — reset location, rotation, and scale in one click.
+- **Transfer Transform Data** — copy location, rotation, and/or scale from the active object to all selected objects.
+- **Distribute Objects** — evenly distribute selected objects along the X axis with spacing based on bounding box sizes (adjustable expose factor).
+
+#### Transform+ Panel
+Enhanced transform panel in the sidebar (`PS` tab) with:
+- **Per-axis display** of Location, Rotation, and Scale with inline reset-to-default buttons.
+- **Copy to clipboard** buttons for each transform type.
+- **Rotation mode switcher** (Euler, Quaternion, Axis-Angle) with full W/X/Y/Z support.
+- **Lock toggles** per axis.
+- **Edit Mode section** — toggle Vertex/Edge Bevel Weight and Crease.
 
 #### Materials and Shading
-- Add simple material to all selected objects:
-  - Add Material (creates/uses “PS Material”).
-- UE-style Material from texture set with mask unpacking and normal-green inversion:
-  - UE Material with properties:
-    - Base Color Texture
-    - Mask Texture (R=Roughness, G=Metallic, B=AO)
-    - Normal Texture (G channel inverted automatically)
-    - Emissive Texture (uses R channel with color/intensity)
-    - Apply to Active Material toggle
-- Quick smooth shading and weighted normal + triangulate combo:
-  - Tris & Weighted Normal (configurable mode, weight, threshold, keep sharp, face influence).
+- **Add Material** — create and assign a default "PS Material" to all selected objects.
+- **UE Material** — create an Unreal Engine-style PBR material from texture maps:
+  - Base Color Texture
+  - Mask Texture (R=Roughness, G=Metallic, B=AO — auto-mixed with Base Color)
+  - Normal Texture (G channel inverted automatically for UE convention)
+  - Emissive Texture (R channel with configurable color and intensity)
+  - "Apply to Active Material" toggle to rebuild nodes in an existing material.
+- **Tris & Weighted Normal** — apply smooth shading and add Triangulate + Weighted Normal modifiers with configurable mode, weight, threshold, keep sharp, and face influence.
 
 #### Modifiers Presets
-- Triangulate preset modifier:
-  - Triangulate (fixed quad method, beauty n-gon).
-- Add Subdivision and Bevel combined preset:
-  - Add Subdivision And Bevel with presets: Default, Wide, Angle-Based.
-- Solidify preset tuned for non-manifold boundary:
-  - Solidify.
+- **Triangulate** — add a triangulate modifier with optimized quad splitting (Fixed) and N-gon method (Beauty).
+- **Add Subdivision And Bevel** — combined bevel + subdivision modifiers with presets: Default (weight-based), Wide (no clamp), Angle-Based.
+- **Solidify** — non-manifold solidify modifier with flat boundary mode and even thickness.
 
 #### Booleans
-- Fast boolean operations (Shift = keep cutter, Ctrl = Brush mode):
-  - Bool Difference
-  - Bool Union
-  - Bool Intersect
-  - Bool Slice (creates split copy intersection)
+Fast boolean operations with modifier hotkeys:
+- **Bool Difference** — subtract selected from active.
+- **Bool Union** — merge selected into active.
+- **Bool Intersect** — keep only overlapping volume.
+- **Bool Slice** — cut active into two parts (difference + intersection copy).
+
+Modifiers:
+- `Shift+LMB` — keep the boolean operand object.
+- `Ctrl+LMB` — non-destructive brush mode (keep modifier live).
 
 #### Object Utilities
-- Randomize object names (11 letters) for all selected meshes:
-  - Set Random Name (also available as an Outliner header button).
-- Add and align camera to view; toggle camera transform locks from header:
-  - Add Camera
-  - Lock Camera Transforms
-- Clear data on selected objects (vertex groups, shape keys, color attributes, face maps, attributes):
-  - Clear Data.
-- Clear all materials from selected objects:
-  - Clear Materials.
-
-#### Add Object (Tool Kit)
-- Custom primitives exposed in Add > Mesh (when enabled in Preferences):
-  - Create Cube
-  - Create Cylinder
-  - Create Tube
+- **Set Random Name** — assign random 11-character names to selected objects (also in Outliner header).
+- **Add Camera** — create a camera aligned to the current viewport view with camera lock enabled.
+- **Lock Camera Transforms** — toggle location, rotation, and scale locks on the active camera.
+- **Clear Data** — remove vertex groups, shape keys, color attributes, and custom attributes from selected objects.
+- **Clear Materials** — remove all material slots from selected objects.
 
 #### Cleanup
-- Delete elongated triangles/long faces (Edit Mode):
-  - Delete Long Faces.
+- **Delete Long Faces** (Edit Mode) — dissolve vertices where adjacent edges form angles exceeding a configurable threshold. Supports comparison operators (greater than, less than, equal to, not equal to), face split, boundary tear, and selected-faces-only mode.
 
 ---
 
 ### Installation
-1. Download the add-on as a ZIP or keep the folder structure as is.
-2. Blender → Edit → Preferences → Add-ons → Install…
-3. Select the ZIP (or the `Poly_Source` folder if installing from source) and enable “Poly Source”.
-4. Confirm Blender version is 4.2+.
+
+**Extension (Blender 4.2+):**
+1. Download the add-on ZIP.
+2. Blender → Edit → Preferences → Get Extensions → Install from Disk…
+3. Select the ZIP file and enable "Poly Source".
+
+**Legacy (from source):**
+1. Copy the `Poly_Source` folder to Blender's addons directory.
+2. Edit → Preferences → Add-ons → search "Poly Source" and enable it.
 
 ---
 
 ### How to Use
-- Viewport Header (Top):
-  - Polycount quick counters with popover to Tool Kit and Check panels.
-  - Optional Boolean buttons and Camera controls (enable in Preferences).
-- RMB Context Menu → “Poly Source”:
-  - Quick access to Modifiers, Test tools, and Edge Data toggles in Edit Mode.
-- Add > Mesh menu:
-  - Custom objects (Cube, Cylinder, Tube) when the option is enabled in Preferences.
-- Panels:
-  - Tool Kit: transform tools, display helpers, counters.
-  - Check Objects: topology diagnostics and summary.
-  - Unit Grid (sidebar `PS` tab): overlay configuration for grid/box.
+- **Viewport Header (Top Bar):**
+  Polycount counters with popover to Tool Kit and Check panels. Optional Boolean buttons, Camera Sync controls, and Color Randomizer (enable in Preferences).
+- **RMB Context Menu → "Poly Source":**
+  Modifiers presets, utility operators, edge data toggles (Edit Mode), edge selection helpers.
+- **Sidebar → PS tab:**
+  - *Unit Grid* — grid/box overlay configuration.
+  - *Transform+* — enhanced transform panel with per-axis reset and clipboard copy (enable in Preferences).
+- **Snapping Popover:**
+  Angle increment presets (5°, 10°, 15°, 30°, 45°, 60°, 90°).
+- **Viewport Overlays:**
+  "Display Wireframe for Selected" toggle (when enabled in Preferences).
+- **Outliner Header:**
+  "Set Random Name" button.
 
 ---
 
 ### Preferences
 Find under Edit → Preferences → Add-ons → Poly Source.
 
-Options include (non-exhaustive):
-- Show Polycount in various headers (Top, Viewport Left/Right, Tool Header).
-- Enable Boolean tool buttons in headers.
-- Enable Camera Sync controls in the 3D View header.
-- Show Unit Grid settings and drawing.
-- Presets for snapping increment angles.
-- Optional “Wireframe for Selected” integration.
-- Keymap: open Tool Kit panel via Space (note: may conflict with other add-ons/keymaps).
+**General tab:**
+| Section | Options |
+|---|---|
+| Viewport Header | Color Randomizer, Bool Tool, Camera Sync buttons |
+| Polycount | Placement (Header, Viewport Left/Right, Tool Header), `_LOW` suffix filter, performance limits (max vertices, max objects) |
+| Panels & Tools | Transform+ panel, Wireframe for Selected, Snapping angle presets |
+| Mesh Check | Point/edge sizes, highlight colors for each topology check |
+| Unit Grid | Grid and box colors |
+| Links | Blender Market, Gumroad, Artstation |
+
+**Keymaps tab:**
+- Open Tool Kit panel via `Space` (customizable; may conflict with other add-ons/keymaps).
 
 ---
 
 ### Compatibility
-- Blender: 4.2+ (as defined in `bl_info`). Some UI icons or header placements adapt based on Blender version.
-- Other add-ons: some hotkeys or header insertions may overlap; adjust in Preferences as needed.
+- **Blender:** 4.2+ (defined in `blender_manifest.toml`). Some UI icons adapt based on Blender version.
+- **Other add-ons:** some hotkeys or header insertions may overlap; adjust in Preferences as needed. Cylinder Optimizer's "Rounding Up" mode requires the LoopTools add-on.
 
 ---
 
 ### License
-Specify your license here (e.g., MIT). If omitted, users will assume default “all rights reserved”.
+This add-on is licensed under [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ---
 

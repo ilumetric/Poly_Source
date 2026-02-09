@@ -7,7 +7,6 @@ from gpu import state
 from .utils.utils import get_addon_prefs
 
 
-
 def generate_grid():
     """
     генерирует координаты внутренней сетки, ограниченной основной рамкой
@@ -98,69 +97,69 @@ def lines():
     x = settings.unit_x / 100.0
     y = settings.unit_y / 100.0
     z = settings.offset_z / 100.0
-    xPad = (settings.unit_x - (settings.padding * 2.0)) / 100.0
-    yPad = (settings.unit_y - (settings.padding * 2.0)) / 100.0
+    x_pad = (settings.unit_x - (settings.padding * 2.0)) / 100.0
+    y_pad = (settings.unit_y - (settings.padding * 2.0)) / 100.0
 
-    linesCo = []
+    lines_co = []
 
     if settings.one2one:
-        linesCo = [
+        lines_co = [
             (x/2, x/2, z), (-x/2, x/2, z),
             (-x/2, x/2, z), (-x/2, -x/2, z),
             (-x/2, -x/2, z), (x/2, -x/2, z),
             (x/2, -x/2, z), (x/2, x/2, z),
 
-            (xPad/2, xPad/2, z), (-xPad/2, xPad/2, z),
-            (-xPad/2, xPad/2, z), (-xPad/2, -xPad/2, z),
-            (-xPad/2, -xPad/2, z), (xPad/2, -xPad/2, z),
-            (xPad/2, -xPad/2, z), (xPad/2, xPad/2, z),
+            (x_pad/2, x_pad/2, z), (-x_pad/2, x_pad/2, z),
+            (-x_pad/2, x_pad/2, z), (-x_pad/2, -x_pad/2, z),
+            (-x_pad/2, -x_pad/2, z), (x_pad/2, -x_pad/2, z),
+            (x_pad/2, -x_pad/2, z), (x_pad/2, x_pad/2, z),
         ]
 
     else:
-        linesCo = [
+        lines_co = [
             (x/2, y/2, z), (-x/2, y/2, z),
             (-x/2, y/2, z), (-x/2, -y/2, z),
             (-x/2, -y/2, z), (x/2, -y/2, z),
             (x/2, -y/2, z), (x/2, y/2, z),
 
-            (xPad/2, yPad/2, z), (-xPad/2, yPad/2, z),
-            (-xPad/2, yPad/2, z), (-xPad/2, -yPad/2, z),
-            (-xPad/2, -yPad/2, z), (xPad/2, -yPad/2, z),
-            (xPad/2, -yPad/2, z), (xPad/2, yPad/2, z),
+            (x_pad/2, y_pad/2, z), (-x_pad/2, y_pad/2, z),
+            (-x_pad/2, y_pad/2, z), (-x_pad/2, -y_pad/2, z),
+            (-x_pad/2, -y_pad/2, z), (x_pad/2, -y_pad/2, z),
+            (x_pad/2, -y_pad/2, z), (x_pad/2, y_pad/2, z),
         ]
 
-    return linesCo
+    return lines_co
 
 
 def box():
     settings = bpy.context.scene.poly_source
     # значения приходят в сантиметрах, переводим в метры
-    xPad = (settings.unit_x - (settings.padding * 2.0)) / 100.0
-    yPad = (settings.unit_y - (settings.padding * 2.0)) / 100.0
+    x_pad = (settings.unit_x - (settings.padding * 2.0)) / 100.0
+    y_pad = (settings.unit_y - (settings.padding * 2.0)) / 100.0
     z = settings.offset_z / 100.0
     h = settings.height / 100.0
 
     if settings.one2one:
-        faceCo = [
-            (xPad/2, xPad/2, z),
-            (xPad/2, -xPad/2, z),
-            (-xPad/2, -xPad/2, z),
-            (-xPad/2, xPad/2, z),
-            (xPad/2, xPad/2, h),
-            (xPad/2, -xPad/2, h),
-            (-xPad/2, -xPad/2, h),
-            (-xPad/2, xPad/2, h),
+        face_co = [
+            (x_pad/2, x_pad/2, z),
+            (x_pad/2, -x_pad/2, z),
+            (-x_pad/2, -x_pad/2, z),
+            (-x_pad/2, x_pad/2, z),
+            (x_pad/2, x_pad/2, h),
+            (x_pad/2, -x_pad/2, h),
+            (-x_pad/2, -x_pad/2, h),
+            (-x_pad/2, x_pad/2, h),
         ]
     else:
-        faceCo = [
-            (xPad/2, yPad/2, z),
-            (xPad/2, -yPad/2, z),
-            (-xPad/2, -yPad/2, z),
-            (-xPad/2, yPad/2, z),
-            (xPad/2, yPad/2, h),
-            (xPad/2, -yPad/2, h),
-            (-xPad/2, -yPad/2, h),
-            (-xPad/2, yPad/2, h),
+        face_co = [
+            (x_pad/2, y_pad/2, z),
+            (x_pad/2, -y_pad/2, z),
+            (-x_pad/2, -y_pad/2, z),
+            (-x_pad/2, y_pad/2, z),
+            (x_pad/2, y_pad/2, h),
+            (x_pad/2, -y_pad/2, h),
+            (-x_pad/2, -y_pad/2, h),
+            (-x_pad/2, y_pad/2, h),
         ]
 
     faces_indices = [
@@ -172,8 +171,7 @@ def box():
         (2, 3, 6), (3, 6, 7),
     ]
 
-    return faceCo, faces_indices
-
+    return face_co, faces_indices
 
 
 if bpy.app.version >= (4, 0, 0):
@@ -204,22 +202,22 @@ def draw_grid(self, context):
         state.depth_test_set('LESS_EQUAL')
 
     if settings.box:
-        faceCo, faces_indices = box()
-        FACES = batch_for_shader(shader, 'TRIS', {"pos": faceCo}, indices=faces_indices)
+        face_co, faces_indices = box()
+        faces_batch = batch_for_shader(shader, 'TRIS', {"pos": face_co}, indices=faces_indices)
         shader.uniform_float("color", props.color_box)
-        FACES.draw(shader)
+        faces_batch.draw(shader)
 
     if settings.draw_sub_grid:
-        gridCo = generate_grid()
-        GRID_EDGES = batch_for_shader(shader, 'LINES', {"pos": gridCo})
+        grid_co = generate_grid()
+        grid_batch = batch_for_shader(shader, 'LINES', {"pos": grid_co})
         c = props.color_grid
         shader.uniform_float("color", (c[0], c[1], c[2], c[3] / 2.0))
-        GRID_EDGES.draw(shader)
+        grid_batch.draw(shader)
 
-    linesCo = lines()
-    EDGES = batch_for_shader(shader, 'LINES', {"pos": linesCo})
+    lines_co = lines()
+    edges_batch = batch_for_shader(shader, 'LINES', {"pos": lines_co})
     shader.uniform_float("color", props.color_grid)
-    EDGES.draw(shader)
+    edges_batch.draw(shader)
 
     state.depth_mask_set(True)
     state.depth_test_set('NONE')
@@ -229,8 +227,8 @@ def draw_grid(self, context):
     state.blend_set('NONE')
 
 
-
 class PS_GT_grid(Gizmo):
+    """Unit grid overlay gizmo"""
     bl_idname = 'PS_GT_grid'
 
     def draw(self, context):
@@ -240,14 +238,13 @@ class PS_GT_grid(Gizmo):
         self.use_draw_modal = False
 
 
-
-
 class PS_GGT_grid(GizmoGroup):
+    """Unit grid overlay gizmo group"""
     bl_idname = 'PS_GGT_grid'
     bl_label = 'Grid'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'WINDOW'
-    bl_options = {'3D','SHOW_MODAL_ALL','PERSISTENT'}
+    bl_options = {'3D', 'SHOW_MODAL_ALL', 'PERSISTENT'}
 
     @classmethod
     def poll(cls, context):
@@ -255,7 +252,6 @@ class PS_GGT_grid(GizmoGroup):
 
     def setup(self, context):
         self.gizmos.new(PS_GT_grid.bl_idname)
-
 
 
 classes = [

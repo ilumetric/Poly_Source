@@ -1,0 +1,32 @@
+schema_version = "1.0.3"
+
+id = "poly_source"
+version = "5.0.5"
+name = "Poly Source"
+tagline = "Professional toolset for game-ready 3D modeling and retopology workflow"
+maintainer = "Max Derksen"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = [
+    "SPDX:GPL-3.0-or-later",
+]
+
+tags = ["3D View", "Mesh"]
+
+# website = "https://blendermarket.com/creators/derksen"
+
+[build]
+paths_exclude_pattern = [
+    "__pycache__/",
+    "/.git/",
+    "/*.zip",
+    "/.vscode/",
+    "/build_zip.py",
+    "/.gitattributes",
+    "/.gitignore",
+    "/.pylintrc",
+    "/pyproject.toml",
+    "/blender_vscode_development/",
+]

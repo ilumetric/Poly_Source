@@ -34,15 +34,15 @@ def del_prefix(self, context, obj):
 
 
 class PS_OT_set_color(Operator):
+    """Add incremental color randomizer prefix to selected objects"""
     bl_idname = 'object.ps_set_color'
     bl_label = 'Object Color'
-    bl_description = 'Relative Plus One'
+    bl_description = 'Add color randomizer prefix to selected objects for viewport color variation'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
-        objs = context.selected_objects
-        return objs != []
+        return len(context.selected_objects) > 0
 
     def execute(self, context):
         objects = context.selected_objects
@@ -57,9 +57,10 @@ class PS_OT_set_color(Operator):
 
 
 class PS_OT_del_prefix(Operator):
+    """Remove color randomizer prefix from selected objects"""
     bl_idname = 'object.ps_del_prefix'
     bl_label = 'Delete Prefixes'
-    bl_description = 'Delete Prefix in Object'
+    bl_description = 'Remove color randomizer prefix from selected objects'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -78,24 +79,28 @@ class PS_OT_del_prefix(Operator):
 
 def button_in_header(self, context):
     props = get_addon_prefs()
-    if props and getattr(props, 'b_color_radomizer', False):
+    if props and getattr(props, 'b_color_randomizer', False):
         layout = self.layout
-        row = layout.row(align = True)
+        row = layout.row(align=True)
         row.scale_x = 1.3
-        row.operator('object.ps_set_color', text='',  icon='COLOR')
+        row.operator('object.ps_set_color', text='', icon='COLOR')
         row.scale_x = 1.0
-        row.operator('object.ps_del_prefix', text='',  icon='X')
+        row.operator('object.ps_del_prefix', text='', icon='X')
 
 
-class PS_color_store(PropertyGroup):
-    color_idx: IntProperty(default=0, max=999)
-
+class PS_PG_color_store(PropertyGroup):
+    """Per-object storage for color randomizer prefix index"""
+    color_idx: IntProperty(
+        name="Color Index",
+        description="Current color randomizer prefix index for this object",
+        default=0, max=999,
+    )
 
 
 classes = [
     PS_OT_set_color,
     PS_OT_del_prefix,
-    PS_color_store,
+    PS_PG_color_store,
 ]
 
 
@@ -103,7 +108,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Object.random_color = PointerProperty(type=PS_color_store)
+    bpy.types.Object.random_color = PointerProperty(type=PS_PG_color_store)
     bpy.types.VIEW3D_HT_header.append(button_in_header)
 
 

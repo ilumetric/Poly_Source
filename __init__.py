@@ -1,52 +1,40 @@
+# legacy bl_info для совместимости с Blender Development (VSCode/Cursor)
+# основные метаданные хранятся в blender_manifest.toml
 bl_info = {
     'name': 'Poly Source',
-    "author": "Max Derksen",
-    'version': (5, 0, 5),
+    'author': 'Max Derksen',
+    'version': (5, 1, 3),
     'blender': (4, 2, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': '3D View',
 }
 
-
-
 from . import (
-    camera_sync,
+    icons,
     preferences,
+    camera_sync,
     ui,
     check,
     color_randomizer,
     polycount,
     envira_grid,
-    icons,
     wire_for_selected,
 )
 
 from .utils import (
+    ops,
     fill_mesh,
     cylinder_optimizer,
-    ops,
 )
-
-
-# --- Tool Kit
-from .add_object import (
-    cube,
-    cylinder,
-)
-
-
-# --- Clean Up
-from .clean_up import (
-    long_tris,
-)
-
 
 
 def register():
+    # базовые модули (иконки, операторы, настройки)
     icons.register()
     ops.register()
     preferences.register()
-    
+
+    # UI и визуализация
     camera_sync.register()
     ui.register()
     check.register()
@@ -55,47 +43,26 @@ def register():
     envira_grid.register()
     wire_for_selected.register()
 
-
-
+    # утилиты
     fill_mesh.register()
-    
     cylinder_optimizer.register()
 
 
-    # --- Tool Kit
-    cube.register()
-    cylinder.register()
-
-
-    # --- Clean Up
-    long_tris.register()
-
-
 def unregister():
-    
-    
-
-    camera_sync.unregister()
-    ui.unregister()
-    check.unregister()
-    color_randomizer.unregister()
-    polycount.unregister()
-    envira_grid.unregister()
-    wire_for_selected.unregister()
-
-    fill_mesh.unregister()
-    
+    # утилиты
     cylinder_optimizer.unregister()
+    fill_mesh.unregister()
 
+    # UI и визуализация
+    wire_for_selected.unregister()
+    envira_grid.unregister()
+    polycount.unregister()
+    color_randomizer.unregister()
+    check.unregister()
+    ui.unregister()
+    camera_sync.unregister()
 
-    # --- Tool Kit
-    cube.unregister()
-    cylinder.unregister()
-
-
-    # --- Clean Up
-    long_tris.unregister()
-
+    # базовые модули (в обратном порядке)
     preferences.unregister()
     ops.unregister()
     icons.unregister()

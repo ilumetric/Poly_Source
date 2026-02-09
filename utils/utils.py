@@ -1,21 +1,19 @@
 import bpy
-import timeit
 
-
-def speed_test(function):
-    execution_time = timeit.timeit(lambda: function, number=1000)
-    print(f"Время выполнения: {execution_time} секунд")
+# корневой пакет аддона (для совместимости с системой расширений Blender 5)
+_addon_package = __package__.rsplit(".", 1)[0]
 
 
 def get_addon_prefs():
     # безопасно возвращает preferences аддона или None
     try:
-        return bpy.context.preferences.addons['Poly_Source'].preferences
+        return bpy.context.preferences.addons[_addon_package].preferences
     except Exception:
         return None
 
 
 def get_active_3d_view():
+    # возвращает активный 3D вьюпорт или None
     for area in bpy.context.screen.areas:
         if area.type == 'VIEW_3D':
             for space in area.spaces:
@@ -25,6 +23,7 @@ def get_active_3d_view():
 
 
 def get_hotkey_entry_item(km, kmi_name, kmi_value, properties):
+    # поиск элемента хоткея по имени и свойствам
     for i, km_item in enumerate(km.keymap_items):
         if km.keymap_items.keys()[i] == kmi_name:
             if properties == 'name':
