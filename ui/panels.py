@@ -7,50 +7,6 @@ from .. import check
 
 # --- вспомогательные функции для PS_PT_tool_kit ---
 
-def transform_panel(self, context, pie):
-    """панель сброса трансформаций"""
-    pcoll = preview_collections["main"]
-    x_icon = pcoll["x_icon"]
-    y_icon = pcoll["y_icon"]
-    z_icon = pcoll["z_icon"]
-    reset_all = pcoll["reset_icon"]
-
-    box = pie
-    if context.mode == 'OBJECT':
-        box.label(text='Reset Transform')
-        box.scale_x = 1.3
-
-        row = box.row()
-        row.operator('object.ps_reset_location_object', text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator('object.ps_reset_location_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator('object.ps_reset_location_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator('object.ps_reset_location_object', text='Location').axis = 'ALL'
-
-        row = box.row()
-        row.operator('object.ps_reset_rotation_object', text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator('object.ps_reset_rotation_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator('object.ps_reset_rotation_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator('object.ps_reset_rotation_object', text='Rotation').axis = 'ALL'
-
-        row = box.row()
-        row.operator('object.ps_reset_scale_object', text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator('object.ps_reset_scale_object', text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator('object.ps_reset_scale_object', text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator('object.ps_reset_scale_object', text='Scale').axis = 'ALL'
-
-        box.operator("object.ps_reset_location_object", text='Reset All', icon_value=reset_all.icon_id).axis = 'ALL_T'
-
-    elif context.mode == 'EDIT_MESH':
-        box.label(text='Reset Transform')
-        box.scale_x = 1.3
-
-        row = box.row()
-        row.operator("mesh.ps_reset_vertex_location", text='', icon_value=x_icon.icon_id).axis = 'X'
-        row.operator("mesh.ps_reset_vertex_location", text='', icon_value=y_icon.icon_id).axis = 'Y'
-        row.operator("mesh.ps_reset_vertex_location", text='', icon_value=z_icon.icon_id).axis = 'Z'
-        row.operator("mesh.ps_reset_vertex_location", text='Location').axis = 'ALL'
-
-
 def display_panel(self, context, layout):
     """панель настроек отображения"""
     pcoll = preview_collections['main']
@@ -116,30 +72,6 @@ class PS_PT_unit_grid(Panel):
             row.prop(settings, 'grid_align_center', text="", icon='SNAP_FACE_CENTER')
         else:
             layout.prop(settings, 'draw_sub_grid')
-
-
-class PS_PT_tool_kit(Panel):
-    """Quick access panel for common operations"""
-    bl_idname = 'PS_PT_tool_kit'
-    bl_label = 'Tool Kit'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'WINDOW'
-    bl_ui_units_x = 13
-
-    def draw(self, context):
-        settings = context.scene.poly_source
-        layout = self.layout
-        row = layout.row(align=False)
-        right = row.column(align=False)
-        right.scale_x = 1.5
-        right.scale_y = 1.5
-        right.prop(settings, 'panel_groups', expand=True, icon_only=True)
-        col = row.column()
-
-        if settings.panel_groups == 'TRANSFORM':
-            transform_panel(self, context, col)
-        elif settings.panel_groups == 'DISPLAY':
-            display_panel(self, context, col)
 
 
 class PS_PT_check(Panel):
@@ -220,7 +152,6 @@ class PS_PT_check(Panel):
 
 
 panels_classes = [
-    PS_PT_tool_kit,
     PS_PT_check,
     PS_PT_unit_grid,
 ]

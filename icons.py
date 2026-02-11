@@ -28,10 +28,6 @@ def register():
     pcoll.load("check_icon", os.path.join(my_icons_dir, "check.png"), 'IMAGE')
 
     # --- тулкит (оси, сброс)
-    pcoll.load("x_icon", os.path.join(my_icons_dir, "x.png"), 'IMAGE')
-    pcoll.load("y_icon", os.path.join(my_icons_dir, "y.png"), 'IMAGE')
-    pcoll.load("z_icon", os.path.join(my_icons_dir, "z.png"), 'IMAGE')
-    pcoll.load("reset_icon", os.path.join(my_icons_dir, "reset.png"), 'IMAGE')
     pcoll.load("fix_icon", os.path.join(my_icons_dir, "fix.png"), 'IMAGE')
 
     # --- булевые операции

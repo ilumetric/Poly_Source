@@ -146,15 +146,15 @@ class PS_PG_settings(PropertyGroup):
     )
 
     # --- группы панели
-    panel_groups: EnumProperty(
-        name='Groups',
-        description='Switch between Tool Kit panel sections',
-        items=[
-            ('TRANSFORM', 'Transform', 'Reset and transfer object transforms', 'EMPTY_ARROWS', 0),
-            ('DISPLAY', 'Display', 'Viewport display and retopology settings', 'RESTRICT_VIEW_OFF', 1),
-        ],
-        default='TRANSFORM',
-    )
+    # panel_groups: EnumProperty(
+    #     name='Groups',
+    #     description='Switch between Tool Kit panel sections',
+    #     items=[
+    #         ('TRANSFORM', 'Transform', 'Reset and transfer object transforms', 'EMPTY_ARROWS', 0),
+    #         ('DISPLAY', 'Display', 'Viewport display and retopology settings', 'RESTRICT_VIEW_OFF', 1),
+    #     ],
+    #     default='TRANSFORM',
+    # )
 
 
 class PS_preferences(AddonPreferences):
@@ -226,11 +226,11 @@ class PS_preferences(AddonPreferences):
     # =============================================
     # --- панели и инструменты ---
     # =============================================
-    b_transform_plus: BoolProperty(
-        name="Transform+",
-        description="Show enhanced Transform panel in the sidebar with quick reset and copy buttons",
-        default=False,
-    )
+    # b_transform_plus: BoolProperty(
+    #     name="Transform+",
+    #     description="Show enhanced Transform panel in the sidebar with quick reset and copy buttons",
+    #     default=False,
+    # )
     b_wire_for_selected: BoolProperty(
         name="Wireframe for Selected",
         description="Automatically display wireframe overlay on selected objects",
@@ -384,7 +384,7 @@ class PS_preferences(AddonPreferences):
         row = box.row()
         row.label(text='Panels & Tools', icon='TOOL_SETTINGS')
         col = box.column(align=True)
-        col.prop(self, 'b_transform_plus')
+        #col.prop(self, 'b_transform_plus')
         col.prop(self, 'b_wire_for_selected')
         col.prop(self, 'b_presets_increment_angles')
 

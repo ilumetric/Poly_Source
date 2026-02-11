@@ -1,6 +1,6 @@
 import bpy
 import bmesh
-from bpy.types import Panel
+from bpy.types import Panel, Operator
 from bpy.props import EnumProperty
 from ..utils.utils import get_addon_prefs
 
@@ -67,7 +67,7 @@ def _draw_transform_row(col, obj, prop_name, prop_index, axis_name,
 
 # --- операторы ---
 
-class PS_OT_copy_transform(bpy.types.Operator):
+class PS_OT_copy_transform(Operator):
     bl_idname = "object.ps_copy_transform"
     bl_label = "Copy Transform to Clipboard"
     bl_description = "Copy the active object's transform to the clipboard"
@@ -110,7 +110,7 @@ class PS_OT_copy_transform(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class PS_OT_reset_transform_axis(bpy.types.Operator):
+class PS_OT_reset_transform_axis(Operator):
     bl_idname = "object.ps_reset_transform_axis"
     bl_label = "Reset Transform Axis"
     bl_description = "Reset a specific axis of the object's transform to its default value"
@@ -175,7 +175,7 @@ class PS_OT_reset_transform_axis(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class PS_OT_tp_edge_data(bpy.types.Operator):
+class PS_OT_tp_edge_data(Operator):
     bl_idname = "mesh.ps_tp_edge_data"
     bl_label = "Mark Edge Data"
     bl_description = "Toggle bevel weight or crease for selected edges"
@@ -204,7 +204,7 @@ class PS_OT_tp_edge_data(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class PS_OT_tp_vertex_data(bpy.types.Operator):
+class PS_OT_tp_vertex_data(Operator):
     bl_idname = "mesh.ps_tp_vertex_data"
     bl_label = "Mark Vertex Data"
     bl_description = "Toggle bevel weight or crease for selected vertices"
@@ -248,7 +248,7 @@ class PS_PT_transform_plus(Panel):
         if context.object is None:
             return False
         prefs = get_addon_prefs()
-        return prefs is not None and prefs.b_transform_plus
+        return prefs is not None #and prefs.b_transform_plus
 
     def draw(self, context):
         layout = self.layout
@@ -258,6 +258,47 @@ class PS_PT_transform_plus(Panel):
             self._draw_object_mode(layout, obj)
         elif context.mode == 'EDIT_MESH':
             self._draw_edit_mode(layout)
+
+
+        # старый подход TODO удалить
+        box = layout.box()
+        if context.mode == 'OBJECT':
+            box.label(text='Reset Transform')
+            box.scale_x = 1.3
+
+            grid = box.grid_flow(columns=2, align=False)
+            grid_sub = grid.grid_flow(columns=3, align=True)
+            grid_sub.operator('object.ps_reset_location_object', text='X').axis = 'X'
+            grid_sub.operator('object.ps_reset_location_object', text='Y').axis = 'Y'
+            grid_sub.operator('object.ps_reset_location_object', text='Z').axis = 'Z'
+            grid.operator('object.ps_reset_location_object', text='Location').axis = 'ALL'
+
+            grid = box.grid_flow(columns=2, align=False)
+            grid_sub = grid.grid_flow(columns=3, align=True)
+            grid_sub.operator('object.ps_reset_rotation_object', text='X').axis = 'X'
+            grid_sub.operator('object.ps_reset_rotation_object', text='Y').axis = 'Y'
+            grid_sub.operator('object.ps_reset_rotation_object', text='Z').axis = 'Z'
+            grid.operator('object.ps_reset_rotation_object', text='Rotation').axis = 'ALL'
+
+            grid = box.grid_flow(columns=2, align=False)
+            grid_sub = grid.grid_flow(columns=3, align=True)
+            grid_sub.operator('object.ps_reset_scale_object', text='X').axis = 'X'
+            grid_sub.operator('object.ps_reset_scale_object', text='Y').axis = 'Y'
+            grid_sub.operator('object.ps_reset_scale_object', text='Z').axis = 'Z'
+            grid.operator('object.ps_reset_scale_object', text='Scale').axis = 'ALL'
+
+            box.operator("object.ps_reset_location_object", text='Reset All').axis = 'ALL_T'
+
+        elif context.mode == 'EDIT_MESH':
+            box.label(text='Reset Transform')
+            box.scale_x = 1.3
+
+            grid = box.grid_flow(columns=2, align=False)
+            grid_sub = grid.grid_flow(columns=3, align=True)
+            grid_sub.operator("mesh.ps_reset_vertex_location", text='X').axis = 'X'
+            grid_sub.operator("mesh.ps_reset_vertex_location", text='Y').axis = 'Y'
+            grid_sub.operator("mesh.ps_reset_vertex_location", text='Z').axis = 'Z'
+            grid.operator("mesh.ps_reset_vertex_location", text='Location').axis = 'ALL'
 
     # --- объектный режим ---
 
