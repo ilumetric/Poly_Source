@@ -1213,7 +1213,35 @@ class PS_BooleanBase:
         default=False,
     )
 
+    BOOLEAN_SOLVER = "EXACT"
+
+    @classmethod
+    def poll(cls, context):
+        active = context.active_object
+        return (
+            context.mode == 'OBJECT'
+            and active is not None
+            and active.type == 'MESH'
+            and len(context.selected_objects) >= 2
+        )
+
+    def _validate_selection(self, context):
+        active = context.active_object
+        if active is None or active.type != 'MESH':
+            self.report({'ERROR'}, "Active object must be a mesh")
+            return None, None
+
+        operands = [ob for ob in context.selected_objects if ob != active and ob.type == 'MESH']
+        if not operands:
+            self.report({'ERROR'}, "Select at least one mesh operand")
+            return None, None
+
+        return active, operands
+
     def objects_prepare(self):
+        if bpy.context.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
         for ob in bpy.context.selected_objects:
             if ob.type != "MESH":
                 ob.select_set(False)
@@ -1230,24 +1258,36 @@ class PS_BooleanBase:
         bpy.context.view_layer.objects.active = obj
 
     def boolean_operation(self):
-        obj = bpy.context.active_object
+        obj, obs = self._validate_selection(bpy.context)
+        if obj is None:
+            return {'CANCELLED'}
+
         obj.select_set(False)
-        obs = bpy.context.selected_objects
 
         self.mesh_selection(obj, "DESELECT")
         for ob in obs:
             self.mesh_selection(ob, "SELECT")
             self.boolean_mod(obj, ob, self.mode)
         obj.select_set(True)
+        return {'FINISHED'}
 
     def boolean_mod(self, obj, ob, mode, ob_delete=True):
         md = obj.modifiers.new("PS Boolean", "BOOLEAN")
         md.show_viewport = self.brush_mode
         md.operation = mode
         md.object = ob
+        if hasattr(md, "solver"):
+            md.solver = self.BOOLEAN_SOLVER
+        if hasattr(md, "use_hole_tolerant"):
+            md.use_hole_tolerant = True
 
         if not self.brush_mode:
-            context_override = {'object': obj}
+            context_override = {
+                'object': obj,
+                'active_object': obj,
+                'selected_objects': [obj],
+                'selected_editable_objects': [obj],
+            }
             with bpy.context.temp_override(**context_override):
                 bpy.ops.object.modifier_apply(modifier=md.name)
             if not self.keep_bool_obj:
@@ -1257,14 +1297,13 @@ class PS_BooleanBase:
 
     def execute(self, context):
         self.objects_prepare()
-        self.boolean_operation()
-        return {"FINISHED"}
+        return self.boolean_operation()
 
     def invoke(self, context, event):
         self.keep_bool_obj = event.shift
         self.brush_mode = event.ctrl
-        if len(context.selected_objects) < 2:
-            self.report({"ERROR"}, "At least two objects must be selected")
+        if not self.poll(context):
+            self.report({"ERROR"}, "Object mode with at least two mesh objects is required")
             return {"CANCELLED"}
         return self.execute(context)
 
@@ -1313,13 +1352,18 @@ class PS_OT_bool_slice(Operator, PS_BooleanBase):
             return {"CANCELLED"}
 
         is_local_view = bool(space_data.local_view)
+        active, operands = self._validate_selection(context)
+        if active is None:
+            return {'CANCELLED'}
+
         self.objects_prepare()
 
-        ob1 = context.active_object
+        ob1 = active
         ob1.select_set(False)
         self.mesh_selection(ob1, "DESELECT")
 
-        for ob2 in context.selected_objects:
+        ob1_copy = None
+        for ob2 in operands:
             self.mesh_selection(ob2, "SELECT")
 
             ob1_copy = ob1.copy()
@@ -1335,7 +1379,8 @@ class PS_OT_bool_slice(Operator, PS_BooleanBase):
             self.boolean_mod(ob1_copy, ob2, "INTERSECT")
             ob1_copy.select_set(True)
 
-        context.view_layer.objects.active = ob1_copy
+        if ob1_copy is not None:
+            context.view_layer.objects.active = ob1_copy
         return {"FINISHED"}
 
 
