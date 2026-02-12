@@ -1033,12 +1033,14 @@ class PS_OT_tris_weighted_normal(Operator):
         description="Use face influence for normal calculation",
     )
 
+
     def execute(self, context):
         tri_name = "PS Triangulate"
         wn_name = "PS Weighted Normal"
 
         # применяем smooth shading один раз для всех выделенных объектов
-        bpy.ops.object.shade_smooth()
+        if context.mode == 'OBJECT':
+            bpy.ops.object.shade_smooth()
 
         for obj in context.selected_objects:
             if obj.type != 'MESH':

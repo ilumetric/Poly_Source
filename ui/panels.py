@@ -9,22 +9,19 @@ from .. import check
 
 def display_panel(self, context, layout):
     """панель настроек отображения"""
-    pcoll = preview_collections['main']
-    draw_icon = pcoll['draw_icon']
-
     space_data = get_active_3d_view()
     if space_data is not None:
         overlay = space_data.overlay
         if overlay.show_retopology:
             box = layout.box()
-            box.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
+            box.prop(overlay, 'show_retopology', icon='GREASEPENCIL')
             box.prop(overlay, 'retopology_offset')
             theme = context.preferences.themes[0].view_3d
             box.prop(theme, 'face_retopology')
             box.prop(theme, 'edge_width')
             box.prop(theme, 'vertex_size')
         else:
-            layout.prop(overlay, 'show_retopology', icon_value=draw_icon.icon_id)
+            layout.prop(overlay, 'show_retopology', icon='GREASEPENCIL')
 
 
 # --- классы панелей ---
@@ -46,11 +43,9 @@ class PS_PT_unit_grid(Panel):
             return
 
         layout = self.layout
-        pcoll = preview_collections['main']
-        box_icon = pcoll['box_icon']
 
         row = layout.row()
-        row.prop(settings, 'box', text="Draw Box", toggle=True, icon_value=box_icon.icon_id)
+        row.prop(settings, 'box', text="Draw Box", toggle=True, icon='CUBE')
         row.prop(settings, 'grid_xray', toggle=True)
         row.prop(settings, 'one2one', toggle=True)
 
@@ -101,8 +96,8 @@ class PS_PT_check(Panel):
         col.scale_y = 1.5
         self._check_row(col, settings, prefs, "v_alone", "v_alone_color")
         self._check_row(col, settings, prefs, "v_bound", "bound_col")
-        self._check_row(col, settings, prefs, "e_pole", "e_pole_col")
         self._check_row(col, settings, prefs, "n_pole", "n_pole_col")
+        self._check_row(col, settings, prefs, "e_pole", "e_pole_col")
         self._check_row(col, settings, prefs, "f_pole", "f_pole_col")
 
         col = row.column()

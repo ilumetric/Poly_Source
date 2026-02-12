@@ -327,31 +327,9 @@ class PS_preferences(AddonPreferences):
         description="Fill color of the bounding box volume",
     )
 
-    # --- вкладки настроек
-    tabs: EnumProperty(
-        name="Tabs",
-        description="Switch between preference tabs",
-        items=[
-            ("GENERAL", "General", "General addon settings"),
-            ("KEYMAPS", "Keymaps", "Keyboard shortcut configuration"),
-        ],
-        default="GENERAL",
-    )
-
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.prop(self, 'tabs', expand=True)
-
-        if self.tabs == 'GENERAL':
-            self._draw_general(layout)
-        elif self.tabs == 'KEYMAPS':
-            self._draw_keymaps(context, layout)
-
-    def _draw_general(self, layout):
         layout.use_property_split = True
-
-        pcoll = preview_collections['main']
 
         # --- кнопки в хедере вьюпорта ---
         box = layout.box()
@@ -425,18 +403,9 @@ class PS_preferences(AddonPreferences):
         col.prop(self, "color_grid")
         col.prop(self, "color_box")
 
-        # --- ссылки ---
+        # --- keymaps ---
         box = layout.box()
-        row = box.row()
-        row.label(text='Links', icon='URL')
-        row = box.row()
-        row.operator('wm.url_open', text='Blender Market', icon_value=pcoll['market_icon'].icon_id).url = "https://blendermarket.com/creators/derksen"
-        row.operator('wm.url_open', text='Gumroad', icon_value=pcoll['gumroad_icon'].icon_id).url = "https://derksen.gumroad.com"
-        row.operator('wm.url_open', text='Artstation', icon_value=pcoll['artstation_icon'].icon_id).url = "https://www.artstation.com/derksen"
-
-    def _draw_keymaps(self, context, layout):
-        col = layout.column()
-        col.label(text='Keymap')
+        box.label(text='Keymap', icon='EVENT_K')
 
         wm = context.window_manager
         kc = wm.keyconfigs.user
@@ -444,12 +413,21 @@ class PS_preferences(AddonPreferences):
 
         kmi = get_hotkey_entry_item(km, 'wm.call_panel', 'PS_PT_tool_kit', 'none')
         if kmi:
-            col.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
+            box.context_pointer_set('keymap', km)
+            rna_keymap_ui.draw_kmi([], kc, km, kmi, box, 0)
         else:
-            col.label(text='No hotkey entry found')
+            box.label(text='No hotkey entry found')
 
-        col.label(text="*some hotkeys may not work because of the use of other addons")
+        box.label(text="*some hotkeys may not work because of the use of other addons")
+
+        # --- ссылки ---
+        box = layout.box()
+        row = box.row()
+        row.label(text='Links', icon='URL')
+        row = box.row()
+        row.operator('wm.url_open', text='Blender Market').url = "https://blendermarket.com/creators/derksen"
+        row.operator('wm.url_open', text='Gumroad').url = "https://derksen.gumroad.com"
+        row.operator('wm.url_open', text='Artstation').url = "https://www.artstation.com/derksen"
 
 
 addon_keymaps = []

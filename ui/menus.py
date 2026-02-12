@@ -1,6 +1,5 @@
 import bpy
 from bpy.types import Menu
-from ..icons import preview_collections
 from ..utils.utils import get_addon_prefs
 
 
@@ -10,11 +9,10 @@ class PS_MT_modifiers(Menu):
     bl_idname = 'PS_MT_modifiers'
 
     def draw(self, context):
-        pcoll = preview_collections["main"]
         layout = self.layout
-        layout.operator('object.ps_tris_weighted_normal', text='Tris & Weighted Normal', icon_value=pcoll["fix_icon"].icon_id)
+        layout.operator('object.ps_tris_weighted_normal', text='Tris & Weighted Normal', icon='NORMALS_VERTEX_FACE')
         layout.operator('object.ps_triangulate', text='Triangulate', icon='MOD_TRIANGULATE')
-        layout.operator('object.ps_add_subsurf_and_bevel', text='Crease Bevel', icon_value=pcoll["bevelSub"].icon_id)
+        layout.operator('object.ps_add_subsurf_and_bevel', text='Crease Bevel', icon='META_CUBE')
         layout.operator('object.ps_solidify', text='Solidify', icon='MOD_SOLIDIFY')
 
 
@@ -48,12 +46,6 @@ class PS_MT_main(Menu):
     bl_options = {'SEARCH_ON_KEY_PRESS'}
 
     def draw(self, context):
-        pcoll = preview_collections["main"]
-        seam_icon = pcoll["seam"]
-        sharp_icon = pcoll["sharp"]
-        bevelW_icon = pcoll["bevelW"]
-        creaseW_icon = pcoll["creaseW"]
-
         layout = self.layout
         layout.menu('PS_MT_modifiers')
         layout.menu('PS_MT_test')
@@ -61,31 +53,31 @@ class PS_MT_main(Menu):
         if context.mode == 'EDIT_MESH':
             layout.separator()
 
-            op = layout.operator('mesh.ps_set_edge_data', text='Seam / Sharp', icon_value=seam_icon.icon_id)
+            op = layout.operator('mesh.ps_set_edge_data', text='Seam / Sharp', icon='EDGESEL')
             op.do_seam = True
             op.do_sharp = True
             op.do_bevel = False
             op.do_crease = False
 
-            op = layout.operator('mesh.ps_set_edge_data', text='Seam', icon_value=seam_icon.icon_id)
+            op = layout.operator('mesh.ps_set_edge_data', text='Seam', icon='EDGE_SEAM')
             op.do_seam = True
             op.do_sharp = False
             op.do_bevel = False
             op.do_crease = False
 
-            op = layout.operator('mesh.ps_set_edge_data', text='Sharp', icon_value=sharp_icon.icon_id)
+            op = layout.operator('mesh.ps_set_edge_data', text='Sharp', icon='EDGE_SHARP')
             op.do_sharp = True
             op.do_seam = False
             op.do_bevel = False
             op.do_crease = False
 
-            op = layout.operator('mesh.ps_set_edge_data', text='Bevel', icon_value=bevelW_icon.icon_id)
+            op = layout.operator('mesh.ps_set_edge_data', text='Bevel', icon='EDGE_BEVEL')
             op.do_bevel = True
             op.do_seam = False
             op.do_sharp = False
             op.do_crease = False
 
-            op = layout.operator('mesh.ps_set_edge_data', text='Crease', icon_value=creaseW_icon.icon_id)
+            op = layout.operator('mesh.ps_set_edge_data', text='Crease', icon='EDGE_CREASE')
             op.do_crease = True
             op.do_seam = False
             op.do_sharp = False
