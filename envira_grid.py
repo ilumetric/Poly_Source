@@ -174,6 +174,34 @@ def box():
     return face_co, faces_indices
 
 
+def triangle_pointer_lines():
+    """Build a small +X direction pointer outside the outer frame."""
+    settings = bpy.context.scene.poly_source
+
+    x = settings.unit_x / 100.0
+    y = settings.unit_y / 100.0
+    if settings.one2one:
+        y = x
+    z = settings.offset_z / 100.0
+
+    short_side = max(1e-6, min(abs(x), abs(y)))
+
+    offset = short_side * 0.04
+    tip_len = short_side * 0.10
+    base_half = short_side * 0.08
+
+    x_base = (x / 2.0) + offset
+    x_tip = x_base + tip_len
+
+    tri_lines = [
+        (x_base, base_half, z), (x_base, -base_half, z),
+        (x_base, -base_half, z), (x_tip, 0.0, z),
+        (x_tip, 0.0, z), (x_base, base_half, z),
+    ]
+
+    return tri_lines
+
+
 if bpy.app.version >= (4, 0, 0):
     shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 else:
@@ -213,6 +241,11 @@ def draw_grid(self, context):
         c = props.color_grid
         shader.uniform_float("color", (c[0], c[1], c[2], c[3] / 2.0))
         grid_batch.draw(shader)
+
+    tri_co = triangle_pointer_lines()
+    tri_batch = batch_for_shader(shader, 'LINES', {"pos": tri_co})
+    shader.uniform_float("color", props.color_grid)
+    tri_batch.draw(shader)
 
     lines_co = lines()
     edges_batch = batch_for_shader(shader, 'LINES', {"pos": lines_co})
