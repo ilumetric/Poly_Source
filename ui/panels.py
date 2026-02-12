@@ -39,34 +39,32 @@ class PS_PT_unit_grid(Panel):
 
     def draw(self, context):
         settings = context.scene.poly_source
-        if not settings.draw_grid:
-            return
+        if settings.draw_grid:
+            layout = self.layout
 
-        layout = self.layout
+            row = layout.row()
+            row.prop(settings, 'box', text="Draw Box", toggle=True)
+            row.prop(settings, 'grid_xray', toggle=True)
+            row.prop(settings, 'one2one', toggle=True)
 
-        row = layout.row()
-        row.prop(settings, 'box', text="Draw Box", toggle=True, icon='CUBE')
-        row.prop(settings, 'grid_xray', toggle=True)
-        row.prop(settings, 'one2one', toggle=True)
-
-        row = layout.row(align=True)
-        row.prop(settings, 'unit_x')
-        if not settings.one2one:
-            row.prop(settings, 'unit_y')
-        if settings.box:
-            row.prop(settings, 'height')
-
-        row = layout.row()
-        row.prop(settings, 'padding')
-        row.prop(settings, 'offset_z')
-
-        if settings.draw_sub_grid:
             row = layout.row(align=True)
-            row.prop(settings, 'draw_sub_grid', text="", icon='MESH_GRID')
-            row.prop(settings, 'grid_cell_size')
-            row.prop(settings, 'grid_align_center', text="", icon='SNAP_FACE_CENTER')
-        else:
-            layout.prop(settings, 'draw_sub_grid')
+            row.prop(settings, 'unit_x')
+            if not settings.one2one:
+                row.prop(settings, 'unit_y')
+            if settings.box:
+                row.prop(settings, 'height')
+
+            row = layout.row()
+            row.prop(settings, 'padding')
+            row.prop(settings, 'offset_z')
+
+            if settings.draw_sub_grid:
+                row = layout.row(align=True)
+                row.prop(settings, 'draw_sub_grid', text="", icon='MESH_GRID')
+                row.prop(settings, 'grid_cell_size')
+                row.prop(settings, 'grid_align_center', text="", icon='SNAP_FACE_CENTER')
+            else:
+                layout.prop(settings, 'draw_sub_grid')
 
 
 class PS_PT_check(Panel):
