@@ -1245,8 +1245,14 @@ class PS_BooleanBase:
         for ob in bpy.context.selected_objects:
             if ob.type != "MESH":
                 ob.select_set(False)
-        bpy.ops.object.make_single_user(object=True, obdata=True)
-        bpy.ops.object.convert(target="MESH")
+
+        # Preserve existing modifier stacks: for boolean ops we only need
+        # unique mesh datablocks, not a full convert/apply pass.
+        for ob in bpy.context.selected_objects:
+            if ob.type != 'MESH':
+                continue
+            if ob.data.users > 1:
+                ob.data = ob.data.copy()
 
     def mesh_selection(self, ob, select_action):
         obj = bpy.context.active_object
@@ -1281,13 +1287,16 @@ class PS_BooleanBase:
         if hasattr(md, "use_hole_tolerant"):
             md.use_hole_tolerant = True
 
+        # Boolean modifiers are created at the end of the stack by default,
+        # which is exactly what we need for "on top of visible result" behavior.
+        context_override = {
+            'object': obj,
+            'active_object': obj,
+            'selected_objects': [obj],
+            'selected_editable_objects': [obj],
+        }
+
         if not self.brush_mode:
-            context_override = {
-                'object': obj,
-                'active_object': obj,
-                'selected_objects': [obj],
-                'selected_editable_objects': [obj],
-            }
             with bpy.context.temp_override(**context_override):
                 bpy.ops.object.modifier_apply(modifier=md.name)
             if not self.keep_bool_obj:
