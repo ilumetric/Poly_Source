@@ -154,7 +154,8 @@ Find under Edit → Preferences → Add-ons → Poly Source.
 ---
 
 ### Compatibility
-- **Blender:** 4.2+ (defined in `blender_manifest.toml`). Some UI icons adapt based on Blender version.
+- **Blender:** 4.2+ including Blender 5.x (minimum version is defined in `blender_manifest.toml`).
+- **Booleans:** boolean operators use Blender's `EXACT` solver path for stable, predictable results across Blender 4.2+ and 5.x.
 - **Other add-ons:** some hotkeys or header insertions may overlap; adjust in Preferences as needed. Cylinder Optimizer's "Rounding Up" mode requires the LoopTools add-on.
 
 ---
