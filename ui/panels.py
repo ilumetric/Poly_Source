@@ -94,6 +94,7 @@ class PS_PT_check(Panel):
         col.scale_y = 1.5
         self._check_row(col, settings, prefs, "v_alone", "v_alone_color")
         self._check_row(col, settings, prefs, "v_bound", "bound_col")
+        self._check_row(col, settings, prefs, "v_inline", "v_inline_col")
         self._check_row(col, settings, prefs, "n_pole", "n_pole_col")
         self._check_row(col, settings, prefs, "e_pole", "e_pole_col")
         self._check_row(col, settings, prefs, "f_pole", "f_pole_col")
@@ -114,7 +115,7 @@ class PS_PT_check(Panel):
         # статистика по найденным проблемам
         any_active = any([
             settings.v_alone, settings.v_bound, settings.e_pole,
-            settings.n_pole, settings.f_pole, settings.tris,
+            settings.n_pole, settings.f_pole, settings.v_inline, settings.tris,
             settings.ngone, settings.non_manifold_check, settings.custom_count,
         ])
         if any_active:
@@ -129,6 +130,8 @@ class PS_PT_check(Panel):
                 box.label(text='N-Pole (3): ' + str(check.n_pole_count))
             if settings.f_pole:
                 box.label(text='>5 Pole: ' + str(check.f_pole_count))
+            if settings.v_inline:
+                box.label(text='Inline (2): ' + str(check.v_inline_count))
             if settings.tris:
                 box.label(text='Triangles: ' + str(len(check.tris_co) // 3))
             if settings.ngone:

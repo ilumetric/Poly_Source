@@ -3,7 +3,7 @@
 bl_info = {
     'name': 'Poly Source',
     'author': 'Max Derksen',
-    'version': (5, 2, 0),
+    'version': (5, 2, 2),
     'blender': (5, 0, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': '3D View',

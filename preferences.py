@@ -108,6 +108,12 @@ class PS_PG_settings(PropertyGroup):
         default=False,
         update=update_check,
     )
+    v_inline: BoolProperty(
+        name="Inline (2)",
+        description="Highlight vertices connected to exactly 2 edges (mid-edge vertices left after dissolve)",
+        default=False,
+        update=update_check,
+    )
     tris: BoolProperty(
         name="Tris",
         description="Highlight triangular faces (3 vertices)",
@@ -283,6 +289,11 @@ class PS_preferences(AddonPreferences):
         default=(1.0, 0.1, 0.55, 0.9), size=4, min=0.0, max=1.0,
         description="Highlight color for extraordinary pole vertices with more than 5 edges",
     )
+    v_inline_col: FloatVectorProperty(
+        name="Inline (2 Edges)", subtype='COLOR',
+        default=(0.0, 1.0, 0.4, 0.9), size=4, min=0.0, max=1.0,
+        description="Highlight color for vertices connected to exactly 2 edges",
+    )
 
     # --- рёбра (lines) ---
     non_manifold_color: FloatVectorProperty(
@@ -379,10 +390,11 @@ class PS_preferences(AddonPreferences):
         col = box.column(align=True)
         col.prop(self, "v_alone_color")
         col.prop(self, "bound_col")
+        col.prop(self, "v_inline_col")
         col.prop(self, "n_pole_col")
         col.prop(self, "e_pole_col")
         col.prop(self, "f_pole_col")
-
+        
         box.separator(factor=0.5)
         box.label(text='Edge Colors:')
         col = box.column(align=True)

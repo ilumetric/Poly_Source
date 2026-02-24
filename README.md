@@ -33,7 +33,7 @@ Location: `3D View` (headers, context menus, sidebar panels, and popovers).
 - **Polycount header counters** with click-to-select by topology type (N-gons, Quads, Tris). Configurable placement: Top Bar, Viewport Header Left/Right, Tool Header.
 - **Polycount overlay** — viewport widget showing scene triangle count vs. target budget with color-coded feedback (green / orange / red). Supports `_LOW` collection suffix filtering.
 - **Tool Kit popover** for quick access to transform reset and display settings.
-- **Check Objects panel** — real-time topology diagnostics: non-manifold edges, isolated vertices, boundary vertices, E-poles (5 edges), N-poles (3 edges), extraordinary poles (>5 edges), tris, N-gons, elongated triangles, and custom vertex count.
+- **Check Objects panel** — real-time topology diagnostics: non-manifold edges, isolated vertices, boundary vertices, E-poles (5 edges), N-poles (3 edges), extraordinary poles (>5 edges), **Inline (2) vertices** (vertices connected to exactly 2 edges, often left after edge dissolve with vertex preservation), tris, N-gons, elongated triangles, and custom vertex count.
 - **Unit Grid overlay** — configurable grid/box drawn in the viewport with padding, sub-grid, cell size, alignment, height, X-Ray mode, and custom colors. Settings in the sidebar `PS` tab.
 - **Color Randomizer** — header buttons to add/remove incremental color prefix (`CR#_`) to object names for viewport random-color shading.
 - **Boolean tool buttons** in the 3D Viewport header (Difference, Union, Intersect, Slice).
@@ -144,7 +144,7 @@ Find under Edit → Preferences → Add-ons → Poly Source.
 | Viewport Header | Color Randomizer, Bool Tool, Camera Sync buttons |
 | Polycount | Placement (Header, Viewport Left/Right, Tool Header), `_LOW` suffix filter, performance limits (max vertices, max objects) |
 | Panels & Tools | Transform+ panel, Wireframe for Selected, Snapping angle presets |
-| Mesh Check | Point/edge sizes, highlight colors for each topology check |
+| Mesh Check | Point/edge sizes, highlight colors for each topology check, including **Inline (2)** vertices for detecting leftover mid-edge points that can cause Subdivision artifacts |
 | Unit Grid | Grid and box colors |
 | Links | Blender Market, Gumroad, Artstation |
 

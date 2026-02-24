@@ -135,6 +135,7 @@ v_bound_count = 0
 e_pole_count = 0
 n_pole_count = 0
 f_pole_count = 0
+v_inline_count = 0
 
 
 def check_draw(self, context):
@@ -257,7 +258,7 @@ class PS_GGT_check_group(GizmoGroup):
         global ngone_co, ngons_indices, tris_co, custom_co, custom_faces_indices
         global e_non_co, ngone_idx, e_non_idx, custom_faces_idx, elongated_tris_co
         global point_pos, point_col1, point_col2
-        global v_alone_count, v_bound_count, e_pole_count, n_pole_count, f_pole_count
+        global v_alone_count, v_bound_count, e_pole_count, n_pole_count, f_pole_count, v_inline_count
 
         # сброс всех списков
         ngone_co = []
@@ -278,6 +279,7 @@ class PS_GGT_check_group(GizmoGroup):
         e_pole_count = 0
         n_pole_count = 0
         f_pole_count = 0
+        v_inline_count = 0
 
         objs = [obj for obj in context.selected_objects if obj.type == 'MESH' and len(obj.data.polygons) < 50000]
         if not objs:
@@ -363,7 +365,7 @@ class PS_GGT_check_group(GizmoGroup):
 
             # unified проверка вершин с детекцией наложений
             any_vert = (settings.e_pole or settings.n_pole or settings.f_pole
-                        or settings.v_bound or settings.v_alone)
+                        or settings.v_bound or settings.v_alone or settings.v_inline)
             if any_vert:
                 props = get_addon_prefs()
                 if props:
@@ -378,6 +380,8 @@ class PS_GGT_check_group(GizmoGroup):
                     col_e = tuple(props.e_pole_col) if check_e else None
                     col_n = tuple(props.n_pole_col) if check_n else None
                     col_f = tuple(props.f_pole_col) if check_f else None
+                    check_inline = settings.v_inline
+                    col_inline = tuple(props.v_inline_col) if check_inline else None
                     no_col = (0.0, 0.0, 0.0, 0.0)
                     matrix = obj.matrix_world
 
@@ -400,6 +404,9 @@ class PS_GGT_check_group(GizmoGroup):
                         if check_f and ec > 5:
                             f_pole_count += 1
                             colors.append(col_f)
+                        if check_inline and ec == 2:
+                            v_inline_count += 1
+                            colors.append(col_inline)
 
                         if colors:
                             point_pos.append(matrix @ v.co)
