@@ -3,7 +3,7 @@
 bl_info = {
     'name': 'Poly Source',
     'author': 'Max Derksen',
-    'version': (5, 2, 2),
+    'version': (5, 2, 5),
     'blender': (5, 0, 0),
     'location': 'VIEW 3D > Top Bar',
     'category': '3D View',
@@ -19,6 +19,7 @@ from . import (
     polycount,
     envira_grid,
     wire_for_selected,
+    edge_decal,
 )
 
 from .utils import (
@@ -42,6 +43,7 @@ def register():
     polycount.register()
     envira_grid.register()
     wire_for_selected.register()
+    edge_decal.register()
 
     # утилиты
     fill_mesh.register()
@@ -55,6 +57,7 @@ def unregister():
 
     # UI и визуализация
     wire_for_selected.unregister()
+    edge_decal.unregister()
     envira_grid.unregister()
     polycount.unregister()
     color_randomizer.unregister()

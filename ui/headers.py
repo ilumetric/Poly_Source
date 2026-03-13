@@ -31,7 +31,14 @@ def get_polygons_count_ui(context, layout):
         if _total_vertices < props.max_verts and _total_objects < props.max_objs:
             if context.mode == 'EDIT_MESH':
                 for obj in objs:
-                    bm = bmesh.from_edit_mesh(obj.data)
+                    if obj.type != 'MESH':
+                        continue
+                    if not getattr(obj.data, 'is_editmode', False):
+                        continue
+                    try:
+                        bm = bmesh.from_edit_mesh(obj.data)
+                    except ValueError:
+                        continue
                     _tris += sum(1 for face in bm.faces if len(face.verts) == 3)
                     _quad += sum(1 for face in bm.faces if len(face.verts) == 4)
                     _ngon += sum(1 for face in bm.faces if len(face.verts) > 4)

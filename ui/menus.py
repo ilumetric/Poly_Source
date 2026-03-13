@@ -89,6 +89,8 @@ class PS_MT_main(Menu):
             layout.operator('mesh.loop_multi_select', text='Edge Loop', icon='MATSPHERE').ring = False
             layout.operator('mesh.loop_multi_select', text='Edge Ring', icon='SNAP_EDGE').ring = True
             layout.operator('mesh.region_to_loop', text='Boundary Loop', icon='MESH_GRID')
+            layout.separator()
+            layout.operator('mesh.ps_create_edge_decal', icon='MOD_SOLIDIFY')
 
 
 def rmb_menu(self, context):
