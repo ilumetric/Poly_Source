@@ -150,6 +150,17 @@ class PS_PG_settings(PropertyGroup):
         min=3, default=5,
         update=update_check,
     )
+    facet_ratio: BoolProperty(
+        name="Facet Ratio",
+        description=(
+            "Estimate how faceted the mesh becomes in Unreal Engine: shared "
+            "vertices are split by hard edges / smooth groups and the "
+            "vertex-to-triangle ratio is reported. Text statistics only, "
+            "no viewport overlay"
+        ),
+        default=False,
+        update=update_check,
+    )
 
     # --- группы панели
     # panel_groups: EnumProperty(

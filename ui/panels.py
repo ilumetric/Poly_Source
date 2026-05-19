@@ -84,6 +84,37 @@ class PS_PT_check(Panel):
         sub.enabled = getattr(settings, toggle_prop)
         sub.prop(prefs, color_prop, text="")
 
+    @staticmethod
+    def _ratio_stat(layout, label, value, icon='NONE', tip=''):
+        """строка статистики: подпись слева, значение по центру,
+        индикатор-иконка прижата к правому краю.
+
+        tip != '' — иконка-индикатор рисуется как operator без действия,
+        чтобы при наведении на неё показывать описание метрики
+        """
+        split = layout.split(factor=0.5)
+
+        # левая половина — подпись (label, чтобы текст совпадал со строками выше)
+        split.label(text=label)
+
+        # правая половина — значение слева, индикатор у правого края
+        right = split.row()
+        right.label(text=value)
+        if icon != 'NONE':
+            right.separator_spacer()
+            if tip:
+                right.operator('wm.ps_facet_info', text='', icon=icon, emboss=False).info_type = tip
+            else:
+                right.label(text='', icon=icon)
+
+    @staticmethod
+    def _section_sep(layout):
+        """разделитель секций: горизонтальная линия (Blender 4.2+) или узкий отступ"""
+        if bpy.app.version >= (4, 2, 0):
+            layout.separator(factor=0.7, type='LINE')
+        else:
+            layout.separator(factor=0.4)
+
     def draw(self, context):
         settings = context.scene.poly_source
         prefs = get_addon_prefs()
@@ -106,6 +137,13 @@ class PS_PT_check(Panel):
         self._check_row(col, settings, prefs, "non_manifold_check", "non_manifold_color")
         self._check_row(col, settings, prefs, "elongated_tris", "elongated_tris_col")
         self._check_row(col, settings, prefs, "custom_count", "custom_col")
+
+        # оценка соотношения вершин Blender/Unreal — текст, без цвета во вьюпорте
+        ratio_row = col.row(align=True)
+        ratio_row.prop(settings, "facet_ratio", toggle=True)
+        ratio_pad = ratio_row.row(align=True)
+        ratio_pad.scale_x = 0.3
+        ratio_pad.label(text="")
 
         if settings.elongated_tris:
             layout.prop(settings, "elongated_aspect_ratio")
@@ -142,6 +180,49 @@ class PS_PT_check(Panel):
                 box.label(text='Elongated Tris: ' + str(len(check.elongated_tris_co) // 6))
             if settings.custom_count:
                 box.label(text='Custom: ' + str(len(check.custom_faces_idx)))
+
+        # статистика фасетизации меша (Blender vs Unreal)
+        if settings.facet_ratio:
+            box = layout.box()
+            box.label(text='Facet Ratio', icon='MESH_DATA')
+
+            col = box.column(align=True)
+            col.scale_y = 0.9
+
+            # текущий меш Blender — с квадами / n-гонами
+            col.label(text='Blender:')
+            self._ratio_stat(col, 'Verts', str(check.ratio_phys_verts))
+            self._ratio_stat(col, 'Faces', str(check.ratio_faces))
+
+            # как меш увидит Unreal — после триангуляции и расщепления хард-эджей
+            self._section_sep(col)
+            col.label(text='Unreal (triangulated):')
+            self._ratio_stat(col, 'Verts', str(check.ratio_render_verts))
+            self._ratio_stat(col, 'Triangles', str(check.ratio_tris))
+
+            self._section_sep(col)
+
+            # главный показатель — вершины / треугольники после триангуляции
+            if check.ratio_tris > 0:
+                vt = check.ratio_render_verts / check.ratio_tris
+                if vt < 1.0:
+                    vt_icon = 'CHECKMARK'
+                elif vt < 2.0:
+                    vt_icon = 'INFO'
+                else:
+                    vt_icon = 'ERROR'
+                self._ratio_stat(col, 'V/T Ratio', '{:.2f}'.format(vt), vt_icon, 'VT')
+
+            # насколько хард-эджи раздувают число вершин относительно Blender
+            if check.ratio_phys_verts > 0:
+                split = check.ratio_render_verts / check.ratio_phys_verts
+                if split < 1.5:
+                    sp_icon = 'CHECKMARK'
+                elif split < 2.0:
+                    sp_icon = 'INFO'
+                else:
+                    sp_icon = 'ERROR'
+                self._ratio_stat(col, 'Unreal Split', 'x{:.2f}'.format(split), sp_icon, 'SPLIT')
 
         layout.prop(settings, "xray_for_check")
         layout.prop(settings, "use_modifiers")

@@ -3,7 +3,7 @@ import gpu
 import bmesh
 import math
 from gpu_extras.batch import batch_for_shader
-from bpy.types import Gizmo, GizmoGroup
+from bpy.types import Gizmo, GizmoGroup, Operator
 from gpu import state
 from .utils.utils import get_addon_prefs
 
@@ -137,6 +137,55 @@ n_pole_count = 0
 f_pole_count = 0
 v_inline_count = 0
 
+# статистика соотношения вершин: физические точки Blender и
+# точки, как их разобьёт Unreal по хард-эджам / смуз-группам
+ratio_phys_verts = 0
+ratio_faces = 0
+ratio_render_verts = 0
+ratio_tris = 0
+
+
+def count_render_verts(v):
+    """Сколько вершин получит Unreal из общей точки v.
+
+    Unreal расщепляет вершину там, где меняется нормаль (хард-эдж).
+    Грани вокруг v объединяются в группы: соседние грани попадают в
+    одну группу, если их общее ребро гладкое (не sharp) и обе грани
+    со сглаживанием. Число групп = число вершин на стороне Unreal.
+    """
+    faces = v.link_faces
+    n = len(faces)
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+
+    # union-find по граням вокруг вершины
+    parent = {f: f for f in faces}
+
+    def find(x):
+        root = x
+        while parent[root] != root:
+            root = parent[root]
+        while parent[x] != root:
+            parent[x], x = root, parent[x]
+        return root
+
+    for e in v.link_edges:
+        lf = e.link_faces
+        if len(lf) != 2:
+            continue
+        if not e.smooth:  # ребро помечено как sharp — нормаль рвётся
+            continue
+        f1, f2 = lf
+        if not (f1.smooth and f2.smooth):  # flat-грань всегда рвёт нормаль
+            continue
+        r1, r2 = find(f1), find(f2)
+        if r1 != r2:
+            parent[r1] = r2
+
+    return len({find(f) for f in faces})
+
 
 def check_draw(self, context):
     """отрисовка результатов проверки меша"""
@@ -259,6 +308,7 @@ class PS_GGT_check_group(GizmoGroup):
         global e_non_co, ngone_idx, e_non_idx, custom_faces_idx, elongated_tris_co
         global point_pos, point_col1, point_col2
         global v_alone_count, v_bound_count, e_pole_count, n_pole_count, f_pole_count, v_inline_count
+        global ratio_phys_verts, ratio_faces, ratio_render_verts, ratio_tris
 
         # сброс всех списков
         ngone_co = []
@@ -280,6 +330,10 @@ class PS_GGT_check_group(GizmoGroup):
         n_pole_count = 0
         f_pole_count = 0
         v_inline_count = 0
+        ratio_phys_verts = 0
+        ratio_faces = 0
+        ratio_render_verts = 0
+        ratio_tris = 0
 
         objs = [obj for obj in context.selected_objects if obj.type == 'MESH' and len(obj.data.polygons) < 50000]
         if not objs:
@@ -438,6 +492,13 @@ class PS_GGT_check_group(GizmoGroup):
                                         verts[2], verts[0],
                                     ])
 
+            # статистика фасетизации меша Blender vs Unreal (только текст)
+            if settings.facet_ratio:
+                ratio_phys_verts += len(bm.verts)
+                ratio_faces += len(bm.faces)
+                ratio_tris += sum(len(f.verts) - 2 for f in bm.faces)
+                ratio_render_verts += sum(count_render_verts(v) for v in bm.verts)
+
             if not (context.mode == 'EDIT_MESH' and obj.mode == 'EDIT'):
                 bm.free()
 
@@ -448,7 +509,36 @@ class PS_GGT_check_group(GizmoGroup):
             UPDATE = False
 
 
+class PS_OT_facet_info(Operator):
+    """кнопка-заглушка: показывает описание метрики при наведении курсора"""
+    bl_idname = 'wm.ps_facet_info'
+    bl_label = 'Facet Metric Info'
+    bl_options = {'INTERNAL'}
+
+    info_type: bpy.props.StringProperty(default='', options={'HIDDEN'})
+
+    @classmethod
+    def description(cls, context, properties):
+        if properties.info_type == 'VT':
+            return (
+                "Vertex-to-triangle ratio of the triangulated mesh, the way Unreal sees it.\n"
+                "Below 1.0 is ideal. 2:1 or higher likely indicates a problem. "
+                "3:1 means the mesh is fully faceted — every triangle has its own 3 vertices"
+            )
+        if properties.info_type == 'SPLIT':
+            return (
+                "How much hard edges inflate the vertex count compared to the Blender mesh.\n"
+                "x1.0 means perfect vertex sharing. Higher values mean hard edges / "
+                "smooth groups force Unreal to duplicate vertices"
+            )
+        return ""
+
+    def execute(self, context):
+        return {'CANCELLED'}
+
+
 classes = [
+    PS_OT_facet_info,
     PS_GT_check,
     PS_GGT_check_group,
 ]

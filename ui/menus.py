@@ -86,12 +86,15 @@ class PS_MT_main(Menu):
             layout.separator()
             layout.operator('mesh.edges_select_sharp', icon='LINCURVE')
             layout.operator('mesh.select_nth', icon='TEXTURE_DATA')
-            layout.operator('mesh.loop_multi_select', text='Edge Loop', icon='MATSPHERE').ring = False
-            layout.operator('mesh.loop_multi_select', text='Edge Ring', icon='SNAP_EDGE').ring = True
+            if bpy.app.version >= (5, 1, 0):
+                layout.operator('mesh.select_edge_loop_multi', text='Edge Loop', icon='MATSPHERE')
+                layout.operator('mesh.select_edge_ring_multi', text='Edge Ring', icon='SNAP_EDGE')
+            else:
+                layout.operator('mesh.loop_select', text='Edge Loop', icon='MATSPHERE')
+                layout.operator('mesh.edgering_select', text='Edge Ring', icon='SNAP_EDGE')
             layout.operator('mesh.region_to_loop', text='Boundary Loop', icon='MESH_GRID')
             layout.separator()
             layout.operator('mesh.ps_create_edge_decal', icon='MOD_SOLIDIFY')
-
 
 def rmb_menu(self, context):
     if context.mode in ['OBJECT', 'EDIT_MESH']:
