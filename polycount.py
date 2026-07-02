@@ -5,26 +5,31 @@ from bpy.types import Gizmo, GizmoGroup
 from .utils.utils import get_addon_prefs
 
 
+_FONT_ID = 0
+_LABEL_COLOR = (0.58, 0.72, 0.0)
+_VALUE_COLOR = (0.9, 0.9, 0.9)
+
+
+def _draw_text(x, y, text, color):
+    blf.position(_FONT_ID, x, y, 0)
+    blf.size(_FONT_ID, 14)
+    blf.color(_FONT_ID, color[0], color[1], color[2], 1.0)
+    blf.enable(_FONT_ID, blf.SHADOW)
+    blf.shadow(_FONT_ID, 3, 0.0, 0.0, 0.0, 1.0)
+    blf.draw(_FONT_ID, text)
+
+
 def polycount(self, context):
     """отрисовка счётчика полигонов в вьюпорте"""
     if context.active_object is None:
         return
 
-    font_id = 0
     props = get_addon_prefs()
     if not props:
         return
     settings = context.scene.poly_source
 
-    width = 10
-    height = 45
-    label = "Polycount: " + str(settings.tris_count) + "/"
-    blf.position(font_id, width, height, 0)
-    blf.size(font_id, 14)
-    blf.color(font_id, 0.58, 0.72, 0.0, 1.0)
-    blf.enable(font_id, blf.SHADOW)
-    blf.shadow(font_id, 3, 0.0, 0.0, 0.0, 1.0)
-    blf.draw(font_id, label)
+    _draw_text(10, 45, "Polycount: " + str(settings.tris_count) + "/", _LABEL_COLOR)
 
     # подсчёт треугольников сцены
     if not props.low_suffix:
@@ -67,19 +72,12 @@ def polycount(self, context):
     elif 1.2 > coef > 1:
         col = (1.0, 0.5, 0.0)
     else:
-        col = (0.9, 0.9, 0.9)
+        col = _VALUE_COLOR
 
-    offset = len(str(settings.tris_count)) * 6
+    value_x = 110 + len(str(settings.tris_count)) * 6
 
-    # отрисовка количества треугольников сцены
-    width = 110 + offset
-    tris_text = str(tris)
-    blf.position(font_id, width, height, 0)
-    blf.size(font_id, 14)
-    blf.color(font_id, col[0], col[1], col[2], 1.0)
-    blf.enable(font_id, blf.SHADOW)
-    blf.shadow(font_id, 3, 0.0, 0.0, 0.0, 1.0)
-    blf.draw(font_id, tris_text)
+    # количество треугольников сцены
+    _draw_text(value_x, 45, str(tris), col)
 
     # подсчёт треугольников активного объекта
     active_tris = 0
@@ -91,26 +89,8 @@ def polycount(self, context):
             else:
                 active_tris += sum(len(f.vertices) - 2 for f in obj.data.polygons)
 
-    # отрисовка метки активного объекта
-    width = 10
-    height = 30
-    label = "Active Object: "
-    blf.position(font_id, width, height, 0)
-    blf.size(font_id, 14)
-    blf.color(font_id, 0.58, 0.72, 0.0, 1.0)
-    blf.enable(font_id, blf.SHADOW)
-    blf.shadow(font_id, 3, 0.0, 0.0, 0.0, 1.0)
-    blf.draw(font_id, label)
-
-    # отрисовка количества треугольников активного объекта
-    width = 110 + offset
-    active_text = str(active_tris)
-    blf.position(font_id, width, height, 0)
-    blf.size(font_id, 14)
-    blf.color(font_id, 0.9, 0.9, 0.9, 1.0)
-    blf.enable(font_id, blf.SHADOW)
-    blf.shadow(font_id, 3, 0.0, 0.0, 0.0, 1.0)
-    blf.draw(font_id, active_text)
+    _draw_text(10, 30, "Active Object: ", _LABEL_COLOR)
+    _draw_text(value_x, 30, str(active_tris), _VALUE_COLOR)
 
 
 class PS_GT_polycount(Gizmo):

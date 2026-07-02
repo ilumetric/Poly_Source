@@ -202,10 +202,7 @@ def triangle_pointer_lines():
     return tri_lines
 
 
-if bpy.app.version >= (4, 0, 0):
-    shader = gpu.shader.from_builtin('UNIFORM_COLOR')
-else:
-    shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 
 
 def draw_grid(self, context):
@@ -216,8 +213,8 @@ def draw_grid(self, context):
 
     shader.bind()
 
-    # ширины из темы
-    theme = context.preferences.themes['Default']
+    # ширины из активной темы (обращение по имени падает на кастомных темах)
+    theme = context.preferences.themes[0]
     edge_width = theme.view_3d.edge_width
     vertex_size = theme.view_3d.vertex_size
 

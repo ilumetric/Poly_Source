@@ -3,6 +3,7 @@ import gpu
 import bmesh
 import math
 from gpu_extras.batch import batch_for_shader
+from mathutils.geometry import tessellate_polygon
 from bpy.types import Gizmo, GizmoGroup, Operator
 from gpu import state
 from .utils.utils import get_addon_prefs
@@ -10,24 +11,25 @@ from .utils.utils import get_addon_prefs
 
 UPDATE = False
 
-if bpy.app.version >= (4, 0, 0):
-    shader = gpu.shader.from_builtin('UNIFORM_COLOR')
+shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 
-    # шейдер для точек с per-vertex цветами и поддержкой наложений (Vulkan)
+
+def _create_point_shader():
+    """шейдер для точек с per-vertex цветами и поддержкой наложений"""
     try:
-        _pt_iface = gpu.types.GPUStageInterfaceInfo("pt_iface")
-        _pt_iface.flat('VEC4', "vCol1")
-        _pt_iface.flat('VEC4', "vCol2")
+        iface = gpu.types.GPUStageInterfaceInfo("pt_iface")
+        iface.flat('VEC4', "vCol1")
+        iface.flat('VEC4', "vCol2")
 
-        _pt_info = gpu.types.GPUShaderCreateInfo()
-        _pt_info.push_constant('MAT4', "ModelViewProjectionMatrix")
-        _pt_info.push_constant('FLOAT', "pointSize")
-        _pt_info.vertex_in(0, 'VEC3', "pos")
-        _pt_info.vertex_in(1, 'VEC4', "col1")
-        _pt_info.vertex_in(2, 'VEC4', "col2")
-        _pt_info.vertex_out(_pt_iface)
-        _pt_info.fragment_out(0, 'VEC4', "fragColor")
-        _pt_info.vertex_source(
+        info = gpu.types.GPUShaderCreateInfo()
+        info.push_constant('MAT4', "ModelViewProjectionMatrix")
+        info.push_constant('FLOAT', "pointSize")
+        info.vertex_in(0, 'VEC3', "pos")
+        info.vertex_in(1, 'VEC4', "col1")
+        info.vertex_in(2, 'VEC4', "col2")
+        info.vertex_out(iface)
+        info.fragment_out(0, 'VEC4', "fragColor")
+        info.vertex_source(
             "void main()\n"
             "{\n"
             "  gl_Position = ModelViewProjectionMatrix * vec4(pos, 1.0);\n"
@@ -36,7 +38,7 @@ if bpy.app.version >= (4, 0, 0):
             "  vCol2 = col2;\n"
             "}\n"
         )
-        _pt_info.fragment_source(
+        info.fragment_source(
             "void main()\n"
             "{\n"
             "  vec2 center = gl_PointCoord - vec2(0.5);\n"
@@ -52,28 +54,30 @@ if bpy.app.version >= (4, 0, 0):
             "  }\n"
             "}\n"
         )
-        point_shader = gpu.shader.create_from_info(_pt_info)
-        del _pt_info, _pt_iface
+        return gpu.shader.create_from_info(info)
     except Exception:
-        point_shader = None
+        return None
 
-    # шейдер для линий с контролем ширины (совместимость с Vulkan)
+
+def _create_line_shader():
+    """шейдер для линий с контролем ширины (geometry shader);
+    на бэкендах без geometry-стадии (Metal) вернёт None — используется fallback"""
     try:
-        _ln_info = gpu.types.GPUShaderCreateInfo()
-        _ln_info.push_constant('MAT4', "ModelViewProjectionMatrix")
-        _ln_info.push_constant('VEC4', "color")
-        _ln_info.push_constant('FLOAT', "lineWidth")
-        _ln_info.push_constant('VEC2', "viewportSize")
-        _ln_info.vertex_in(0, 'VEC3', "pos")
-        _ln_info.fragment_out(0, 'VEC4', "fragColor")
-        _ln_info.vertex_source(
+        info = gpu.types.GPUShaderCreateInfo()
+        info.push_constant('MAT4', "ModelViewProjectionMatrix")
+        info.push_constant('VEC4', "color")
+        info.push_constant('FLOAT', "lineWidth")
+        info.push_constant('VEC2', "viewportSize")
+        info.vertex_in(0, 'VEC3', "pos")
+        info.fragment_out(0, 'VEC4', "fragColor")
+        info.vertex_source(
             "void main()\n"
             "{\n"
             "  gl_Position = ModelViewProjectionMatrix * vec4(pos, 1.0);\n"
             "}\n"
         )
-        _ln_info.geometry_layout('LINES', 'TRIANGLE_STRIP', 4)
-        _ln_info.geometry_source(
+        info.geometry_layout('LINES', 'TRIANGLE_STRIP', 4)
+        info.geometry_source(
             "void main()\n"
             "{\n"
             "  vec4 p0 = gl_in[0].gl_Position;\n"
@@ -96,20 +100,19 @@ if bpy.app.version >= (4, 0, 0):
             "  EndPrimitive();\n"
             "}\n"
         )
-        _ln_info.fragment_source(
+        info.fragment_source(
             "void main()\n"
             "{\n"
             "  fragColor = color;\n"
             "}\n"
         )
-        line_shader = gpu.shader.create_from_info(_ln_info)
-        del _ln_info
+        return gpu.shader.create_from_info(info)
     except Exception:
-        line_shader = None
-else:
-    shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
-    point_shader = None
-    line_shader = None
+        return None
+
+
+point_shader = _create_point_shader()
+line_shader = _create_line_shader()
 
 
 # данные для отрисовки гизмо
@@ -119,9 +122,6 @@ tris_co = []
 custom_co = []
 custom_faces_indices = []
 e_non_co = []
-ngone_idx = []
-e_non_idx = []
-custom_faces_idx = []
 elongated_tris_co = []
 
 # unified данные для точек (per-vertex цвета)
@@ -136,6 +136,9 @@ e_pole_count = 0
 n_pole_count = 0
 f_pole_count = 0
 v_inline_count = 0
+ngone_count = 0
+custom_faces_count = 0
+non_manifold_count = 0
 
 # статистика соотношения вершин: физические точки Blender и
 # точки, как их разобьёт Unreal по хард-эджам / смуз-группам
@@ -185,6 +188,23 @@ def count_render_verts(v):
             parent[r1] = r2
 
     return len({find(f) for f in faces})
+
+
+def collect_face_triangles(faces, matrix, coords, indices):
+    """триангулирует произвольные грани и добавляет их в батч 'TRIS'
+
+    работает без копии bmesh: каждая грань тесселируется независимо
+    """
+    for f in faces:
+        vs = [matrix @ v.co for v in f.verts]
+        base = len(coords)
+        if len(vs) == 3:
+            coords.extend(vs)
+            indices.append((base, base + 1, base + 2))
+        else:
+            for a, b, c in tessellate_polygon((vs,)):
+                indices.append((base + a, base + b, base + c))
+            coords.extend(vs)
 
 
 def check_draw(self, context):
@@ -305,9 +325,10 @@ class PS_GGT_check_group(GizmoGroup):
 
     def refresh(self, context):
         global ngone_co, ngons_indices, tris_co, custom_co, custom_faces_indices
-        global e_non_co, ngone_idx, e_non_idx, custom_faces_idx, elongated_tris_co
+        global e_non_co, elongated_tris_co
         global point_pos, point_col1, point_col2
         global v_alone_count, v_bound_count, e_pole_count, n_pole_count, f_pole_count, v_inline_count
+        global ngone_count, custom_faces_count, non_manifold_count
         global ratio_phys_verts, ratio_faces, ratio_render_verts, ratio_tris
 
         # сброс всех списков
@@ -317,9 +338,6 @@ class PS_GGT_check_group(GizmoGroup):
         custom_co = []
         custom_faces_indices = []
         e_non_co = []
-        ngone_idx = []
-        e_non_idx = []
-        custom_faces_idx = []
         elongated_tris_co = []
         point_pos = []
         point_col1 = []
@@ -330,6 +348,9 @@ class PS_GGT_check_group(GizmoGroup):
         n_pole_count = 0
         f_pole_count = 0
         v_inline_count = 0
+        ngone_count = 0
+        custom_faces_count = 0
+        non_manifold_count = 0
         ratio_phys_verts = 0
         ratio_faces = 0
         ratio_render_verts = 0
@@ -353,69 +374,26 @@ class PS_GGT_check_group(GizmoGroup):
                 bm.edges.ensure_lookup_table()
                 bm.faces.ensure_lookup_table()
 
+            matrix = obj.matrix_world
+
             # n-gone
             if settings.ngone:
-                # локальные индексы граней текущего объекта
-                obj_ngone_idx = [n.index for n in bm.faces if len(n.verts) > 4]
-                ngone_idx.extend(obj_ngone_idx)
-
-                if obj_ngone_idx:
-                    copy = bm.copy()
-                    copy.faces.ensure_lookup_table()
-                    edge_n = set(e for i in obj_ngone_idx for e in copy.faces[i].edges)
-
-                    for e in copy.edges:
-                        if e not in edge_n:
-                            e.hide_set(True)
-
-                    bmesh.ops.triangulate(copy, faces=copy.faces[:])
-
-                    offset = len(ngone_co)
-                    v_count = 0
-                    for f in copy.faces:
-                        if not f.hide:
-                            ngone_co.extend([obj.matrix_world @ v.co for v in f.verts])
-                            v_count += len(f.verts)
-
-                    copy.free()
-                    ngons_indices.extend(
-                        [offset + vi, offset + vi + 1, offset + vi + 2] for vi in range(0, v_count, 3)
-                    )
+                faces = [f for f in bm.faces if len(f.verts) > 4]
+                ngone_count += len(faces)
+                collect_face_triangles(faces, matrix, ngone_co, ngons_indices)
 
             # кастомный подсчёт
             if settings.custom_count:
-                # локальные индексы граней текущего объекта
-                obj_custom_idx = [n.index for n in bm.faces if len(n.verts) == settings.custom_count_verts]
-                custom_faces_idx.extend(obj_custom_idx)
-
-                if obj_custom_idx:
-                    copy = bm.copy()
-                    copy.faces.ensure_lookup_table()
-                    edge_n = set(e for i in obj_custom_idx for e in copy.faces[i].edges)
-
-                    for e in copy.edges:
-                        if e not in edge_n:
-                            e.hide_set(True)
-
-                    bmesh.ops.triangulate(copy, faces=copy.faces[:])
-
-                    offset = len(custom_co)
-                    v_count = 0
-                    for f in copy.faces:
-                        if not f.hide:
-                            custom_co.extend([obj.matrix_world @ v.co for v in f.verts])
-                            v_count += len(f.verts)
-
-                    copy.free()
-                    custom_faces_indices.extend(
-                        [offset + vi, offset + vi + 1, offset + vi + 2] for vi in range(0, v_count, 3)
-                    )
+                faces = [f for f in bm.faces if len(f.verts) == settings.custom_count_verts]
+                custom_faces_count += len(faces)
+                collect_face_triangles(faces, matrix, custom_co, custom_faces_indices)
 
             # non-manifold рёбра
             if settings.non_manifold_check:
-                obj_non_idx = [e.index for e in bm.edges if not e.is_manifold]
-                e_non_idx.extend(obj_non_idx)
-                e_non_co.extend([obj.matrix_world @ v.co for i in obj_non_idx for v in bm.edges[i].verts])
+                for e in bm.edges:
+                    if not e.is_manifold:
+                        non_manifold_count += 1
+                        e_non_co.extend((matrix @ e.verts[0].co, matrix @ e.verts[1].co))
 
             # unified проверка вершин с детекцией наложений
             any_vert = (settings.e_pole or settings.n_pole or settings.f_pole
@@ -437,7 +415,6 @@ class PS_GGT_check_group(GizmoGroup):
                     check_inline = settings.v_inline
                     col_inline = tuple(props.v_inline_col) if check_inline else None
                     no_col = (0.0, 0.0, 0.0, 0.0)
-                    matrix = obj.matrix_world
 
                     for v in bm.verts:
                         colors = []
@@ -471,7 +448,7 @@ class PS_GGT_check_group(GizmoGroup):
             if settings.elongated_tris or settings.tris:
                 for f in bm.faces:
                     if len(f.verts) == 3:
-                        verts = [obj.matrix_world @ v.co for v in f.verts]
+                        verts = [matrix @ v.co for v in f.verts]
 
                         if settings.tris:
                             tris_co.extend(verts)

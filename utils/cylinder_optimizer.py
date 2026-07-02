@@ -52,9 +52,8 @@ class PS_OT_cylinder_optimizer(Operator):
     def poll(cls, context):
         return context.mode == 'EDIT_MESH'
 
-    @staticmethod
-    def _circle(self, context):
-        """выравнивает выбранные петли в окружность"""
+    def _circle(self):
+        """выравнивает выбранные петли в окружность (требуется аддон LoopTools)"""
         bpy.ops.mesh.loop_multi_select(ring=True)
         bpy.ops.mesh.loop_multi_select(ring=False)
         bpy.ops.mesh.looptools_circle(
@@ -63,10 +62,8 @@ class PS_OT_cylinder_optimizer(Operator):
             radius=1, angle=0, regular=True,
         )
 
-    @staticmethod
-    def _optimizer(self, context):
+    def _optimizer(self):
         """оптимизирует цилиндр, удаляя лишние edge loops"""
-        bpy.ops.ed.undo_push()
         bpy.ops.mesh.loop_multi_select(ring=True)
         bpy.ops.mesh.select_nth(skip=self.skip, nth=self.nth, offset=self.offset)
         bpy.ops.mesh.loop_multi_select(ring=False)
@@ -75,9 +72,12 @@ class PS_OT_cylinder_optimizer(Operator):
 
     def execute(self, context):
         if self.rounding:
-            self._circle(self, context)
+            if not hasattr(bpy.types, 'MESH_OT_looptools_circle'):
+                self.report({'ERROR'}, "Rounding Up requires the LoopTools add-on to be enabled")
+                return {'CANCELLED'}
+            self._circle()
         else:
-            self._optimizer(self, context)
+            self._optimizer()
         return {'FINISHED'}
 
     def draw(self, context):

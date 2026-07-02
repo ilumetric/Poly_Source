@@ -1,16 +1,12 @@
 import bpy
-import rna_keymap_ui
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.props import (
-    EnumProperty,
     FloatVectorProperty,
     BoolProperty,
     FloatProperty,
     IntProperty,
     PointerProperty,
 )
-from .icons import preview_collections
-from .utils.utils import get_hotkey_entry_item
 from . import check
 
 
@@ -162,17 +158,6 @@ class PS_PG_settings(PropertyGroup):
         update=update_check,
     )
 
-    # --- группы панели
-    # panel_groups: EnumProperty(
-    #     name='Groups',
-    #     description='Switch between Tool Kit panel sections',
-    #     items=[
-    #         ('TRANSFORM', 'Transform', 'Reset and transfer object transforms', 'EMPTY_ARROWS', 0),
-    #         ('DISPLAY', 'Display', 'Viewport display and retopology settings', 'RESTRICT_VIEW_OFF', 1),
-    #     ],
-    #     default='TRANSFORM',
-    # )
-
 
 class PS_preferences(AddonPreferences):
     """Addon preferences for Poly Source"""
@@ -243,11 +228,6 @@ class PS_preferences(AddonPreferences):
     # =============================================
     # --- панели и инструменты ---
     # =============================================
-    # b_transform_plus: BoolProperty(
-    #     name="Transform+",
-    #     description="Show enhanced Transform panel in the sidebar with quick reset and copy buttons",
-    #     default=False,
-    # )
     b_wire_for_selected: BoolProperty(
         name="Wireframe for Selected",
         description="Automatically display wireframe overlay on selected objects",
@@ -384,7 +364,6 @@ class PS_preferences(AddonPreferences):
         row = box.row()
         row.label(text='Panels & Tools', icon='TOOL_SETTINGS')
         col = box.column(align=True)
-        #col.prop(self, 'b_transform_plus')
         col.prop(self, 'b_wire_for_selected')
         col.prop(self, 'b_presets_increment_angles')
 
@@ -426,23 +405,6 @@ class PS_preferences(AddonPreferences):
         col.prop(self, "color_grid")
         col.prop(self, "color_box")
 
-        # --- keymaps ---
-        box = layout.box()
-        box.label(text='Keymap', icon='EVENT_K')
-
-        wm = context.window_manager
-        kc = wm.keyconfigs.user
-        km = kc.keymaps['3D View']
-
-        kmi = get_hotkey_entry_item(km, 'wm.call_panel', 'PS_PT_tool_kit', 'none')
-        if kmi:
-            box.context_pointer_set('keymap', km)
-            rna_keymap_ui.draw_kmi([], kc, km, kmi, box, 0)
-        else:
-            box.label(text='No hotkey entry found')
-
-        box.label(text="*some hotkeys may not work because of the use of other addons")
-
         # --- ссылки ---
         box = layout.box()
         row = box.row()
@@ -452,8 +414,6 @@ class PS_preferences(AddonPreferences):
         row.operator('wm.url_open', text='Gumroad').url = "https://derksen.gumroad.com"
         row.operator('wm.url_open', text='Artstation').url = "https://www.artstation.com/derksen"
 
-
-addon_keymaps = []
 
 classes = [
     PS_PG_settings,
@@ -467,23 +427,9 @@ def register():
 
     bpy.types.Scene.poly_source = PointerProperty(type=PS_PG_settings)
 
-    wm = bpy.context.window_manager
-    addon_keyconfig = wm.keyconfigs.addon
-    if not addon_keyconfig:
-        return
-
-    km = addon_keyconfig.keymaps.new(name='3D View', space_type='VIEW_3D')
-    kmi = km.keymap_items.new('wm.call_panel', type='SPACE', value='PRESS')
-    kmi.properties.name = 'PS_PT_tool_kit'
-    addon_keymaps.append((km, kmi))
-
 
 def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
-
     del bpy.types.Scene.poly_source
 
-    for km, kmi in addon_keymaps:
-        km.keymap_items.remove(kmi)
-    addon_keymaps.clear()
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)

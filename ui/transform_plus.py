@@ -34,11 +34,12 @@ def _toggle_bmesh_data(elements, layer):
         elem[layer] = new_value
 
 
-def _get_or_create_float_layer(bm_layers, attr_name, obj_data):
+def _get_or_create_float_layer(bm_layers, attr_name):
     """получает или создаёт float-слой bmesh"""
-    if attr_name not in obj_data.attributes:
-        return bm_layers.float.new(attr_name)
-    return bm_layers.float.get(attr_name)
+    layer = bm_layers.float.get(attr_name)
+    if layer is None:
+        layer = bm_layers.float.new(attr_name)
+    return layer
 
 
 def _draw_transform_row(col, obj, prop_name, prop_index, axis_name,
@@ -198,7 +199,7 @@ class PS_OT_tp_edge_data(Operator):
         attr_name = _EDGE_ATTR[self.mode]
         for obj in context.objects_in_mode_unique_data:
             bm = bmesh.from_edit_mesh(obj.data)
-            layer = _get_or_create_float_layer(bm.edges.layers, attr_name, obj.data)
+            layer = _get_or_create_float_layer(bm.edges.layers, attr_name)
             _toggle_bmesh_data(bm.edges, layer)
             bmesh.update_edit_mesh(obj.data)
         return {'FINISHED'}
@@ -227,7 +228,7 @@ class PS_OT_tp_vertex_data(Operator):
         attr_name = _VERT_ATTR[self.mode]
         for obj in context.objects_in_mode_unique_data:
             bm = bmesh.from_edit_mesh(obj.data)
-            layer = _get_or_create_float_layer(bm.verts.layers, attr_name, obj.data)
+            layer = _get_or_create_float_layer(bm.verts.layers, attr_name)
             _toggle_bmesh_data(bm.verts, layer)
             bmesh.update_edit_mesh(obj.data)
         return {'FINISHED'}

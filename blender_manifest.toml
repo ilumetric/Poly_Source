@@ -1,0 +1,25 @@
+schema_version = "1.0.0"
+
+id = "poly_source"
+version = "5.2.8"
+name = "Poly Source"
+tagline = "Toolset for game-ready modeling, retopology and mesh checks"
+maintainer = "Max Derksen"
+type = "add-on"
+website = "https://blendermarket.com/creators/derksen"
+tags = ["3D View", "Mesh"]
+blender_version_min = "4.2.0"
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  ".*",
+  "*.zip",
+  "/ilumetric/",
+  "/README.md",
+  "/Versions",
+  "/blender_vscode_development/",
+]

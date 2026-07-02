@@ -2,7 +2,6 @@ import bpy
 import bmesh
 import random
 import string
-import mathutils
 from bpy.types import Operator
 from bpy.props import (
     EnumProperty,
@@ -98,7 +97,7 @@ class PS_OT_clear_dots(Operator):
 
     def execute(self, context):
         v_count = 0
-        for obj in context.selected_objects:
+        for obj in context.objects_in_mode_unique_data:
             me = obj.data
             bm = bmesh.from_edit_mesh(me)
 
@@ -125,7 +124,7 @@ class PS_OT_remove_vertex_non_manifold(Operator):
 
     def execute(self, context):
         v_count = 0
-        for obj in context.selected_objects:
+        for obj in context.objects_in_mode_unique_data:
             me = obj.data
             bm = bmesh.from_edit_mesh(me)
 
@@ -216,7 +215,7 @@ class PS_OT_del_long_faces(Operator):
                 return degrees(angle_val) < self.angle
             return False
 
-        for obj in context.selected_objects:
+        for obj in context.objects_in_mode_unique_data:
             me = obj.data
             bm = bmesh.from_edit_mesh(me)
             bm.verts.ensure_lookup_table()
@@ -280,7 +279,9 @@ class PS_OT_clear_materials(Operator):
 
     def execute(self, context):
         for obj in context.selected_objects:
-            obj.data.materials.clear()
+            data = obj.data
+            if data is not None and hasattr(data, 'materials'):
+                data.materials.clear()
         return {'FINISHED'}
 
 
@@ -501,30 +502,34 @@ class PS_OT_reset_vertex_location(Operator):
 
         center = sum(verts, Vector()) / len(verts)
 
-        # смещение от центра для каждой вершины
+        # смещение от центра нужно только при выключенном Vertex Individual
         offsets = {}
-        for ob in uniques:
-            for v in bms[ob].verts:
-                offsets[v] = center - v.co
+        if not self.vi:
+            for ob in uniques:
+                for v in bms[ob].verts:
+                    if v.select:
+                        offsets[v] = center - v.co
 
         cursor = context.scene.cursor.location
         origin = Vector((0.0, 0.0, 0.0))
+        zero = Vector()
 
         for ob in uniques:
             inv_matrix = ob.matrix_world.inverted()
+
+            # целевая позиция в пространстве объекта (общая для всех вершин объекта)
+            if self.pos == 'CURSOR':
+                target = inv_matrix @ cursor
+            elif self.pos == 'WORLD':
+                target = inv_matrix @ origin
+            else:
+                target = origin
+
             for v in bms[ob].verts:
                 if not v.select:
                     continue
 
-                # целевая позиция в пространстве объекта
-                if self.pos == 'CURSOR':
-                    target = inv_matrix @ cursor
-                elif self.pos == 'WORLD':
-                    target = inv_matrix @ origin
-                else:
-                    target = origin
-
-                offset = offsets[v] if not self.vi else Vector()
+                offset = zero if self.vi else offsets[v]
 
                 if self.axis == 'X':
                     v.co.x = target[0] - offset[0]
@@ -555,30 +560,24 @@ class PS_OT_transfer_transform(Operator):
     rot: BoolProperty(name='Rotation', description='Transfer rotation data', default=True)
     sca: BoolProperty(name='Scale', description='Transfer scale data', default=False)
 
-    _copy_loc = None
-    _copy_rot = None
-    _copy_sca = None
-
     @classmethod
     def poll(cls, context):
         return context.mode == 'OBJECT' and context.active_object is not None
 
     def execute(self, context):
+        act = context.active_object
+        copy_loc = act.location.copy()
+        copy_rot = act.rotation_euler.copy()
+        copy_sca = act.scale.copy()
+
         for ob in context.selected_objects:
             if self.loc:
-                ob.location = self._copy_loc
+                ob.location = copy_loc.copy()
             if self.rot:
-                ob.rotation_euler = self._copy_rot
+                ob.rotation_euler = copy_rot.copy()
             if self.sca:
-                ob.scale = self._copy_sca
+                ob.scale = copy_sca.copy()
         return {'FINISHED'}
-
-    def invoke(self, context, event):
-        act = context.active_object
-        self._copy_loc = act.location.copy()
-        self._copy_rot = act.rotation_euler.copy()
-        self._copy_sca = act.scale.copy()
-        return self.execute(context)
 
 
 # =====================================================================
@@ -591,6 +590,10 @@ class PS_OT_add_camera(Operator):
     bl_label = "Add Camera"
     bl_description = "Create a new camera and align it to the current 3D viewport view"
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.area is not None and context.area.type == 'VIEW_3D'
 
     def execute(self, context):
         bpy.ops.object.camera_add()
@@ -616,7 +619,9 @@ class PS_OT_add_material(Operator):
             mat = bpy.data.materials.new(name='PS Material')
 
         for obj in context.selected_objects:
-            obj.data.materials.append(mat)
+            data = obj.data
+            if data is not None and hasattr(data, 'materials'):
+                data.materials.append(mat)
 
         return {'FINISHED'}
 
@@ -737,7 +742,7 @@ class PS_OT_unreal_material(Operator):
         base_color_node = None
         if self.base_color_texture:
             try:
-                base_color_img = bpy.data.images.load(self.base_color_texture)
+                base_color_img = bpy.data.images.load(self.base_color_texture, check_existing=True)
             except Exception:
                 self.report({'ERROR'}, f"Could not load Base Color texture: {self.base_color_texture}")
                 return None
@@ -753,7 +758,7 @@ class PS_OT_unreal_material(Operator):
         # --- Mask (RGB: R-Roughness, G-Metallic, B-AO) ---
         if self.mask_texture:
             try:
-                mask_img = bpy.data.images.load(self.mask_texture)
+                mask_img = bpy.data.images.load(self.mask_texture, check_existing=True)
             except Exception:
                 self.report({'ERROR'}, f"Could not load Mask texture: {self.mask_texture}")
                 return None
@@ -788,7 +793,7 @@ class PS_OT_unreal_material(Operator):
         # --- Normal (с инвертированием зелёного канала для UE) ---
         if self.normal_texture:
             try:
-                normal_img = bpy.data.images.load(self.normal_texture)
+                normal_img = bpy.data.images.load(self.normal_texture, check_existing=True)
             except Exception:
                 self.report({'ERROR'}, f"Could not load Normal texture: {self.normal_texture}")
                 return None
@@ -826,7 +831,7 @@ class PS_OT_unreal_material(Operator):
         # --- Emissive ---
         if self.emissive_texture:
             try:
-                emissive_img = bpy.data.images.load(self.emissive_texture)
+                emissive_img = bpy.data.images.load(self.emissive_texture, check_existing=True)
             except Exception:
                 self.report({'ERROR'}, f"Could not load Emissive texture: {self.emissive_texture}")
                 return None
@@ -1203,7 +1208,12 @@ class PS_OT_set_edge_data(Operator):
 # =====================================================================
 
 class PS_BooleanBase:
-    """базовый миксин для булевых операций"""
+    """базовый миксин для булевых операций
+
+    применяется ТОЛЬКО созданный оператором bool-модификатор
+    (modifier_apply по имени) — остальной стек модификаторов
+    объекта и операндов не трогается
+    """
     keep_bool_obj: BoolProperty(
         name="Keep Bool Object",
         description="Do not delete the boolean operand object after the operation",
@@ -1215,7 +1225,7 @@ class PS_BooleanBase:
         default=False,
     )
 
-    BOOLEAN_SOLVER = "EXACT"
+    BOOLEAN_SOLVER = 'EXACT'
 
     @classmethod
     def poll(cls, context):
@@ -1233,89 +1243,103 @@ class PS_BooleanBase:
             self.report({'ERROR'}, "Active object must be a mesh")
             return None, None
 
-        operands = [ob for ob in context.selected_objects if ob != active and ob.type == 'MESH']
+        operands = [ob for ob in context.selected_objects if ob is not active and ob.type == 'MESH']
         if not operands:
             self.report({'ERROR'}, "Select at least one mesh operand")
             return None, None
 
         return active, operands
 
-    def objects_prepare(self):
-        if bpy.context.mode != 'OBJECT':
-            bpy.ops.object.mode_set(mode='OBJECT')
+    @staticmethod
+    def _ensure_single_user_data(obj):
+        # modifier_apply не работает с multi-user данными
+        if obj.data.users > 1:
+            obj.data = obj.data.copy()
 
-        for ob in bpy.context.selected_objects:
-            if ob.type != "MESH":
-                ob.select_set(False)
+    @staticmethod
+    def _set_mesh_selection(obj, select):
+        """выделение/сброс всей геометрии напрямую, без переключения режимов
 
-        # Preserve existing modifier stacks: for boolean ops we only need
-        # unique mesh datablocks, not a full convert/apply pass.
-        for ob in bpy.context.selected_objects:
-            if ob.type != 'MESH':
-                continue
-            if ob.data.users > 1:
-                ob.data = ob.data.copy()
+        (после применения буля вырезанная часть остаётся выделенной в Edit Mode)
+        """
+        me = obj.data
+        for elements in (me.vertices, me.edges, me.polygons):
+            count = len(elements)
+            if count:
+                elements.foreach_set('select', [select] * count)
+                elements.foreach_set('hide', [False] * count)
 
-    def mesh_selection(self, ob, select_action):
-        obj = bpy.context.active_object
-        bpy.context.view_layer.objects.active = ob
-        bpy.ops.object.mode_set(mode="EDIT")
-        bpy.ops.mesh.reveal()
-        bpy.ops.mesh.select_all(action=select_action)
-        bpy.ops.object.mode_set(mode="OBJECT")
-        bpy.context.view_layer.objects.active = obj
-
-    def boolean_operation(self):
-        obj, obs = self._validate_selection(bpy.context)
-        if obj is None:
-            return {'CANCELLED'}
-
-        obj.select_set(False)
-
-        self.mesh_selection(obj, "DESELECT")
-        for ob in obs:
-            self.mesh_selection(ob, "SELECT")
-            self.boolean_mod(obj, ob, self.mode)
-        obj.select_set(True)
-        return {'FINISHED'}
-
-    def boolean_mod(self, obj, ob, mode, ob_delete=True):
-        md = obj.modifiers.new("PS Boolean", "BOOLEAN")
-        md.show_viewport = self.brush_mode
+    def _add_boolean_mod(self, obj, operand, mode):
+        md = obj.modifiers.new("PS Boolean", 'BOOLEAN')
         md.operation = mode
-        md.object = ob
-        if hasattr(md, "solver"):
-            md.solver = self.BOOLEAN_SOLVER
-        if hasattr(md, "use_hole_tolerant"):
-            md.use_hole_tolerant = True
+        md.object = operand
+        md.solver = self.BOOLEAN_SOLVER
+        md.use_hole_tolerant = True
+        # выключенный во вьюпорте модификатор Blender отказывается применять
+        md.show_viewport = True
+        return md
 
-        # Boolean modifiers are created at the end of the stack by default,
-        # which is exactly what we need for "on top of visible result" behavior.
-        context_override = {
+    def _apply_boolean_mod(self, context, obj, md):
+        """применяет один конкретный модификатор по имени"""
+        override = {
             'object': obj,
             'active_object': obj,
             'selected_objects': [obj],
             'selected_editable_objects': [obj],
         }
-
-        if not self.brush_mode:
-            with bpy.context.temp_override(**context_override):
+        try:
+            with context.temp_override(**override):
                 bpy.ops.object.modifier_apply(modifier=md.name)
-            if not self.keep_bool_obj:
-                bpy.data.objects.remove(ob)
-        else:
-            ob.display_type = 'BOUNDS'
+        except RuntimeError as err:
+            # например, меш с shape keys
+            obj.modifiers.remove(md)
+            self.report({'WARNING'}, f"Boolean failed on '{obj.name}': {err}")
+            return False
+        return True
+
+    @staticmethod
+    def _remove_operand(operand):
+        mesh = operand.data
+        bpy.data.objects.remove(operand)
+        if mesh is not None and mesh.users == 0:
+            bpy.data.meshes.remove(mesh)
+
+    def _boolean_with_operand(self, context, obj, operand, mode, delete_operand=True):
+        md = self._add_boolean_mod(obj, operand, mode)
+
+        if self.brush_mode:
+            operand.display_type = 'WIRE'
+            operand.hide_render = True
+            return True
+
+        if not self._apply_boolean_mod(context, obj, md):
+            return False
+
+        if delete_operand and not self.keep_bool_obj:
+            self._remove_operand(operand)
+        return True
 
     def execute(self, context):
-        self.objects_prepare()
-        return self.boolean_operation()
+        active, operands = self._validate_selection(context)
+        if active is None:
+            return {'CANCELLED'}
+
+        if not self.brush_mode:
+            self._ensure_single_user_data(active)
+
+        self._set_mesh_selection(active, False)
+
+        for operand in operands:
+            self._set_mesh_selection(operand, True)
+            self._boolean_with_operand(context, active, operand, self.mode)
+
+        active.select_set(True)
+        context.view_layer.objects.active = active
+        return {'FINISHED'}
 
     def invoke(self, context, event):
         self.keep_bool_obj = event.shift
         self.brush_mode = event.ctrl
-        if not self.poll(context):
-            self.report({"ERROR"}, "Object mode with at least two mesh objects is required")
-            return {"CANCELLED"}
         return self.execute(context)
 
 
@@ -1358,41 +1382,43 @@ class PS_OT_bool_slice(Operator, PS_BooleanBase):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        space_data = get_active_3d_view()
-        if space_data is None:
-            return {"CANCELLED"}
-
-        is_local_view = bool(space_data.local_view)
         active, operands = self._validate_selection(context)
         if active is None:
             return {'CANCELLED'}
 
-        self.objects_prepare()
+        space_data = get_active_3d_view()
+        is_local_view = bool(space_data and space_data.local_view)
 
-        ob1 = active
-        ob1.select_set(False)
-        self.mesh_selection(ob1, "DESELECT")
+        if not self.brush_mode:
+            self._ensure_single_user_data(active)
 
-        ob1_copy = None
-        for ob2 in operands:
-            self.mesh_selection(ob2, "SELECT")
+        self._set_mesh_selection(active, False)
+        active.select_set(False)
 
-            ob1_copy = ob1.copy()
-            ob1_copy.data = ob1.data.copy()
+        last_part = None
+        for operand in operands:
+            self._set_mesh_selection(operand, True)
 
-            for coll in ob1.users_collection:
-                coll.objects.link(ob1_copy)
+            part = active.copy()
+            part.data = active.data.copy()
+
+            for coll in active.users_collection:
+                coll.objects.link(part)
 
             if is_local_view:
-                ob1_copy.local_view_set(space_data, True)
+                part.local_view_set(space_data, True)
 
-            self.boolean_mod(ob1, ob2, "DIFFERENCE", ob_delete=False)
-            self.boolean_mod(ob1_copy, ob2, "INTERSECT")
-            ob1_copy.select_set(True)
+            # оба модификатора ссылаются на один операнд,
+            # поэтому удалять его можно только после второго буля
+            self._boolean_with_operand(context, active, operand, 'DIFFERENCE', delete_operand=False)
+            self._boolean_with_operand(context, part, operand, 'INTERSECT', delete_operand=True)
 
-        if ob1_copy is not None:
-            context.view_layer.objects.active = ob1_copy
-        return {"FINISHED"}
+            part.select_set(True)
+            last_part = part
+
+        if last_part is not None:
+            context.view_layer.objects.active = last_part
+        return {'FINISHED'}
 
 
 # =====================================================================
@@ -1427,7 +1453,7 @@ class PS_OT_distribute_objects(Operator):
             padding = 0.1
 
             for obj in objects:
-                bbox = [obj.matrix_world @ mathutils.Vector(corner) for corner in obj.bound_box]
+                bbox = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
                 min_x = min(v.x for v in bbox)
                 max_x = max(v.x for v in bbox)
                 width = max_x - min_x
@@ -1504,16 +1530,10 @@ class PS_OT_fill_from_points(Operator):
     bl_description = 'Connect selected vertices into a mesh using the minimum spanning tree algorithm'
     bl_options = {'REGISTER', 'UNDO'}
 
-    angle: FloatProperty(
-        name='Angle',
-        description='Connection angle threshold in degrees',
-        default=90.0,
-    )
-    range_count: IntProperty(
-        name='Range Count',
-        description='Number of nearest neighbor connections to consider',
-        default=1, min=1, max=100,
-    )
+    @classmethod
+    def poll(cls, context):
+        ob = context.active_object
+        return ob is not None and ob.type == 'MESH' and context.mode == 'EDIT_MESH'
 
     def execute(self, context):
         import heapq
@@ -1523,36 +1543,40 @@ class PS_OT_fill_from_points(Operator):
         obj.update_from_editmode()
         bm = bmesh.from_edit_mesh(me)
 
-        verts_old = [v for v in bm.verts]
+        coords = [v.co.copy() for v in me.vertices]
+        n = len(coords)
+        if n < 2:
+            return {'CANCELLED'}
 
-        # копируем вершины из исходного объекта
-        verts = [bm.verts.new(v.co) for v in me.vertices]
-
-        # удаляем старые вершины
+        # пересоздаём вершины без рёбер и граней
+        verts_old = list(bm.verts)
+        verts = [bm.verts.new(co) for co in coords]
         for v in verts_old:
             bm.verts.remove(v)
 
-        def calc_distance(vert1, vert2):
-            return (vert1.co - vert2.co).length
+        # минимальное остовное дерево (алгоритм Прима с ленивым удалением)
+        in_tree = [False] * n
+        in_tree[0] = True
+        added = 1
 
-        # строим минимальное остовное дерево (алгоритм Прима)
-        edge_heap = []
-        added_verts = {verts[0]}
-        for vert in verts[1:]:
-            heapq.heappush(edge_heap, (calc_distance(verts[0], vert), 0, verts.index(vert)))
+        edge_heap = [((coords[0] - coords[i]).length, 0, i) for i in range(1, n)]
+        heapq.heapify(edge_heap)
 
-        while len(added_verts) < len(verts):
-            dist, vert_from_idx, vert_to_idx = heapq.heappop(edge_heap)
-            if verts[vert_to_idx] not in added_verts:
-                added_verts.add(verts[vert_to_idx])
-                bm.edges.new((verts[vert_from_idx], verts[vert_to_idx]))
+        while added < n and edge_heap:
+            _dist, i_from, i_to = heapq.heappop(edge_heap)
+            if in_tree[i_to]:
+                continue
 
-                for v_idx, vert in enumerate(verts):
-                    if vert not in added_verts:
-                        heapq.heappush(edge_heap, (calc_distance(verts[vert_to_idx], vert), vert_to_idx, v_idx))
+            in_tree[i_to] = True
+            added += 1
+            bm.edges.new((verts[i_from], verts[i_to]))
 
-            bmesh.update_edit_mesh(me)
+            co_new = coords[i_to]
+            for j in range(n):
+                if not in_tree[j]:
+                    heapq.heappush(edge_heap, ((co_new - coords[j]).length, i_to, j))
 
+        bmesh.update_edit_mesh(me)
         return {'FINISHED'}
 
 

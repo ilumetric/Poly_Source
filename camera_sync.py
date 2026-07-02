@@ -37,12 +37,8 @@ def button_in_header(self, context):
         row.enabled = active_object is not None and active_object.type == 'CAMERA'
         is_camera_view = context.space_data.region_3d.view_perspective == 'CAMERA'
 
-        if bpy.app.version >= (4, 2, 0):
-            row.operator("view3d.view_camera", text="", icon='VIEW_CAMERA' if is_camera_view else 'VIEW_CAMERA_UNSELECTED')
-            row.prop(context.space_data, "lock_camera", text="", icon='VIEW_LOCKED' if context.space_data.lock_camera else 'VIEW_UNLOCKED')
-        else:
-            row.operator("view3d.view_camera", text="", icon='VIEW_CAMERA' if is_camera_view else 'OUTLINER_DATA_CAMERA')
-            row.prop(context.space_data, "lock_camera", text="", icon='KEYINGSET')
+        row.operator("view3d.view_camera", text="", icon='VIEW_CAMERA' if is_camera_view else 'VIEW_CAMERA_UNSELECTED')
+        row.prop(context.space_data, "lock_camera", text="", icon='VIEW_LOCKED' if context.space_data.lock_camera else 'VIEW_UNLOCKED')
         if active_object is not None:
             any_locked = any(active_object.lock_location) or any(active_object.lock_rotation) or any(active_object.lock_scale)
         else:

@@ -1,27 +1,6 @@
-import bpy
 from bpy.types import Panel
-from ..icons import preview_collections
-from ..utils.utils import get_active_3d_view, get_addon_prefs
+from ..utils.utils import get_addon_prefs
 from .. import check
-
-
-# --- вспомогательные функции для PS_PT_tool_kit ---
-
-def display_panel(self, context, layout):
-    """панель настроек отображения"""
-    space_data = get_active_3d_view()
-    if space_data is not None:
-        overlay = space_data.overlay
-        if overlay.show_retopology:
-            box = layout.box()
-            box.prop(overlay, 'show_retopology', icon='GREASEPENCIL')
-            box.prop(overlay, 'retopology_offset')
-            theme = context.preferences.themes[0].view_3d
-            box.prop(theme, 'face_retopology')
-            box.prop(theme, 'edge_width')
-            box.prop(theme, 'vertex_size')
-        else:
-            layout.prop(overlay, 'show_retopology', icon='GREASEPENCIL')
 
 
 # --- классы панелей ---
@@ -109,16 +88,16 @@ class PS_PT_check(Panel):
 
     @staticmethod
     def _section_sep(layout):
-        """разделитель секций: горизонтальная линия (Blender 4.2+) или узкий отступ"""
-        if bpy.app.version >= (4, 2, 0):
-            layout.separator(factor=0.7, type='LINE')
-        else:
-            layout.separator(factor=0.4)
+        """разделитель секций: горизонтальная линия"""
+        layout.separator(factor=0.7, type='LINE')
 
     def draw(self, context):
         settings = context.scene.poly_source
         prefs = get_addon_prefs()
         layout = self.layout
+        if prefs is None:
+            layout.label(text='Add-on preferences unavailable', icon='ERROR')
+            return
 
         row = layout.row()
         col = row.column()
@@ -173,13 +152,13 @@ class PS_PT_check(Panel):
             if settings.tris:
                 box.label(text='Triangles: ' + str(len(check.tris_co) // 3))
             if settings.ngone:
-                box.label(text='N-Gons: ' + str(len(check.ngone_idx)))
+                box.label(text='N-Gons: ' + str(check.ngone_count))
             if settings.non_manifold_check:
-                box.label(text='Non-Manifold: ' + str(len(check.e_non_idx)))
+                box.label(text='Non-Manifold: ' + str(check.non_manifold_count))
             if settings.elongated_tris:
                 box.label(text='Elongated Tris: ' + str(len(check.elongated_tris_co) // 6))
             if settings.custom_count:
-                box.label(text='Custom: ' + str(len(check.custom_faces_idx)))
+                box.label(text='Custom: ' + str(check.custom_faces_count))
 
         # статистика фасетизации меша (Blender vs Unreal)
         if settings.facet_ratio:

@@ -1,4 +1,3 @@
-import bpy
 import bmesh
 from ..icons import preview_collections
 from ..utils.utils import get_addon_prefs
@@ -92,7 +91,6 @@ def _draw_header_content(self, context, check_prop):
     layout = self.layout
     row = layout.row(align=True)
     row.popover(panel='PS_PT_transform_plus', text='', icon='EMPTY_ARROWS')
-    #row.popover(panel='PS_PT_tool_kit', text='')
     get_polygons_count_ui(context, row)
     row.separator(factor=0.2)
     row.prop(settings, 'show_check', text='', icon_value=check_icon.icon_id)
@@ -144,7 +142,6 @@ def tool_panel(self, context):
                 row.popover(panel='PS_PT_check', text='')
             if props.b_bool_tool:
                 bool_ui(context, layout)
-            #row.popover(panel='PS_PT_tool_kit', text='')
 
     layout.separator_spacer()
     self.draw_mode_settings(context)
