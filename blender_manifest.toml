@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "poly_source"
-version = "5.2.8"
+version = "5.2.9"
 name = "Poly Source"
 tagline = "Toolset for game-ready modeling, retopology and mesh checks"
 maintainer = "Max Derksen"
